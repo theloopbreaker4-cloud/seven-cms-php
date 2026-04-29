@@ -330,7 +330,7 @@ function formatBytes(int $b): string {
   </div>
 </div>
 
-<script>
+<script nonce="<?= Csp::nonce() ?>">
 (function () {
   const widget  = document.querySelector('[data-cal-month]');
   if (!widget) return;

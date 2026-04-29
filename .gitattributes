@@ -1,0 +1,33 @@
+# Normalize line endings on commit. Files in the repo always have LF;
+# Git auto-converts to CRLF on checkout for Windows users with
+# `core.autocrlf=true`. This eliminates the "LF will be replaced by CRLF"
+# warnings that appeared on every commit.
+
+* text=auto eol=lf
+
+# Explicit binary files — Git won't try to munge their bytes.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.pdf   binary
+*.zip   binary
+*.tar   binary
+*.gz    binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.eot   binary
+*.mp3   binary
+*.mp4   binary
+*.webm  binary
+
+# SVGs are text, not binary — diffable.
+*.svg   text eol=lf
+
+# Shell scripts must always be LF or they break on Linux.
+*.sh    text eol=lf
+bin/sev text eol=lf

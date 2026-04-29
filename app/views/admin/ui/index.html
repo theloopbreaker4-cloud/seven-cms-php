@@ -1,6 +1,6 @@
 <?php $lang = Seven::app()->router->getLanguage(); ?>
 
-<style>
+<style nonce="<?= Csp::nonce() ?>">
 /* UI Kit preview blocks */
 .ui-preview {
   padding: 1.25rem;
@@ -776,7 +776,7 @@ overlay.hide()</div>
 
 </div>
 
-<script type="module">
+<script type="module" nonce="<?= Csp::nonce() ?>">
 import { toast, overlay } from '/src/admin/ui.js'
 window.SevenUI = { toast, overlay }
 

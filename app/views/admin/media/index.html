@@ -159,7 +159,7 @@ $base = '/' . $lang . '/admin/media';
   </form>
 </dialog>
 
-<script>
+<script nonce="<?= Csp::nonce() ?>">
 (() => {
   const BASE   = <?= json_encode($base) ?>;
   const FOLDER = <?= json_encode($folderId) ?>;

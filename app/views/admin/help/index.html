@@ -51,7 +51,7 @@ $lang = Seven::app()->router->getLanguage();
   <?php endforeach ?>
 </div>
 
-<script>
+<script nonce="<?= Csp::nonce() ?>">
 (() => {
   const search = document.getElementById('help-search');
   const links  = Array.from(document.querySelectorAll('.help-link'));

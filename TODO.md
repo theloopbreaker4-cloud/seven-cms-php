@@ -8,7 +8,6 @@ Current backlog. Items are not committed deadlines, just an honest list of what'
 - [ ] Manual pass through Blog/Pages/Media/Ecom forms in browser — verify nothing regressed after the form-validation overhaul (CSRF auto-inject, novalidate, custom select wrapping, dark-theme pickers)
 
 ### Hardening (when CMS goes public)
-- [ ] Move `'unsafe-inline'` out of CSP entirely. Inline blocks in feature views (`admin/blog/form.html`, `admin/media/index.html`, `admin/pagebuilder/edit.html`, etc.) need `nonce="<?= Csp::nonce() ?>"`. Master.html-level blocks already have it.
 - [ ] Third-party security audit before 1.0
 - [ ] Fix the 6 dependabot moderate vulnerabilities flagged on push
 
@@ -19,11 +18,12 @@ Current backlog. Items are not committed deadlines, just an honest list of what'
 - [ ] Walk every `docs/*.md` once — ensure every code sample is current after the recent CSRF/RateLimit/Csp changes
 
 ### Nice-to-have
-- [ ] `.gitattributes` to normalize line endings (eliminates the LF/CRLF warnings on every commit)
 - [ ] Replace lingering `/admin/help` markdown placeholders (`#mdlink#...#`) with verified links
 
 ## Done (recent)
 
+- ✅ `.gitattributes` — `* text=auto eol=lf`, kills LF/CRLF warnings
+- ✅ CSP nonce on every inline `<script>`/`<style>` in all views (Master.html + feature views + error pages + setup). `'unsafe-inline'` dropped from prod CSP — only kept in dev for Vite HMR shims
 - ✅ Custom form validation engine + dark-theme pickers (admin + site)
 - ✅ Custom select wrapper (`seven-select`) with keyboard nav
 - ✅ Character counter for `[maxlength]` inputs/textareas

@@ -108,6 +108,6 @@
     </p>
   </div>
 
-  <script>(function(){var h=document.documentElement,t=localStorage.getItem('theme')||'light';h.setAttribute('data-theme',t);})();</script>
+  <script nonce="<?= Csp::nonce() ?>">(function(){var h=document.documentElement,t=localStorage.getItem('theme')||'light';h.setAttribute('data-theme',t);})();</script>
 </body>
 </html>

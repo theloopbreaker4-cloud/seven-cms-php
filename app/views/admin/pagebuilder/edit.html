@@ -50,7 +50,7 @@ $basePreview = "/{$lang}/admin/pagebuilder/preview/" . urlencode($entityType) . 
   </aside>
 </div>
 
-<script>
+<script nonce="<?= Csp::nonce() ?>">
 (() => {
   const SAVE_URL    = <?= json_encode($baseSave) ?>;
   const PREVIEW_URL = <?= json_encode($basePreview) ?>;

@@ -180,7 +180,7 @@ $renderField = static function (array $f) use ($values, $lang) {
 </form>
 
 <?php if (!$isNew): ?>
-<script>
+<script nonce="<?= Csp::nonce() ?>">
 (() => {
   const baseEntry = <?= json_encode("/{$lang}/admin/content/entries/" . urlencode($type->slug)) ?>;
   const id        = <?= (int)$entry->id ?>;

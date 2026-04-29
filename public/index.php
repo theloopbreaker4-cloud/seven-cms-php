@@ -18,9 +18,8 @@ define('PROTOCOL', stripos($_SERVER['SERVER_PROTOCOL'] ?? '', 'https') !== false
 if (!defined('STDIN')) define('STDIN', 'php://input');
 
 // Generate a per-request CSP nonce — used by inline <script>/<style> in views.
-// Modern browsers ignore 'unsafe-inline' when a nonce is also present, so this
-// upgrades security for browsers that support CSP Level 3 without breaking
-// older ones (or feature views still relying on 'unsafe-inline').
+// Every inline block in the codebase (Master.html + feature views) is stamped
+// with `nonce="<?= Csp::nonce() ?>"`, so we can drop 'unsafe-inline' entirely.
 require_once(ROOT_DIR . DS . 'lib' . DS . 'csp.class.php');
 $_nonce = Csp::nonce();
 
@@ -29,8 +28,12 @@ header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+// In dev, Vite serves modules from localhost:5173 with HMR. We allow that
+// origin and keep 'unsafe-inline' as a fallback only for the dev case
+// (Vite injects unsigned inline shims).
 $_viteSrc = ENVIRONMENT === 'dev' ? ' http://localhost:5173 ws://localhost:5173' : '';
-header("Content-Security-Policy: default-src 'self'{$_viteSrc}; script-src 'self' 'nonce-{$_nonce}' 'unsafe-inline'{$_viteSrc}; style-src 'self' 'nonce-{$_nonce}' 'unsafe-inline'{$_viteSrc}; img-src 'self' data: https://flagcdn.com; font-src 'self'{$_viteSrc}; connect-src 'self'{$_viteSrc}; frame-ancestors 'none';");
+$_devInline = ENVIRONMENT === 'dev' ? " 'unsafe-inline'" : '';
+header("Content-Security-Policy: default-src 'self'{$_viteSrc}; script-src 'self' 'nonce-{$_nonce}'{$_devInline}{$_viteSrc}; style-src 'self' 'nonce-{$_nonce}'{$_devInline}{$_viteSrc}; img-src 'self' data: https://flagcdn.com; font-src 'self'{$_viteSrc}; connect-src 'self'{$_viteSrc}; frame-ancestors 'none';");
 if (PROTOCOL === 'https://') {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 }

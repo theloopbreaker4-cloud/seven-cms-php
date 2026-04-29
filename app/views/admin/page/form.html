@@ -119,7 +119,7 @@ $slugData    = $isEdit ? $model->getSlugs() : [];
 </div>
 </form>
 
-<script>
+<script nonce="<?= Csp::nonce() ?>">
 (function(){
   var tabs   = document.querySelectorAll('.lang-tab');
   var panels = document.querySelectorAll('.lang-panel');

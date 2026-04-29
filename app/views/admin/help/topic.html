@@ -65,7 +65,7 @@ $lang = Seven::app()->router->getLanguage();
   </article>
 </div>
 
-<style>
+<style nonce="<?= Csp::nonce() ?>">
   .prose-doc h1, .prose-doc h2, .prose-doc h3, .prose-doc h4 {
     color: var(--text-primary);
     margin-top: 1.5rem; margin-bottom: 0.75rem;

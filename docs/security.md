@@ -131,25 +131,25 @@ Security headers are sent unconditionally by `public/index.php`:
 - `X-Content-Type-Options: nosniff`
 - `Referrer-Policy: strict-origin-when-cross-origin`
 - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
-- `Content-Security-Policy:` — `'self'` for everything, with a per-request
-  `'nonce-{value}'` for inline scripts and styles. `'unsafe-inline'` is
-  retained as a fallback for browsers that don't yet support CSP Level 3
-  (where nonces silently override `'unsafe-inline'`).
+- `Content-Security-Policy:` — `'self'` + per-request `'nonce-{value}'` for
+  inline scripts and styles. **`'unsafe-inline'` is dropped in production**
+  — every inline block in the codebase is stamped with the nonce. In dev,
+  `'unsafe-inline'` is kept as a fallback because Vite injects unsigned
+  inline shims for HMR.
 - `Strict-Transport-Security` (only when serving over HTTPS)
 
 ### CSP nonce
 
-Use `Csp::nonce()` to stamp inline blocks:
+Every inline `<script>` and `<style>` in views — Master.html *and* every
+feature view — uses:
 
 ```html
 <script nonce="<?= Csp::nonce() ?>">…</script>
 <style  nonce="<?= Csp::nonce() ?>">…</style>
 ```
 
-Both `Master.html` files (admin + site) already do this for every inline
-block they own. Feature views (e.g. `admin/blog/form.html`) still use
-`'unsafe-inline'` as a transition aid — patch them individually as you
-touch them.
+When you add a new inline block, **always** include the nonce attribute.
+Forgetting it means the script silently fails to execute in production.
 
 ## Reporting issues
 

@@ -126,7 +126,7 @@ $lang = Seven::app()->router->getLanguage();
 <?php endforeach ?>
 </div>
 
-<script>
+<script nonce="<?= Csp::nonce() ?>">
 (function(){
   ['brand','favicon'].forEach(function(t){
     var inp   = document.getElementById('file-'+t);

@@ -117,7 +117,7 @@ $buttonTextData = json_decode($model->buttonText ?? '{}', true) ?? [];
 
 </form>
 
-<script type="module">
+<script type="module" nonce="<?= Csp::nonce() ?>">
   document.querySelectorAll('.lang-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.tab;

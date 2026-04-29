@@ -37,7 +37,7 @@ $priceLabel = class_exists('CurrencyService') && CurrencyService::isEnabled()
   </div>
 </div>
 
-<script>
+<script nonce="<?= Csp::nonce() ?>">
   document.getElementById('addToCart')?.addEventListener('click', function () {
     const id = this.dataset.id;
     fetch('/api/v1/shop/cart/items', {
