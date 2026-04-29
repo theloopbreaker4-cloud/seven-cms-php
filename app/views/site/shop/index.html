@@ -1,0 +1,108 @@
+<?php $lang = Seven::app()->router->getLanguage(); ?>
+<div id="shop-app" class="max-w-6xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+    <div>
+      <h1 class="text-3xl font-bold">{{ t.title }}</h1>
+      <p class="text-sm text-[var(--text-secondary)] mt-1">{{ t.subtitle }}</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <select v-if="currencies.enabled" v-model="currentCurrency" @change="changeCurrency"
+              class="px-2 py-1.5 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm">
+        <option v-for="c in currencies.items" :key="c.code" :value="c.code">{{ c.code }}</option>
+      </select>
+      <a href="/<?= $lang ?>/shop/cart" class="relative px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary-hover)]">
+        🛒 {{ t.cart }}
+        <span v-if="cart && cart.items.length" class="ml-1 inline-block min-w-[18px] px-1 rounded-full bg-white text-[var(--primary)] text-xs font-bold text-center">{{ cart.items.length }}</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="flex gap-2 mb-6 overflow-x-auto pb-1">
+    <button @click="filterCategory(null)" :class="['px-3 py-1.5 rounded-full text-sm whitespace-nowrap', !category ? 'bg-[var(--primary)] text-white' : 'bg-[var(--bg-tertiary)]']">{{ t.all }}</button>
+    <button v-for="c in categories" :key="c.id" @click="filterCategory(c.id)"
+            :class="['px-3 py-1.5 rounded-full text-sm whitespace-nowrap', category===c.id ? 'bg-[var(--primary)] text-white' : 'bg-[var(--bg-tertiary)]']">
+      {{ c.name }}
+    </button>
+  </div>
+
+  <div v-if="loading" class="text-center py-16 text-[var(--text-secondary)]">{{ t.loading }}…</div>
+
+  <div v-else-if="!products.length" class="text-center py-16 text-[var(--text-secondary)]">{{ t.empty }}</div>
+
+  <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <a v-for="p in products" :key="p.id" :href="'/<?= $lang ?>/shop/' + p.slug"
+       class="block rounded-lg border border-[var(--border-color)] hover:border-[var(--primary)] overflow-hidden bg-[var(--bg-primary)]">
+      <div class="aspect-square bg-[var(--bg-tertiary)] flex items-center justify-center overflow-hidden">
+        <img v-if="p.image_url" :src="p.image_url" :alt="p.title" class="w-full h-full object-cover" loading="lazy" />
+        <span v-else class="text-4xl text-[var(--text-tertiary)]">📦</span>
+      </div>
+      <div class="p-3">
+        <div class="text-sm font-medium line-clamp-2">{{ p.title }}</div>
+        <div class="text-lg font-bold text-[var(--primary)] mt-1">{{ p.price_formatted || formatPrice(p.price, p.currency) }}</div>
+        <div v-if="p.kind === 'subscription'" class="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mt-0.5">subscription</div>
+        <div v-else-if="p.kind === 'digital'"  class="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] mt-0.5">digital</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<script type="module">
+  import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js';
+
+  createApp({
+    data() {
+      return {
+        loading: true,
+        products: [],
+        categories: [],
+        category: null,
+        cart: null,
+        currencies: { enabled: false, items: [], base: 'USD', active: 'USD' },
+        currentCurrency: 'USD',
+        t: {
+          title:   'Shop',
+          subtitle:'Browse our catalogue.',
+          cart:    'Cart',
+          all:     'All',
+          loading: 'Loading',
+          empty:   'No products yet.',
+        },
+      };
+    },
+    mounted() {
+      Promise.all([
+        fetch('/api/v1/shop/currencies').then(r => r.json()),
+        fetch('/api/v1/shop/categories').then(r => r.json()),
+        fetch('/api/v1/shop/cart').then(r => r.json()).catch(() => null),
+      ]).then(([cur, cats, cart]) => {
+        this.currencies = cur;
+        this.currentCurrency = cur.active || cur.base;
+        this.categories = cats.items || [];
+        this.cart = cart;
+        this.loadProducts();
+      });
+    },
+    methods: {
+      loadProducts() {
+        this.loading = true;
+        const qs = this.category ? '?category=' + this.category : '';
+        fetch('/api/v1/shop/products' + qs)
+          .then(r => r.json())
+          .then(data => { this.products = data.items || []; this.loading = false; });
+      },
+      filterCategory(id) {
+        this.category = id;
+        this.loadProducts();
+      },
+      changeCurrency() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('currency', this.currentCurrency);
+        window.location.href = url.toString();
+      },
+      formatPrice(minor, currency) {
+        if (typeof minor !== 'number') return '';
+        return (minor / 100).toFixed(2) + ' ' + (currency || '');
+      },
+    },
+  }).mount('#shop-app');
+</script>

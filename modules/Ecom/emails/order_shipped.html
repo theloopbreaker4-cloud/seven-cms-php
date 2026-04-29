@@ -1,0 +1,6 @@
+<?php /** @var Order $order */ /** @var ?string $tracking */ ?>
+<h2>Your order is on the way</h2>
+<p>Order <strong><?= htmlspecialchars($order->number) ?></strong> has been shipped.</p>
+<?php if (!empty($tracking)): ?>
+  <p>Tracking number: <code><?= htmlspecialchars($tracking) ?></code></p>
+<?php endif ?>

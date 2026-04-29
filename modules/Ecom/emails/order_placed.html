@@ -1,0 +1,17 @@
+<?php /** @var Order $order */ ?>
+<h2>Thank you for your order!</h2>
+<p>Order number: <strong><?= htmlspecialchars($order->number) ?></strong></p>
+<p>We received your order and will process it shortly.</p>
+<table cellpadding="6" style="border-collapse:collapse">
+  <?php foreach ($order->items() as $i): ?>
+    <tr>
+      <td><?= htmlspecialchars($i['name']) ?> × <?= (int)$i['quantity'] ?></td>
+      <td style="text-align:right"><?= Money::format((int)$i['total'], $order->currency) ?></td>
+    </tr>
+  <?php endforeach ?>
+  <tr><td>Subtotal</td><td style="text-align:right"><?= Money::format($order->subtotal, $order->currency) ?></td></tr>
+  <?php if ($order->discountTotal): ?><tr><td>Discount</td><td style="text-align:right">-<?= Money::format($order->discountTotal, $order->currency) ?></td></tr><?php endif ?>
+  <?php if ($order->shippingTotal): ?><tr><td>Shipping</td><td style="text-align:right"><?= Money::format($order->shippingTotal, $order->currency) ?></td></tr><?php endif ?>
+  <?php if ($order->taxTotal): ?><tr><td>Tax</td><td style="text-align:right"><?= Money::format($order->taxTotal, $order->currency) ?></td></tr><?php endif ?>
+  <tr><td><strong>Total</strong></td><td style="text-align:right"><strong><?= Money::format($order->total, $order->currency) ?></strong></td></tr>
+</table>

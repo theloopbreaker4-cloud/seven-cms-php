@@ -1,0 +1,78 @@
+<?php
+/** @var array $topics */
+$lang = Seven::app()->router->getLanguage();
+?>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h2 class="text-2xl font-semibold">Help &amp; Documentation</h2>
+    <p class="text-sm text-[var(--text-secondary)] mt-1">
+      Same content as the <code>docs/</code> directory, organized by topic. Use the search to jump to a section.
+    </p>
+  </div>
+  <a href="/<?= $lang ?>/admin" class="text-sm text-[var(--text-tertiary)] hover:underline">← Dashboard</a>
+</div>
+
+<input id="help-search" type="search" placeholder="Search topics…"
+       class="w-full mb-6 px-4 py-2.5 rounded-lg border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+
+<div id="help-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <?php foreach ($topics as $cat): ?>
+    <div class="help-card p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-2xl"><?= $cat['icon'] ?></span>
+        <h3 class="font-semibold"><?= htmlspecialchars($cat['label']) ?></h3>
+      </div>
+      <ul class="space-y-1 text-sm">
+        <?php foreach ($cat['topics'] as $t): ?>
+          <li>
+            <a href="/<?= $lang ?>/admin/help/topic/<?= htmlspecialchars($t['slug']) ?>"
+               class="help-link block px-2 py-1 rounded hover:bg-[var(--bg-tertiary)] transition-colors"
+               data-keywords="<?= htmlspecialchars(strtolower($cat['label'] . ' ' . $t['title'] . ' ' . implode(' ', array_column($t['anchors'] ?? [], 'label')))) ?>">
+              <?= htmlspecialchars($t['title']) ?>
+            </a>
+            <?php if (!empty($t['anchors'])): ?>
+              <ul class="ml-4 mt-1 space-y-0.5">
+                <?php foreach ($t['anchors'] as $a): ?>
+                  <li>
+                    <a href="/<?= $lang ?>/admin/help/topic/<?= htmlspecialchars($t['slug']) ?><?= htmlspecialchars($a['hash']) ?>"
+                       class="help-link block px-2 py-0.5 rounded text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+                       data-keywords="<?= htmlspecialchars(strtolower($cat['label'] . ' ' . $t['title'] . ' ' . $a['label'])) ?>">
+                      → <?= htmlspecialchars($a['label']) ?>
+                    </a>
+                  </li>
+                <?php endforeach ?>
+              </ul>
+            <?php endif ?>
+          </li>
+        <?php endforeach ?>
+      </ul>
+    </div>
+  <?php endforeach ?>
+</div>
+
+<script>
+(() => {
+  const search = document.getElementById('help-search');
+  const links  = Array.from(document.querySelectorAll('.help-link'));
+  const cards  = Array.from(document.querySelectorAll('.help-card'));
+
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    if (!q) {
+      links.forEach(l => l.style.display = '');
+      cards.forEach(c => c.style.display = '');
+      return;
+    }
+    cards.forEach(card => {
+      let visible = 0;
+      card.querySelectorAll('.help-link').forEach(l => {
+        const match = l.dataset.keywords.includes(q);
+        l.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      card.style.display = visible ? '' : 'none';
+    });
+  });
+})();
+</script>

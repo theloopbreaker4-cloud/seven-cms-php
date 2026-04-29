@@ -1,0 +1,47 @@
+<?php
+/** @var array  $orders */
+/** @var string $status */
+$lang = Seven::app()->router->getLanguage();
+?>
+
+<div class="flex flex-wrap items-center gap-3 mb-6">
+  <h2 class="text-xl font-semibold flex-1">Orders</h2>
+  <form method="GET" class="flex gap-2">
+    <select name="status" onchange="this.form.submit()" class="px-3 py-1.5 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm">
+      <option value="">All statuses</option>
+      <?php foreach (['pending','paid','fulfilled','shipped','cancelled','refunded','failed'] as $s): ?>
+        <option value="<?= $s ?>" <?= $status === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option>
+      <?php endforeach ?>
+    </select>
+  </form>
+</div>
+
+<div class="rounded-xl border border-[var(--border-color)] overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--bg-secondary)]">
+      <tr>
+        <th class="text-left px-3 py-2">Order</th>
+        <th class="text-left px-3 py-2">Customer</th>
+        <th class="text-left px-3 py-2">Status</th>
+        <th class="text-left px-3 py-2">Payment</th>
+        <th class="text-left px-3 py-2">Total</th>
+        <th class="text-left px-3 py-2">Placed</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($orders as $o): ?>
+        <tr class="border-t border-[var(--border-color)] hover:bg-[var(--bg-secondary)]">
+          <td class="px-3 py-2">
+            <a href="/<?= $lang ?>/admin/ecom/orders/view/<?= (int)$o['id'] ?>"
+               class="font-mono text-[var(--primary)] hover:underline"><?= htmlspecialchars($o['number']) ?></a>
+          </td>
+          <td class="px-3 py-2 text-xs"><?= htmlspecialchars($o['email']) ?></td>
+          <td class="px-3 py-2"><span class="text-xs px-2 py-0.5 rounded bg-[var(--bg-tertiary)]"><?= htmlspecialchars($o['status']) ?></span></td>
+          <td class="px-3 py-2"><span class="text-xs"><?= htmlspecialchars($o['payment_status']) ?></span></td>
+          <td class="px-3 py-2 text-xs"><?= Money::format((int)$o['total'], (string)$o['currency']) ?></td>
+          <td class="px-3 py-2 text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars($o['placed_at'] ?? $o['created_at']) ?></td>
+        </tr>
+      <?php endforeach ?>
+    </tbody>
+  </table>
+</div>

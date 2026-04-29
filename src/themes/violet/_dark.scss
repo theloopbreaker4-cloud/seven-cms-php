@@ -1,0 +1,29 @@
+// Theme: violet — dark mode
+[data-palette="violet"][data-theme="dark"] {
+  --bg-primary:      #0d0918;
+  --bg-secondary:    #150f24;
+  --bg-tertiary:     #1e1730;
+  --text-primary:    #ede8ff;
+  --text-secondary:  #a895d8;
+  --text-tertiary:   #6b5a9a;
+  --border-color:    #2a1f45;
+  --primary:         #a78bfa;
+  --primary-hover:   #8b5cf6;
+  --secondary:       #f472b6;
+  --secondary-hover: #ec4899;
+
+  // admin
+  --sidebar-bg:      #0a0714;
+  --sidebar-border:  #201535;
+  --header-bg:       #110d1e;
+  --success:         #22c55e;
+  --warning:         #f59e0b;
+  --danger:          #ef4444;
+  --info:            #38bdf8;
+
+  // site animated bg
+  --glow-a:  rgba(167, 139, 250, 0.11);
+  --glow-b:  rgba(244, 114, 182, 0.08);
+  --orb-a:   rgba(139, 92,  246, 0.13);
+  --orb-b:   rgba(236, 72,  153, 0.09);
+}

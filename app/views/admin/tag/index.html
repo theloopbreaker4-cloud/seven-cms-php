@@ -1,0 +1,42 @@
+<?php /** @var array $tags */ $lang = Seven::app()->router->getLanguage(); ?>
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold"><?= AdminLang::t('tags', 'nav') ?></h2>
+  <a href="/<?= $lang ?>/admin/tag/create"
+     class="px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary-hover)]"><?= AdminLang::t('add', 'common') ?></a>
+</div>
+
+<?php if (empty($tags)): ?>
+  <p class="text-[var(--text-secondary)] text-sm">No tags yet.</p>
+<?php else: ?>
+  <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]">
+        <tr>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium"><?= AdminLang::t('slug', 'posts') ?></th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium"><?= AdminLang::t('title_en', 'posts') ?></th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($tags as $row):
+          $name = json_decode($row['name'] ?? '{}', true) ?? [];
+        ?>
+          <tr class="border-b border-[var(--border-color)] last:border-0 hover:bg-[var(--bg-tertiary)]">
+            <td class="px-4 py-3 font-mono text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars($row['slug']) ?></td>
+            <td class="px-4 py-3"><?= htmlspecialchars($name['en'] ?? '') ?></td>
+            <td class="px-4 py-3 text-right">
+              <a href="/<?= $lang ?>/admin/tag/edit/<?= $row['id'] ?>"
+                 class="text-[var(--primary)] hover:underline mr-3"><?= AdminLang::t('edit', 'common') ?></a>
+              <a href="/<?= $lang ?>/admin/tag/delete/<?= $row['id'] ?>"
+                 class="text-red-500 hover:underline"
+                 data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
+                 data-confirm-type="danger"
+                 data-confirm-title="<?= htmlspecialchars(AdminLang::t('delete', 'common')) . ': ' . htmlspecialchars($name['en'] ?? '') ?>"
+                 data-confirm-ok="<?= htmlspecialchars(AdminLang::t('delete', 'common')) ?>"><?= AdminLang::t('delete', 'common') ?></a>
+            </td>
+          </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif ?>

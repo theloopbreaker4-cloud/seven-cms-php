@@ -1,0 +1,7 @@
+<?php /** @var Subscription $subscription */ /** @var ?Order $order */ ?>
+<h2>Subscription renewed</h2>
+<p>Your subscription has been renewed.</p>
+<p>Next renewal: <strong><?= htmlspecialchars($subscription->currentPeriodEnd ?? '') ?></strong></p>
+<?php if ($order): ?>
+  <p>Invoice <?= htmlspecialchars($order->number) ?> — <?= Money::format($order->total, $order->currency) ?></p>
+<?php endif ?>

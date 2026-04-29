@@ -1,0 +1,69 @@
+{
+    "name": "sevencms/seven",
+    "description": "SevenCMS — modular PHP CMS with plugins, custom content types, RBAC, e-commerce, multi-site.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.1",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "gabordemooij/redbean": "^5.7"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5",
+        "friendsofphp/php-cs-fixer": "^3.50"
+    },
+    "suggest": {
+        "ext-gd":              "Image processing in the Media plugin (resize / WebP generation)",
+        "ext-imagick":         "Higher-quality image processing alternative to GD",
+        "ext-curl":            "Required by Stripe and PayPal gateways",
+        "ext-fileinfo":        "Reliable mime detection on uploaded media",
+        "stripe/stripe-php":   "Drop-in replacement for the bundled Stripe REST adapter",
+        "aws/aws-sdk-php":     "Use S3Storage with Cloudflare R2 / AWS S3 / MinIO",
+        "phpmailer/phpmailer": "Replace the built-in mail() with SMTP/Mailgun/Postmark",
+        "predis/predis":       "Redis cache driver fallback when ext-redis is not installed"
+    },
+    "autoload": {
+        "psr-4": {
+            "Seven\\": "src/Seven/"
+        },
+        "classmap": [
+            "lib/",
+            "app/controllers/",
+            "app/apiControllers/",
+            "app/models/",
+            "app/middleware/",
+            "modules/"
+        ],
+        "exclude-from-classmap": [
+            "**/migrations/**",
+            "**/views/**",
+            "**/emails/**"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Seven\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php bin/sev migrate"
+        ],
+        "post-update-cmd": [
+            "@php bin/sev migrate"
+        ],
+        "test":         "phpunit",
+        "cs:check":     "php-cs-fixer fix --dry-run --diff",
+        "cs:fix":       "php-cs-fixer fix"
+    },
+    "config": {
+        "sort-packages":       true,
+        "optimize-autoloader": true,
+        "preferred-install":   "dist"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable":     true
+}

@@ -1,0 +1,17 @@
+// Badges & status pills
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+
+  &-success { background: color-mix(in srgb, var(--success) 15%, transparent); color: var(--success); }
+  &-warning { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning); }
+  &-danger  { background: color-mix(in srgb, var(--danger)  15%, transparent); color: var(--danger);  }
+  &-info    { background: color-mix(in srgb, var(--info)    15%, transparent); color: var(--info);    }
+  &-primary { background: color-mix(in srgb, var(--primary) 15%, transparent); color: var(--primary); }
+  &-muted   { background: var(--bg-tertiary); color: var(--text-tertiary); }
+}

@@ -1,0 +1,292 @@
+#!/usr/bin/env php
+<?php
+/**
+ * sev — SevenCMS command-line tool.
+ *
+ * Usage:
+ *   php bin/sev migrate                  — run pending DB migrations
+ *   php bin/sev migrate:status           — list applied + pending migrations
+ *   php bin/sev migrate:rollback         — roll back the most recent batch
+ *   php bin/sev plugin:list              — list discovered modules
+ *   php bin/sev plugin:install <Name>    — install plugin
+ *   php bin/sev plugin:enable  <Name>    — enable plugin
+ *   php bin/sev plugin:disable <Name>    — disable plugin
+ *   php bin/sev plugin:uninstall <Name>  — uninstall plugin
+ *   php bin/sev make:plugin <Name>       — scaffold a new plugin under modules/<Name>
+ *   php bin/sev make:cct <Name>          — scaffold a Content Type via SQL seed
+ *   php bin/sev cache:clear              — clear app cache
+ *   php bin/sev user:make-admin <email>  — promote a user to the "admin" role
+ *
+ * Bootstraps the same way as a web request: defines _SEVEN, loads core, env, db, classes.
+ */
+
+define('_SEVEN',   1);
+define('ROOT_DIR', dirname(__DIR__));
+chdir(ROOT_DIR);
+
+// Composer autoloader (optional). When present, third-party packages and
+// plugins shipping PSR-4 namespaces become available to the CLI as well.
+if (is_file(ROOT_DIR . '/vendor/autoload.php')) require_once ROOT_DIR . '/vendor/autoload.php';
+
+// Autoload core classes (matches public/index.php convention).
+foreach (glob(ROOT_DIR . '/lib/*.class.php') ?: [] as $f) require_once $f;
+foreach (glob(ROOT_DIR . '/lib/*.interface.php') ?: [] as $f) require_once $f;
+
+// Module/Model base classes from app/.
+foreach (glob(ROOT_DIR . '/app/models/*.php') ?: [] as $f) {
+    if (basename($f) === 'index.html') continue;
+    require_once $f;
+}
+
+// Plugin module classes — needed for plugin:* commands.
+foreach (glob(ROOT_DIR . '/modules/*/Module.php') ?: [] as $f) require_once $f;
+foreach (glob(ROOT_DIR . '/modules/*/models/*.php') ?: [] as $f) require_once $f;
+
+// Env + DB
+if (class_exists('Env'))    Env::load(ROOT_DIR . '/.env');
+if (class_exists('Config')) Config::load(ROOT_DIR . '/config/db.config.php');
+if (class_exists('DB'))     DB::connect();
+
+// ─── Dispatch ──────────────────────────────────────────────────────────────
+$cmd  = (string)($argv[1] ?? '');
+$args = array_slice($argv, 2);
+
+if (!$cmd) {
+    fwrite(STDOUT, "sev — SevenCMS CLI\n\n");
+    fwrite(STDOUT, "Usage: php bin/sev <command> [args]\n\n");
+    fwrite(STDOUT, "  migrate, migrate:status, migrate:rollback\n");
+    fwrite(STDOUT, "  plugin:list, plugin:install, plugin:enable, plugin:disable, plugin:uninstall\n");
+    fwrite(STDOUT, "  make:plugin <Name>, make:cct <Name>\n");
+    fwrite(STDOUT, "  user:make-admin <email>\n");
+    fwrite(STDOUT, "  cache:clear\n");
+    fwrite(STDOUT, "  mail:send [--limit=N], mail:status\n");
+    fwrite(STDOUT, "  cron:run, cron:list\n");
+    fwrite(STDOUT, "  ecom:bill-due\n");
+    exit(0);
+}
+
+try {
+    match ($cmd) {
+        'migrate'           => cmdMigrate(),
+        'migrate:status'    => cmdMigrateStatus(),
+        'migrate:rollback'  => cmdMigrateRollback(),
+        'plugin:list'       => cmdPluginList(),
+        'plugin:install'    => cmdPluginInstall($args[0] ?? ''),
+        'plugin:enable'     => cmdPluginToggle($args[0] ?? '', 'enable'),
+        'plugin:disable'    => cmdPluginToggle($args[0] ?? '', 'disable'),
+        'plugin:uninstall'  => cmdPluginToggle($args[0] ?? '', 'uninstall'),
+        'make:plugin'       => cmdMakePlugin($args[0] ?? ''),
+        'make:cct'          => cmdMakeCct($args[0] ?? ''),
+        'user:make-admin'   => cmdMakeAdmin($args[0] ?? ''),
+        'cache:clear'       => cmdCacheClear(),
+        'mail:send'         => cmdMailSend($args),
+        'mail:status'       => cmdMailStatus(),
+        'cron:run'          => cmdCronRun(),
+        'cron:list'         => cmdCronList(),
+        'ecom:bill-due'     => cmdEcomBillDue(),
+        default             => fail("Unknown command: {$cmd}"),
+    };
+} catch (\Throwable $e) {
+    fwrite(STDERR, "ERROR: " . $e->getMessage() . "\n");
+    exit(1);
+}
+
+// ─── Command bodies ────────────────────────────────────────────────────────
+
+function cmdMigrate(): void
+{
+    $r = Migrator::migrate();
+    if ($r['count'] === 0 && empty($r['errors'])) {
+        info('Nothing to migrate.');
+        return;
+    }
+    foreach ($r['ran'] as $m) ok("✓ {$m}");
+    foreach ($r['errors'] as $e) fail("✗ {$e['migration']}: {$e['error']}");
+    ok("Applied {$r['count']} migration(s).");
+}
+
+function cmdMigrateStatus(): void
+{
+    $applied = array_flip(Migrator::applied());
+    $pending = Migrator::pending();
+    info('Applied:');
+    foreach (array_keys($applied) as $m) ok("  ✓ {$m}");
+    info('Pending:');
+    foreach ($pending as $m) warn("  · {$m}");
+    if (!$pending) ok("  (none)");
+}
+
+function cmdMigrateRollback(): void
+{
+    $rolled = Migrator::rollbackLastBatch();
+    foreach ($rolled as $m) warn("← {$m}");
+    if (!$rolled) info('Nothing to roll back.');
+    else          ok("Rolled back " . count($rolled) . " migration(s). Note: tables not dropped.");
+}
+
+function cmdPluginList(): void
+{
+    PluginManager::ensureTable();
+    $discovered = PluginManager::discover();
+    $rows       = PluginManager::all();
+    $byName     = [];
+    foreach ($rows as $r) $byName[$r['name']] = $r;
+
+    foreach ($discovered as $name => $class) {
+        $row = $byName[$name] ?? null;
+        $status = $row['status'] ?? 'uninstalled';
+        $icon = match ($status) {
+            'enabled'      => '✓',
+            'disabled'     => '·',
+            'installed'    => '○',
+            default        => '×',
+        };
+        echo sprintf("  %s %-20s %-12s v%s\n", $icon, $name, $status, $row['version'] ?? '0.0.0');
+    }
+}
+
+function cmdPluginInstall(string $name): void
+{
+    if ($name === '') fail('Plugin name required.');
+    $r = PluginManager::install($name);
+    if (!$r['ok']) fail($r['message'] ?? 'Install failed');
+    ok("Installed {$name}.");
+}
+
+function cmdPluginToggle(string $name, string $action): void
+{
+    if ($name === '') fail('Plugin name required.');
+    $r = PluginManager::$action($name);
+    if (!($r['ok'] ?? false)) fail($r['message'] ?? "Failed to {$action} {$name}");
+    ok(ucfirst($action) . "d {$name}.");
+}
+
+function cmdMakePlugin(string $name): void
+{
+    if (!preg_match('/^[A-Z][A-Za-z0-9]+$/', $name)) fail('Plugin name must be PascalCase.');
+    $dir = ROOT_DIR . "/modules/{$name}";
+    if (is_dir($dir)) fail("Already exists: {$dir}");
+
+    mkdir($dir . '/controllers', 0755, true);
+    mkdir($dir . '/models',      0755, true);
+    mkdir($dir . '/migrations',  0755, true);
+
+    file_put_contents("{$dir}/Module.php", <<<PHP
+<?php
+
+defined('_SEVEN') or die('No direct script access allowed');
+
+class {$name}Module implements ModuleInterface
+{
+    public function getName(): string { return '{$name}'; }
+    public function boot(): void {}
+    public function onInstall(): void {}
+    public function onEnable(): void {}
+    public function onDisable(): void {}
+    public function onUninstall(): void {}
+
+    public function routes(): array
+    {
+        return [
+            // 'admin.{$name}' => ['controller' => '{$name}', 'action' => 'index', 'prefix' => 'admin'],
+        ];
+    }
+}
+
+PHP);
+
+    file_put_contents("{$dir}/plugin.json", json_encode([
+        'name'        => $name,
+        'version'     => '0.1.0',
+        'description' => "{$name} plugin",
+        'author'      => '',
+        'permissions' => [],
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+    file_put_contents("{$dir}/migrations/" . date('Y_m_d_His') . "_init.sql", "-- Initial migration for {$name}\n");
+
+    ok("Scaffolded plugin: modules/{$name}/");
+}
+
+function cmdMakeCct(string $name): void
+{
+    if ($name === '') fail('Content type name required.');
+    $slug = strtolower(preg_replace('~[^a-z0-9_]+~i', '_', $name));
+    DB::execute(
+        'INSERT IGNORE INTO content_types (slug, name, icon) VALUES (:s, :n, :i)',
+        [':s' => $slug, ':n' => $name, ':i' => 'box']
+    );
+    ok("Created content type slug='{$slug}'. Add fields via the admin UI.");
+}
+
+function cmdMakeAdmin(string $email): void
+{
+    if ($email === '') fail('Email required.');
+    $row = DB::findOne('users', ' email = :e ', [':e' => $email]);
+    if (!$row) fail("User not found: {$email}");
+
+    DB::execute('UPDATE users SET role = "admin" WHERE id = :id', [':id' => (int)$row['id']]);
+    if (Permission::class) {
+        Permission::syncRoles((int)$row['id'], array_unique(array_merge(Permission::userRoles((int)$row['id']), ['admin'])));
+    }
+    ok("{$email} is now an admin.");
+}
+
+function cmdCacheClear(): void
+{
+    if (!class_exists('Cache')) { warn('Cache class not available.'); return; }
+    Cache::clear();
+    ok('Cache cleared.');
+}
+
+function cmdMailSend(array $args): void
+{
+    $limit = 50;
+    foreach ($args as $a) {
+        if (preg_match('/^--limit=(\d+)$/', $a, $m)) $limit = (int)$m[1];
+    }
+    $r = Mailer::processQueue($limit);
+    ok("Processed {$r['processed']}, sent {$r['sent']}, failed {$r['failed']}.");
+}
+
+function cmdMailStatus(): void
+{
+    $s = Mailer::stats();
+    info('Mail queue:');
+    ok("  pending  {$s['pending']}");
+    ok("  sending  {$s['sending']}");
+    ok("  sent     {$s['sent']}");
+    warn("  failed   {$s['failed']}");
+}
+
+function cmdCronRun(): void
+{
+    $r = CronRunner::runDue();
+    if (!$r['ran']) { info('No jobs due.'); return; }
+    foreach ($r['ran'] as $j) ok("✓ {$j['name']} ({$j['ms']}ms)");
+    foreach ($r['errors'] as $e) fail("✗ {$e['name']}: {$e['error']}");
+}
+
+function cmdCronList(): void
+{
+    foreach (CronRunner::list() as $j) {
+        $next = $j['next_run_at'] ?? '—';
+        $last = $j['last_run_at'] ?? '—';
+        echo sprintf("  %-30s %-15s last=%s next=%s\n",
+            $j['name'], $j['schedule'], $last, $next);
+    }
+}
+
+function cmdEcomBillDue(): void
+{
+    if (!class_exists('SubscriptionBiller')) { warn('Ecom plugin not enabled.'); return; }
+    $r = SubscriptionBiller::billDue();
+    ok("Billed {$r['billed']} subscription(s); {$r['failed']} failed.");
+}
+
+// ─── pretty output helpers ────────────────────────────────────────────────
+
+function info(string $m): void { fwrite(STDOUT, $m . "\n"); }
+function ok  (string $m): void { fwrite(STDOUT, "\033[32m{$m}\033[0m\n"); }
+function warn(string $m): void { fwrite(STDOUT, "\033[33m{$m}\033[0m\n"); }
+function fail(string $m): void { fwrite(STDERR, "\033[31m{$m}\033[0m\n"); exit(1); }

@@ -1,0 +1,81 @@
+<?php $lang = Seven::app()->router->getLanguage(); ?>
+<div id="cart-app" class="max-w-3xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">Cart</h1>
+
+  <div v-if="loading" class="text-center py-16 text-[var(--text-secondary)]">Loading…</div>
+
+  <div v-else-if="!cart.items.length" class="text-center py-16">
+    <p class="text-[var(--text-secondary)] mb-4">Your cart is empty.</p>
+    <a href="/<?= $lang ?>/shop" class="px-4 py-2 rounded-lg bg-[var(--primary)] text-white">Browse products</a>
+  </div>
+
+  <div v-else>
+    <ul class="divide-y divide-[var(--border-color)] mb-6 rounded-lg border border-[var(--border-color)]">
+      <li v-for="item in cart.items" :key="item.id" class="flex items-center gap-3 px-4 py-3">
+        <img v-if="item.image_url" :src="item.image_url" class="w-14 h-14 rounded object-cover" />
+        <div class="flex-1 min-w-0">
+          <div class="font-medium truncate">{{ item.title }}</div>
+          <div class="text-xs text-[var(--text-tertiary)]">{{ formatPrice(item.unit_price) }}</div>
+        </div>
+        <input type="number" min="1" v-model.number="item.quantity" @change="update(item)" class="w-16 px-2 py-1 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm" />
+        <span class="font-mono w-24 text-right">{{ formatPrice(item.line_total) }}</span>
+        <button @click="remove(item)" class="text-[var(--text-tertiary)] hover:text-red-500" aria-label="Remove">×</button>
+      </li>
+    </ul>
+
+    <div class="rounded-lg border border-[var(--border-color)] p-4 space-y-2">
+      <div class="flex justify-between text-sm"><span>Subtotal</span><span class="font-mono">{{ formatPrice(cart.totals.subtotal) }}</span></div>
+      <div v-if="cart.totals.discount" class="flex justify-between text-sm text-emerald-500"><span>Discount</span><span class="font-mono">-{{ formatPrice(cart.totals.discount) }}</span></div>
+      <div v-if="cart.totals.shipping" class="flex justify-between text-sm"><span>Shipping</span><span class="font-mono">{{ formatPrice(cart.totals.shipping) }}</span></div>
+      <div v-if="cart.totals.tax" class="flex justify-between text-sm"><span>Tax</span><span class="font-mono">{{ formatPrice(cart.totals.tax) }}</span></div>
+      <div class="flex justify-between font-bold pt-2 border-t border-[var(--border-color)]"><span>Total</span><span class="font-mono text-[var(--primary)]">{{ formatPrice(cart.totals.total) }}</span></div>
+
+      <div class="flex gap-2 pt-3">
+        <input v-model="discountCode" placeholder="Discount code" class="flex-1 px-3 py-1.5 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm" />
+        <button @click="applyDiscount" class="px-3 py-1.5 rounded bg-[var(--bg-tertiary)] text-sm hover:bg-[var(--primary)] hover:text-white">Apply</button>
+      </div>
+    </div>
+
+    <button class="mt-6 w-full px-6 py-3 rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] font-medium">
+      Checkout
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js';
+
+  createApp({
+    data() { return { loading: true, cart: { items: [], totals: {} }, discountCode: '' }; },
+    mounted() { this.load(); },
+    methods: {
+      load() {
+        this.loading = true;
+        fetch('/api/v1/shop/cart', { credentials: 'same-origin' })
+          .then(r => r.json()).then(c => { this.cart = c; this.loading = false; });
+      },
+      update(item) {
+        fetch('/api/v1/shop/cart/items/' + item.id, {
+          method: 'PUT', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quantity: item.quantity }),
+        }).then(r => r.json()).then(c => this.cart = c);
+      },
+      remove(item) {
+        fetch('/api/v1/shop/cart/items/' + item.id, { method: 'DELETE', credentials: 'same-origin' })
+          .then(r => r.json()).then(c => this.cart = c);
+      },
+      applyDiscount() {
+        fetch('/api/v1/shop/cart/discount', {
+          method: 'POST', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: this.discountCode }),
+        }).then(r => r.json()).then(c => this.cart = c);
+      },
+      formatPrice(minor) {
+        if (typeof minor !== 'number') return '';
+        return (minor / 100).toFixed(2) + ' ' + (this.cart.currency || '');
+      },
+    },
+  }).mount('#cart-app');
+</script>

@@ -1,0 +1,60 @@
+<?php
+/** @var array $log */
+$lang = Seven::app()->router->getLanguage();
+?>
+
+<div class="flex flex-wrap items-center gap-3 mb-6">
+  <h2 class="text-xl font-semibold flex-1">Activity Log</h2>
+  <form method="GET" class="flex gap-2">
+    <input name="action" value="<?= htmlspecialchars($_GET['action'] ?? '') ?>" placeholder="Action prefix"
+           class="px-3 py-1.5 rounded-lg border text-sm bg-[var(--bg-primary)] border-[var(--border-color)] w-40 font-mono" />
+    <input name="entity" value="<?= htmlspecialchars($_GET['entity'] ?? '') ?>" placeholder="Entity type"
+           class="px-3 py-1.5 rounded-lg border text-sm bg-[var(--bg-primary)] border-[var(--border-color)] w-40 font-mono" />
+    <input name="user" type="number" value="<?= htmlspecialchars($_GET['user'] ?? '') ?>" placeholder="User id"
+           class="px-3 py-1.5 rounded-lg border text-sm bg-[var(--bg-primary)] border-[var(--border-color)] w-24" />
+    <button class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-sm">Filter</button>
+  </form>
+</div>
+
+<?php if (empty($log)): ?>
+  <div class="border border-dashed border-[var(--border-color)] rounded-xl p-10 text-center text-[var(--text-secondary)]">
+    No activity recorded yet.
+  </div>
+<?php else: ?>
+  <div class="rounded-xl border border-[var(--border-color)] overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-[var(--bg-secondary)]">
+        <tr>
+          <th class="text-left px-3 py-2 font-medium">When</th>
+          <th class="text-left px-3 py-2 font-medium">User</th>
+          <th class="text-left px-3 py-2 font-medium">Action</th>
+          <th class="text-left px-3 py-2 font-medium">Entity</th>
+          <th class="text-left px-3 py-2 font-medium">Description</th>
+          <th class="text-left px-3 py-2 font-medium">IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($log as $row): ?>
+          <tr class="border-t border-[var(--border-color)] hover:bg-[var(--bg-secondary)]">
+            <td class="px-3 py-1.5 text-xs text-[var(--text-tertiary)] whitespace-nowrap"><?= htmlspecialchars($row['created_at']) ?></td>
+            <td class="px-3 py-1.5 text-xs">
+              <?php if ($row['user_id']): ?>
+                <span><?= htmlspecialchars($row['user_name'] ?? $row['email'] ?? ('#' . $row['user_id'])) ?></span>
+              <?php else: ?>
+                <span class="text-[var(--text-tertiary)]">system</span>
+              <?php endif ?>
+            </td>
+            <td class="px-3 py-1.5"><span class="font-mono text-xs px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)]"><?= htmlspecialchars($row['action']) ?></span></td>
+            <td class="px-3 py-1.5 text-xs">
+              <?php if ($row['entity_type']): ?>
+                <span class="font-mono"><?= htmlspecialchars($row['entity_type']) ?>#<?= (int)$row['entity_id'] ?></span>
+              <?php endif ?>
+            </td>
+            <td class="px-3 py-1.5 text-xs text-[var(--text-secondary)]"><?= htmlspecialchars($row['description'] ?? '') ?></td>
+            <td class="px-3 py-1.5 text-xs text-[var(--text-tertiary)] font-mono"><?= htmlspecialchars($row['ip'] ?? '') ?></td>
+          </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif ?>

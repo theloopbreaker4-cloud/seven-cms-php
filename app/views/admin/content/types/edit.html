@@ -1,0 +1,123 @@
+<?php
+/** @var ContentType|null $type   */
+/** @var array            $fields */
+$lang   = Seven::app()->router->getLanguage();
+$isNew  = $type === null;
+$action = $isNew
+    ? "/{$lang}/admin/content/types/store"
+    : "/{$lang}/admin/content/types/update/" . (int)$type->id;
+?>
+
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold"><?= $isNew ? 'New Content Type' : 'Edit: ' . htmlspecialchars($type->name) ?></h2>
+  <a href="/<?= $lang ?>/admin/content/types" class="text-sm text-[var(--text-tertiary)] hover:underline">← Back</a>
+</div>
+
+<form method="POST" action="<?= htmlspecialchars($action) ?>"
+      class="grid grid-cols-1 lg:grid-cols-3 gap-6" novalidate>
+
+  <div class="lg:col-span-2 space-y-4">
+    <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+      <h3 class="font-semibold mb-3">Basics</h3>
+      <label class="block mb-3">
+        <span class="text-xs text-[var(--text-secondary)]">Name</span>
+        <input type="text" name="name" required value="<?= htmlspecialchars($type->name ?? '') ?>"
+               data-msg-required="Name is required."
+               class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+      </label>
+      <label class="block mb-3">
+        <span class="text-xs text-[var(--text-secondary)]">Slug (machine name)</span>
+        <input type="text" name="slug" value="<?= htmlspecialchars($type->slug ?? '') ?>"
+               <?= $isNew ? '' : 'readonly' ?>
+               class="w-full mt-1 px-3 py-2 rounded border font-mono bg-[var(--bg-primary)] border-[var(--border-color)] <?= $isNew ? '' : 'opacity-60' ?>" />
+      </label>
+      <label class="block mb-3">
+        <span class="text-xs text-[var(--text-secondary)]">Description</span>
+        <textarea name="description" rows="2" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]"><?= htmlspecialchars($type->description ?? '') ?></textarea>
+      </label>
+    </div>
+
+    <?php if (!$isNew): ?>
+      <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Fields</h3>
+        </div>
+
+        <ul id="field-list" class="space-y-2 mb-4">
+          <?php foreach ($fields as $f): ?>
+            <li class="flex items-center gap-3 p-2 rounded border border-[var(--border-color)]"
+                data-id="<?= (int)$f['id'] ?>">
+              <span class="font-mono text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars($f['key']) ?></span>
+              <span class="flex-1 truncate"><?= htmlspecialchars($f['label']) ?></span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)]"><?= htmlspecialchars($f['field_type']) ?></span>
+              <?php if ((int)$f['required']):  ?><span class="text-xs text-red-500">*req</span><?php endif ?>
+              <?php if ((int)$f['localized']): ?><span class="text-xs text-blue-500">i18n</span><?php endif ?>
+              <form method="POST" action="/<?= $lang ?>/admin/content/fields/delete/<?= (int)$f['id'] ?>" class="m-0">
+                <button type="submit" class="text-xs text-red-500 hover:underline" data-confirm="Delete this field?">×</button>
+              </form>
+            </li>
+          <?php endforeach ?>
+        </ul>
+
+        <fieldset class="border border-dashed border-[var(--border-color)] rounded p-3" form="">
+          <legend class="text-xs px-1 text-[var(--text-tertiary)]">Add field</legend>
+        </fieldset>
+      </div>
+
+      <!-- Add-field form (separate <form> to avoid nesting) -->
+      <form method="POST" action="/<?= $lang ?>/admin/content/fields/store/<?= (int)$type->id ?>"
+            class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <input name="label"     placeholder="Label" required class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+        <input name="key"       placeholder="machine_name (auto)" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
+        <select name="field_type" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]">
+          <?php foreach (ContentField::TYPES as $t): ?>
+            <option value="<?= htmlspecialchars($t) ?>"><?= htmlspecialchars($t) ?></option>
+          <?php endforeach ?>
+        </select>
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="required"  /> Required</label>
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="localized" /> Localized</label>
+        <button class="px-3 py-2 rounded bg-[var(--primary)] text-white text-sm">Add field</button>
+      </form>
+    <?php endif ?>
+  </div>
+
+  <aside class="space-y-4">
+    <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+      <h3 class="font-semibold mb-3">Behavior</h3>
+      <label class="flex items-center gap-2 mb-2 text-sm">
+        <input type="checkbox" name="is_singleton" value="1" <?= !$isNew && (int)$type->isSingleton ? 'checked' : '' ?> />
+        Singleton (only one entry)
+      </label>
+      <label class="flex items-center gap-2 mb-2 text-sm">
+        <input type="checkbox" name="enable_revisions" value="1" <?= $isNew || (int)$type->enableRevisions ? 'checked' : '' ?> />
+        Enable revisions
+      </label>
+      <label class="flex items-center gap-2 mb-2 text-sm">
+        <input type="checkbox" name="enable_drafts" value="1" <?= $isNew || (int)$type->enableDrafts ? 'checked' : '' ?> />
+        Enable drafts
+      </label>
+      <label class="flex items-center gap-2 mb-2 text-sm">
+        <input type="checkbox" name="is_active" value="1" <?= $isNew || (int)$type->isActive ? 'checked' : '' ?> />
+        Active
+      </label>
+    </div>
+
+    <button type="submit" class="w-full px-4 py-2.5 rounded-lg bg-[var(--primary)] text-white font-medium">
+      <?= $isNew ? 'Create type' : 'Save changes' ?>
+    </button>
+
+    <?php if (!$isNew): ?>
+      <a href="/<?= $lang ?>/admin/content/entries/<?= htmlspecialchars($type->slug) ?>"
+         class="block text-center w-full px-4 py-2 rounded-lg border border-[var(--border-color)] text-sm">
+        Manage entries →
+      </a>
+    <?php endif ?>
+  </aside>
+</form>
+
+<?php if (!$isNew): ?>
+  <form method="POST" action="/<?= $lang ?>/admin/content/types/delete/<?= (int)$type->id ?>" class="mt-6">
+    <button type="submit" class="text-xs text-red-500 hover:underline"
+            data-confirm="Delete this type and all its entries?">Delete this type</button>
+  </form>
+<?php endif ?>

@@ -1,0 +1,30 @@
+// Theme: forest — dark mode
+[data-palette="forest"][data-theme="dark"] {
+  --bg-primary:       #0d1610;
+  --bg-secondary:     #122019;
+  --bg-tertiary:      #1a2c22;
+  --text-primary:     #e6f0e2;
+  --text-secondary:   #a8c19a;
+  --text-tertiary:    #6b8470;
+  --border-color:     #2a4334;
+  --primary:          #4ade80;
+  --primary-hover:    #22c55e;
+  --secondary:        #fbbf24;
+  --secondary-hover:  #f59e0b;
+
+  --primary-gradient: linear-gradient(135deg, #16a34a 0%, #4ade80 50%, #fbbf24 100%);
+  --primary-gradient-hover: linear-gradient(135deg, #15803d 0%, #22c55e 50%, #f59e0b 100%);
+
+  --sidebar-bg:       #122019;
+  --sidebar-border:   #2a4334;
+  --header-bg:        #122019;
+  --success:          #4ade80;
+  --warning:          #fbbf24;
+  --danger:           #f87171;
+  --info:             #60a5fa;
+
+  --glow-a:  rgba(74,  222, 128, 0.14);
+  --glow-b:  rgba(251, 191, 36,  0.10);
+  --orb-a:   rgba(34,  197, 94,  0.18);
+  --orb-b:   rgba(245, 158, 11,  0.10);
+}

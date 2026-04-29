@@ -1,0 +1,101 @@
+<?php
+/** @var Order $order */
+/** @var array $items */
+/** @var array $payments */
+/** @var array|null $customer */
+$lang = Seven::app()->router->getLanguage();
+$base = "/{$lang}/admin/ecom/orders";
+?>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h2 class="text-xl font-semibold">Order <?= htmlspecialchars($order->number) ?></h2>
+    <p class="text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars($order->placedAt ?? '') ?></p>
+  </div>
+  <a href="<?= $base ?>" class="text-sm text-[var(--text-tertiary)] hover:underline">← Back</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-4">
+    <div class="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] overflow-hidden">
+      <div class="p-4 border-b border-[var(--border-color)] flex items-center justify-between">
+        <h3 class="font-semibold">Items</h3>
+        <span class="text-xs">
+          <?= htmlspecialchars($order->status) ?> · <?= htmlspecialchars($order->paymentStatus) ?> · <?= htmlspecialchars($order->fulfillmentStatus) ?>
+        </span>
+      </div>
+      <table class="w-full text-sm">
+        <thead class="bg-[var(--bg-tertiary)]">
+          <tr><th class="text-left px-4 py-2">Item</th><th class="text-left px-4 py-2">SKU</th><th class="text-left px-4 py-2">Qty</th><th class="text-right px-4 py-2">Total</th></tr>
+        </thead>
+        <tbody>
+          <?php foreach ($items as $i): ?>
+            <tr class="border-t border-[var(--border-color)]">
+              <td class="px-4 py-2"><?= htmlspecialchars($i['name']) ?> <span class="text-[10px] text-[var(--text-tertiary)]">(<?= $i['kind'] ?>)</span></td>
+              <td class="px-4 py-2 text-xs font-mono"><?= htmlspecialchars($i['sku'] ?? '—') ?></td>
+              <td class="px-4 py-2"><?= (int)$i['quantity'] ?></td>
+              <td class="px-4 py-2 text-right"><?= Money::format((int)$i['total'], $order->currency) ?></td>
+            </tr>
+          <?php endforeach ?>
+        </tbody>
+      </table>
+      <div class="p-4 border-t border-[var(--border-color)] bg-[var(--bg-tertiary)] text-sm space-y-1">
+        <div class="flex justify-between"><span>Subtotal</span><span><?= Money::format($order->subtotal, $order->currency) ?></span></div>
+        <?php if ($order->discountTotal): ?><div class="flex justify-between text-emerald-500"><span>Discount</span><span>-<?= Money::format($order->discountTotal, $order->currency) ?></span></div><?php endif ?>
+        <?php if ($order->shippingTotal): ?><div class="flex justify-between"><span>Shipping</span><span><?= Money::format($order->shippingTotal, $order->currency) ?></span></div><?php endif ?>
+        <?php if ($order->taxTotal): ?><div class="flex justify-between"><span>Tax</span><span><?= Money::format($order->taxTotal, $order->currency) ?></span></div><?php endif ?>
+        <div class="flex justify-between font-bold pt-2 border-t border-[var(--border-color)]"><span>Total</span><span><?= Money::format($order->total, $order->currency) ?></span></div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
+      <h3 class="font-semibold mb-2">Payments</h3>
+      <?php if (empty($payments)): ?>
+        <p class="text-sm text-[var(--text-tertiary)]">No payments recorded.</p>
+      <?php else: ?>
+        <ul class="space-y-1 text-sm">
+          <?php foreach ($payments as $p): ?>
+            <li class="flex items-center justify-between">
+              <span class="font-mono text-xs"><?= htmlspecialchars($p['gateway']) ?> · <?= htmlspecialchars((string)($p['gateway_id'] ?? '')) ?></span>
+              <span><?= htmlspecialchars($p['status']) ?> · <?= Money::format((int)$p['amount'], $p['currency']) ?></span>
+            </li>
+          <?php endforeach ?>
+        </ul>
+      <?php endif ?>
+    </div>
+  </div>
+
+  <aside class="space-y-3">
+    <?php if ($order->paymentStatus !== 'paid'): ?>
+      <form method="POST" action="<?= $base ?>/markPaid/<?= (int)$order->id ?>"><button class="w-full px-4 py-2 rounded bg-emerald-500 text-white text-sm">Mark as paid</button></form>
+    <?php endif ?>
+    <?php if ($order->fulfillmentStatus !== 'fulfilled' && $order->paymentStatus === 'paid'): ?>
+      <form method="POST" action="<?= $base ?>/markShipped/<?= (int)$order->id ?>" class="space-y-2">
+        <input name="tracking" placeholder="Tracking number" class="w-full px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm" />
+        <button class="w-full px-4 py-2 rounded bg-[var(--primary)] text-white text-sm">Mark as shipped</button>
+      </form>
+    <?php endif ?>
+    <?php if ($order->status !== 'cancelled' && $order->status !== 'refunded'): ?>
+      <form method="POST" action="<?= $base ?>/markCancelled/<?= (int)$order->id ?>"><button class="w-full px-4 py-2 rounded border border-[var(--border-color)] text-sm" data-confirm="Cancel this order?">Cancel</button></form>
+    <?php endif ?>
+    <?php if ($order->paymentStatus === 'paid'): ?>
+      <form method="POST" action="<?= $base ?>/refund/<?= (int)$order->id ?>" class="p-3 rounded border border-[var(--border-color)] space-y-2">
+        <p class="text-xs font-semibold">Issue refund</p>
+        <input name="amount" placeholder="Amount" class="w-full px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm" />
+        <input name="reason" placeholder="Reason"  class="w-full px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm" />
+        <button class="w-full px-3 py-1.5 rounded bg-red-500 text-white text-xs">Refund</button>
+      </form>
+    <?php endif ?>
+
+    <div class="p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-sm">
+      <h4 class="font-semibold mb-2">Customer</h4>
+      <p><?= htmlspecialchars($order->email) ?></p>
+      <?php if ($customer): ?>
+        <a href="/<?= $lang ?>/admin/ecom/customers/view/<?= (int)$customer['id'] ?>" class="text-xs text-[var(--primary)] hover:underline">Open profile</a>
+      <?php endif ?>
+      <hr class="my-3 border-[var(--border-color)]" />
+      <h4 class="font-semibold mb-1">Shipping</h4>
+      <pre class="text-xs whitespace-pre-wrap text-[var(--text-secondary)]"><?= htmlspecialchars(json_encode(json_decode($order->shippingAddress, true), JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE)) ?></pre>
+    </div>
+  </aside>
+</div>

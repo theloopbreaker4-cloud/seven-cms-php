@@ -1,0 +1,67 @@
+<?php
+/** @var array $site  */
+/** @var array $hosts */
+$lang = Seven::app()->router->getLanguage();
+$base = "/{$lang}/admin/sites";
+?>
+
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold">Edit site: <?= htmlspecialchars($site['name']) ?></h2>
+  <a href="<?= $base ?>" class="text-sm text-[var(--text-tertiary)] hover:underline">← Back</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <form method="POST" action="<?= $base ?>/update/<?= (int)$site['id'] ?>"
+        class="lg:col-span-2 p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-3" novalidate>
+    <h3 class="font-semibold">Settings</h3>
+    <label class="block">
+      <span class="text-xs text-[var(--text-secondary)]">Name</span>
+      <input name="name" value="<?= htmlspecialchars($site['name']) ?>" required
+             data-msg-required="Site name is required."
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+    </label>
+    <label class="block">
+      <span class="text-xs text-[var(--text-secondary)]">Theme (folder under <code>themes/</code>)</span>
+      <input name="theme" value="<?= htmlspecialchars($site['theme'] ?? '') ?>"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
+    </label>
+    <label class="block">
+      <span class="text-xs text-[var(--text-secondary)]">Default locale</span>
+      <input name="default_locale" value="<?= htmlspecialchars($site['default_locale']) ?>" maxlength="8"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
+    </label>
+    <label class="flex items-center gap-2 text-sm">
+      <input type="checkbox" name="is_active" value="1" <?= (int)$site['is_active'] ? 'checked' : '' ?> /> Active
+    </label>
+    <button class="px-4 py-2 rounded bg-[var(--primary)] text-white text-sm">Save</button>
+  </form>
+
+  <div class="space-y-4">
+    <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+      <h3 class="font-semibold mb-3">Host names</h3>
+      <ul class="space-y-2 text-sm mb-3">
+        <?php foreach ($hosts as $h): ?>
+          <li class="flex items-center gap-2">
+            <code class="text-xs flex-1"><?= htmlspecialchars($h['host']) ?></code>
+            <?php if ((int)$h['is_primary']): ?><span class="text-[10px] text-emerald-500">primary</span><?php endif ?>
+            <form method="POST" action="<?= $base ?>/host/remove/<?= (int)$h['id'] ?>" class="m-0">
+              <button class="text-xs text-red-500" data-confirm="Remove host?">×</button>
+            </form>
+          </li>
+        <?php endforeach ?>
+      </ul>
+      <form method="POST" action="<?= $base ?>/host/add/<?= (int)$site['id'] ?>" class="space-y-2" novalidate>
+        <input name="host" placeholder="example.com" required
+               pattern="[a-z0-9.\-:]+"
+               data-msg-required="Host is required."
+               data-msg-pattern="Use a valid hostname (letters, digits, dots, dashes)."
+               class="w-full px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
+        <label class="flex items-center gap-2 text-xs">
+          <input type="checkbox" name="is_primary" value="1" /> Mark as primary
+        </label>
+        <button class="w-full px-3 py-2 rounded bg-[var(--primary)] text-white text-xs">Add host</button>
+      </form>
+    </div>
+  </div>
+</div>

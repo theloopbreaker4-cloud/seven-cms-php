@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========== Design Tokens — Admin ========== */
+:root,
+[data-theme="light"] {
+  --bg-primary:      #eef4f3;
+  --bg-secondary:    #e4efed;
+  --bg-tertiary:     #d8e8e5;
+  --text-primary:    #0d1f1c;
+  --text-secondary:  #2a4540;
+  --text-tertiary:   #587870;
+  --border-color:    #c0d8d4;
+  --primary:         #00a896;
+  --primary-hover:   #008a7b;
+  --secondary:       #006b5e;
+  --secondary-hover: #005249;
+  --sidebar-bg:      #e0eeeb;
+  --sidebar-border:  #b8d4d0;
+  --header-bg:       #e8f2f0;
+  --success:         #16a34a;
+  --warning:         #d97706;
+  --danger:          #dc2626;
+  --info:            #0284c7;
+}
+
+[data-theme="dark"] {
+  --bg-primary:      #081412;
+  --bg-secondary:    #0e1e1b;
+  --bg-tertiary:     #152824;
+  --text-primary:    #cff0eb;
+  --text-secondary:  #7bbfb8;
+  --text-tertiary:   #3d7870;
+  --border-color:    #1c3330;
+  --primary:         #00c4ae;
+  --primary-hover:   #00a896;
+  --secondary:       #4dfce8;
+  --secondary-hover: #00ffe0;
+  --sidebar-bg:      #060f0e;
+  --sidebar-border:  #162b28;
+  --header-bg:       #0b1a18;
+  --success:         #22c55e;
+  --warning:         #f59e0b;
+  --danger:          #ef4444;
+  --info:            #38bdf8;
+}
+
+/* ========== Base ========== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 300ms ease, color 300ms ease;
+  min-height: 100vh;
+}
+
+/* ========== Sidebar ========== */
+aside {
+  background-color: var(--sidebar-bg) !important;
+  border-right-color: var(--sidebar-border) !important;
+  transition: background-color 300ms ease;
+}
+
+aside nav a {
+  transition: background 150ms, color 150ms;
+  border-radius: 6px;
+  margin: 0 8px;
+}
+
+/* ========== Header ========== */
+.admin-header {
+  background-color: var(--header-bg) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+/* ========== Cards ========== */
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1.25rem;
+  transition: background-color 300ms ease, border-color 200ms;
+}
+.card:hover { border-color: var(--primary); }
+
+/* ========== Tables ========== */
+table { border-collapse: collapse; width: 100%; }
+
+th {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+td {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-tertiary); }
+
+/* ========== Badges ========== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.badge-success { background: color-mix(in srgb, var(--success) 15%, transparent); color: var(--success); }
+.badge-warning { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning); }
+.badge-danger  { background: color-mix(in srgb, var(--danger)  15%, transparent); color: var(--danger);  }
+.badge-info    { background: color-mix(in srgb, var(--info)    15%, transparent); color: var(--info);    }
+.badge-muted   { background: var(--bg-tertiary); color: var(--text-tertiary); }
+
+/* ========== Buttons ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 200ms, color 200ms, border-color 200ms;
+}
+.btn-primary   { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.btn-secondary { background: var(--bg-tertiary); color: var(--text-secondary); border-color: var(--border-color); }
+.btn-secondary:hover { color: var(--primary); border-color: var(--primary); }
+.btn-danger    { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, transparent); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-sm { padding: 0.3rem 0.7rem; font-size: 0.78rem; }
+
+/* ========== Form inputs ========== */
+input, textarea, select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.875rem;
+  width: 100%;
+  transition: border-color 200ms, box-shadow 200ms;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.02em;
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* ========== Selection & focus ========== */
+::selection        { background: var(--primary); color: #fff; }
+:focus-visible     { outline: 2px solid var(--primary); outline-offset: 2px; }

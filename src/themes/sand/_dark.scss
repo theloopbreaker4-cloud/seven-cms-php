@@ -1,0 +1,29 @@
+// Theme: sand — dark mode (warm beige dark)
+[data-palette="sand"][data-theme="dark"] {
+  --bg-primary:      #130e09;
+  --bg-secondary:    #1e1710;
+  --bg-tertiary:     #2a2018;
+  --text-primary:    #f5ede0;
+  --text-secondary:  #c4a882;
+  --text-tertiary:   #7a6045;
+  --border-color:    #352820;
+  --primary:         #f59e0b;
+  --primary-hover:   #d97706;
+  --secondary:       #fb923c;
+  --secondary-hover: #f97316;
+
+  // admin
+  --sidebar-bg:      #0e0a06;
+  --sidebar-border:  #2a1e14;
+  --header-bg:       #160f08;
+  --success:         #22c55e;
+  --warning:         #f59e0b;
+  --danger:          #ef4444;
+  --info:            #38bdf8;
+
+  // site animated bg
+  --glow-a:  rgba(245, 158,  11, 0.12);
+  --glow-b:  rgba(251, 146,  60, 0.08);
+  --orb-a:   rgba(253, 186,  16, 0.13);
+  --orb-b:   rgba(245, 158,  11, 0.08);
+}

@@ -1,0 +1,95 @@
+<?php
+/** @var array $modules  [{name, class, enabled, booted, routes}] */
+$lang    = Seven::app()->router->getLanguage();
+$enabled = array_filter($modules, fn($m) => $m['enabled']);
+$total   = count($modules);
+$on      = count($enabled);
+?>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold">Modules</h2>
+    <p class="text-sm text-[var(--text-secondary)] mt-0.5">
+      <?= $on ?> of <?= $total ?> enabled
+    </p>
+  </div>
+</div>
+
+<?php if (empty($modules)): ?>
+  <div class="empty-state">
+    <svg fill="none" viewBox="0 0 48 48" stroke="currentColor" stroke-width="1.2"><rect x="4" y="4" width="18" height="18" rx="2"/><rect x="26" y="4" width="18" height="18" rx="2"/><rect x="4" y="26" width="18" height="18" rx="2"/><path d="M26 35h18M35 26v18"/></svg>
+    <p>No modules found. Create <code>modules/MyModule/Module.php</code>.</p>
+  </div>
+<?php else: ?>
+  <div class="card overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]">
+        <tr>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Module</th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Class</th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Routes</th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium w-24">Status</th>
+          <th class="px-4 py-3 w-28"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($modules as $mod): ?>
+          <tr class="border-b border-[var(--border-color)] last:border-0 hover:bg-[var(--bg-tertiary)] <?= !$mod['enabled'] ? 'opacity-50' : '' ?>">
+            <td class="px-4 py-3">
+              <div class="font-medium"><?= htmlspecialchars($mod['name']) ?></div>
+            </td>
+            <td class="px-4 py-3 font-mono text-xs text-[var(--text-tertiary)]">
+              <?= htmlspecialchars($mod['class']) ?>
+            </td>
+            <td class="px-4 py-3">
+              <?php if ($mod['routes']): ?>
+                <div class="flex flex-wrap gap-1">
+                  <?php foreach ($mod['routes'] as $r): ?>
+                    <span class="text-xs bg-[var(--bg-tertiary)] border border-[var(--border-color)] px-1.5 py-0.5 rounded font-mono"><?= htmlspecialchars($r) ?></span>
+                  <?php endforeach ?>
+                </div>
+              <?php else: ?>
+                <span class="text-[var(--text-tertiary)] text-xs">—</span>
+              <?php endif ?>
+            </td>
+            <td class="px-4 py-3">
+              <?php if ($mod['enabled']): ?>
+                <span class="badge badge-success">Active</span>
+              <?php else: ?>
+                <span class="badge badge-secondary">Disabled</span>
+              <?php endif ?>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <?php if ($mod['enabled']): ?>
+                <a href="/<?= $lang ?>/admin/module/disable/<?= urlencode($mod['name']) ?>"
+                   class="text-sm text-[var(--text-secondary)] hover:underline"
+                   data-confirm="Module controllers and routes will be unavailable until re-enabled."
+                   data-confirm-type="warning"
+                   data-confirm-title="Disable <?= htmlspecialchars($mod['name']) ?>?"
+                   data-confirm-ok="Disable">
+                  Disable
+                </a>
+              <?php else: ?>
+                <a href="/<?= $lang ?>/admin/module/enable/<?= urlencode($mod['name']) ?>"
+                   class="text-sm text-[var(--primary)] hover:underline">
+                  Enable
+                </a>
+              <?php endif ?>
+            </td>
+          </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif ?>
+
+<div class="mt-6 card p-4 text-sm text-[var(--text-secondary)] space-y-2">
+  <p class="font-semibold text-[var(--text-primary)]">How modules work</p>
+  <ul class="list-disc list-inside space-y-1">
+    <li>Each module lives in <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">modules/Name/</code> with a <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">Module.php</code> entry point</li>
+    <li>Controllers go in <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">modules/Name/controllers/</code>, models in <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">modules/Name/models/</code></li>
+    <li>Disabled modules are skipped on boot — their classes and routes are not loaded</li>
+    <li>Disabled state is saved to <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">storage/modules.json</code></li>
+    <li>Changes take effect on the next request (no restart needed)</li>
+  </ul>
+</div>

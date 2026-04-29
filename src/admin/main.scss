@@ -1,0 +1,26 @@
+@use '../themes/all' as *;
+@use '../components/all' as *;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ── Admin layout ──────────────────────────────────────────────────────────
+html { font-size: 15px; }
+
+aside {
+  background-color: var(--sidebar-bg) !important;
+  border-right-color: var(--sidebar-border) !important;
+  transition: background-color 300ms ease;
+
+  nav a {
+    transition: background 150ms, color 150ms;
+    border-radius: 6px;
+    margin: 0 8px;
+  }
+}
+
+.admin-header {
+  background-color: var(--header-bg) !important;
+  border-bottom-color: var(--border-color) !important;
+}

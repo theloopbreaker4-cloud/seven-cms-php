@@ -1,0 +1,38 @@
+<?php /** @var string|null $error */ ?>
+<div class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <img src="/brand.svg" alt="Seven CMS" class="w-9 h-9 rounded-lg" />
+        <span class="font-bold text-xl"><span class="text-[var(--primary)]">Seven</span> <span class="text-[var(--text-secondary)]">CMS</span></span>
+      </div>
+      <p class="text-sm text-[var(--text-tertiary)]">Admin Panel</p>
+    </div>
+
+    <?php if ($error): ?>
+      <div class="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+        <?= htmlspecialchars($error) ?>
+      </div>
+    <?php endif ?>
+
+    <form method="POST" action="/<?= Seven::app()->router->getLanguage() ?>/admin/auth/login" class="space-y-4" novalidate>
+      <?= Csrf::field() ?>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1"><?= Lang::t('email', 'auth') ?> / Username</label>
+        <input type="text" name="login" required autofocus autocomplete="username"
+               data-msg-required="Email or username is required."
+               class="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1"><?= Lang::t('password', 'auth') ?></label>
+        <input type="password" name="password" required autocomplete="current-password"
+               data-msg-required="Password is required."
+               class="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]" />
+      </div>
+      <button type="submit"
+              class="w-full py-2.5 rounded-lg bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary-hover)] transition-colors">
+        <?= Lang::t('submit', 'auth') ?>
+      </button>
+    </form>
+  </div>
+</div>

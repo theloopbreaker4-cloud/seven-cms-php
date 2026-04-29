@@ -1,0 +1,12 @@
+<?php
+/** @var Page $model */
+/** @var string $lang */
+?>
+<div class="max-w-3xl mx-auto px-4 py-12">
+  <h1 class="text-3xl font-bold mb-8 text-[var(--text-primary)]">
+    <?= htmlspecialchars($model->t('title', $lang)) ?>
+  </h1>
+  <div class="text-[var(--text-secondary)] leading-relaxed">
+    <?= $model->t('content', $lang) ?>
+  </div>
+</div>

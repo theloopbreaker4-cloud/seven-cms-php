@@ -1,0 +1,30 @@
+<?php
+/** @var array  $customers */
+/** @var string $q */
+$lang = Seven::app()->router->getLanguage();
+?>
+<div class="flex items-center gap-3 mb-6">
+  <h2 class="text-xl font-semibold flex-1">Customers</h2>
+  <form method="GET">
+    <input name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Search…"
+           class="px-3 py-1.5 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm w-64" />
+  </form>
+</div>
+<div class="rounded-xl border border-[var(--border-color)] overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--bg-secondary)]"><tr>
+      <th class="text-left px-3 py-2">Email</th><th class="text-left px-3 py-2">Name</th>
+      <th class="text-left px-3 py-2">Orders</th><th class="text-left px-3 py-2">Spent</th>
+    </tr></thead>
+    <tbody>
+      <?php foreach ($customers as $c): ?>
+        <tr class="border-t border-[var(--border-color)] hover:bg-[var(--bg-secondary)]">
+          <td class="px-3 py-2"><a href="/<?= $lang ?>/admin/ecom/customers/view/<?= (int)$c['id'] ?>" class="text-[var(--primary)] hover:underline"><?= htmlspecialchars($c['email']) ?></a></td>
+          <td class="px-3 py-2 text-xs"><?= htmlspecialchars(trim(($c['first_name'] ?? '') . ' ' . ($c['last_name'] ?? ''))) ?></td>
+          <td class="px-3 py-2 text-xs"><?= (int)$c['orders_count'] ?></td>
+          <td class="px-3 py-2 text-xs"><?= Money::format((int)$c['total_spent'], (string)(DB::getCell('SELECT value FROM settings WHERE `key`="ecom.currency"') ?? 'USD')) ?></td>
+        </tr>
+      <?php endforeach ?>
+    </tbody>
+  </table>
+</div>

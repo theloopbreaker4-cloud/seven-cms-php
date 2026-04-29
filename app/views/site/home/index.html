@@ -1,0 +1,27 @@
+<?php
+/** @var Page|null $homePage */
+/** @var string $lang */
+?>
+<div class="max-w-5xl mx-auto px-4 py-16">
+  <?php if ($homePage): ?>
+    <h1 class="text-4xl font-bold mb-6 text-[var(--text-primary)]">
+      <?= htmlspecialchars($homePage->t('title', $lang)) ?>
+    </h1>
+    <div class="text-[var(--text-secondary)] leading-relaxed">
+      <?= $homePage->t('content', $lang) ?>
+    </div>
+  <?php else: ?>
+    <h1 class="text-4xl font-bold mb-4">Welcome to Seven CMS</h1>
+    <p class="text-[var(--text-secondary)] text-lg">A modern, multilingual content management system.</p>
+    <div class="mt-8 flex gap-4">
+      <a href="/<?= $lang ?>/blog" class="px-5 py-2.5 rounded-lg bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary-hover)]">
+        <?= Lang::t('blog', 'nav') ?>
+      </a>
+      <?php if (!Auth::isLogin()): ?>
+        <a href="/<?= $lang ?>/auth" class="px-5 py-2.5 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--primary)]">
+          <?= Lang::t('signin', 'nav') ?>
+        </a>
+      <?php endif ?>
+    </div>
+  <?php endif ?>
+</div>

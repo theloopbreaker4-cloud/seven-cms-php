@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========== Design Tokens — Site ========== */
+:root,
+[data-theme="light"] {
+  --bg-primary:      #f2f7f6;
+  --bg-secondary:    #e8f0ee;
+  --bg-tertiary:     #dce9e6;
+  --text-primary:    #0d1f1c;
+  --text-secondary:  #2d4a45;
+  --text-tertiary:   #5a7a74;
+  --border-color:    #c8dbd8;
+  --primary:         #00a896;
+  --primary-hover:   #008a7b;
+  --secondary:       #006b5e;
+  --secondary-hover: #005249;
+  --glow-a:          rgba(0,184,166,0.15);
+  --glow-b:          rgba(0,107,94,0.10);
+  --orb-a:           rgba(0,191,166,0.18);
+  --orb-b:           rgba(0,51,51,0.10);
+}
+
+[data-theme="dark"] {
+  --bg-primary:      #061614;
+  --bg-secondary:    #0c1f1d;
+  --bg-tertiary:     #132a27;
+  --text-primary:    #d4f5f0;
+  --text-secondary:  #8ecec7;
+  --text-tertiary:   #4d8880;
+  --border-color:    #1a3330;
+  --primary:         #00d4bb;
+  --primary-hover:   #00bfa6;
+  --secondary:       #66fff0;
+  --secondary-hover: #00ffe0;
+  --glow-a:          rgba(0,212,187,0.12);
+  --glow-b:          rgba(102,255,240,0.07);
+  --orb-a:           rgba(0,191,166,0.14);
+  --orb-b:           rgba(0,255,224,0.08);
+}
+
+/* ========== Base ========== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 350ms ease, color 350ms ease;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+#app > main,
+body > main {
+  flex: 1 1 auto;
+}
+
+/* ========== Animated SVG Background ========== */
+.site-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.site-bg__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.8;
+}
+
+.site-bg__orb--a {
+  width: 600px;
+  height: 600px;
+  top: -160px;
+  right: -120px;
+  background: var(--orb-a);
+  animation: orbFloat 20s ease-in-out infinite;
+}
+
+.site-bg__orb--b {
+  width: 500px;
+  height: 500px;
+  bottom: -130px;
+  left: -90px;
+  background: var(--orb-b);
+  animation: orbFloat 26s ease-in-out infinite reverse;
+}
+
+.site-bg__orb--c {
+  width: 280px;
+  height: 280px;
+  top: 42%;
+  left: 48%;
+  background: var(--glow-a);
+  animation: orbFloat 16s ease-in-out infinite 5s;
+}
+
+@keyframes orbFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(28px, -36px) scale(1.04); }
+  66%  { transform: translate(-18px, 26px) scale(0.97); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.site-bg__dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--border-color) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.45;
+  animation: dotsShift 50s linear infinite;
+}
+
+@keyframes dotsShift {
+  from { background-position: 0 0; }
+  to   { background-position: 32px 32px; }
+}
+
+.site-bg__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.site-bg__shape {
+  fill: none;
+  stroke: var(--primary);
+  stroke-opacity: 0.07;
+}
+
+.site-bg__shape--spin {
+  transform-origin: center;
+  animation: shapeSpin 70s linear infinite;
+}
+
+.site-bg__shape--spin-rev {
+  transform-origin: center;
+  animation: shapeSpin 90s linear infinite reverse;
+}
+
+.site-bg__shape--pulse {
+  animation: shapePulse 9s ease-in-out infinite;
+}
+
+@keyframes shapeSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes shapePulse {
+  0%, 100% { stroke-opacity: 0.04; }
+  50%       { stroke-opacity: 0.11; }
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* ========== Selection ========== */
+::selection { background: var(--primary); color: #fff; }
+
+/* ========== Focus ring ========== */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

@@ -1,0 +1,105 @@
+<?php
+/** @var array  $events */
+/** @var string $month  e.g. "2026-04" */
+
+$ts        = strtotime($month . '-01');
+$daysInMo  = (int)date('t', $ts);
+$firstDow  = (int)date('N', $ts);                       // 1=Mon … 7=Sun
+$prevMonth = date('Y-m', strtotime($month . '-01 -1 month'));
+$nextMonth = date('Y-m', strtotime($month . '-01 +1 month'));
+
+$byDay = [];
+foreach ($events as $e) {
+    $key = substr((string)($e['starts_at'] ?? ''), 0, 10);
+    if ($key) $byDay[$key][] = $e;
+}
+?>
+<div class="flex items-start gap-6">
+  <div class="flex-1">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <a href="?month=<?= htmlspecialchars($prevMonth) ?>" class="px-2 py-1 rounded hover:bg-[var(--bg-tertiary)]">‹</a>
+        <h2 class="text-xl font-semibold"><?= date('F Y', $ts) ?></h2>
+        <a href="?month=<?= htmlspecialchars($nextMonth) ?>" class="px-2 py-1 rounded hover:bg-[var(--bg-tertiary)]">›</a>
+        <a href="?month=<?= date('Y-m') ?>" class="ml-2 px-2 py-1 text-xs rounded bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white">Today</a>
+      </div>
+      <a href="/admin/help/topic/calendar" class="text-sm text-[var(--primary)] hover:underline">Help →</a>
+    </div>
+
+    <div class="grid grid-cols-7 text-xs text-center text-[var(--text-tertiary)] uppercase tracking-wider mb-1">
+      <?php foreach (['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] as $d): ?>
+        <div class="py-2"><?= $d ?></div>
+      <?php endforeach ?>
+    </div>
+
+    <div class="grid grid-cols-7 gap-1">
+      <?php for ($i = 1; $i < $firstDow; $i++): ?>
+        <div class="min-h-[88px] rounded border border-[var(--border-color)] bg-[var(--bg-tertiary)]/40"></div>
+      <?php endfor ?>
+
+      <?php for ($d = 1; $d <= $daysInMo; $d++):
+        $key   = sprintf('%s-%02d', $month, $d);
+        $today = $key === date('Y-m-d');
+        $list  = $byDay[$key] ?? [];
+      ?>
+        <div class="min-h-[88px] rounded border <?= $today ? 'border-[var(--primary)]' : 'border-[var(--border-color)]' ?> p-1.5 bg-[var(--bg-primary)]">
+          <div class="text-xs <?= $today ? 'text-[var(--primary)] font-bold' : 'text-[var(--text-secondary)]' ?>"><?= $d ?></div>
+          <?php foreach (array_slice($list, 0, 3) as $e): ?>
+            <a href="<?= htmlspecialchars($e['url'] ?? '#') ?>"
+               class="block mt-1 text-[10px] truncate px-1 py-0.5 rounded"
+               style="background:<?= htmlspecialchars($e['color'] ?: 'var(--bg-tertiary)') ?>;color:#fff"
+               title="<?= htmlspecialchars($e['title']) ?>">
+              <?= htmlspecialchars($e['title']) ?>
+            </a>
+          <?php endforeach ?>
+          <?php if (count($list) > 3): ?>
+            <div class="text-[10px] text-[var(--text-tertiary)] mt-1">+<?= count($list)-3 ?> more</div>
+          <?php endif ?>
+        </div>
+      <?php endfor ?>
+    </div>
+  </div>
+
+  <aside class="w-72 flex-shrink-0">
+    <div class="rounded-lg border border-[var(--border-color)] p-4">
+      <h3 class="font-semibold text-sm mb-3">Add event</h3>
+      <form action="/admin/calendar/store" method="post" class="space-y-2" novalidate>
+        <input name="title" required placeholder="Title"
+               data-msg-required="Title is required."
+               class="w-full px-2 py-1.5 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm" />
+        <input name="starts_at" type="datetime-local" required
+               data-msg-required="Start date is required."
+               class="w-full px-2 py-1.5 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm" />
+        <input name="ends_at" type="datetime-local" placeholder="End (optional)"
+               class="w-full px-2 py-1.5 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm" />
+        <input name="notify_at" type="datetime-local" placeholder="Notify at"
+               class="w-full px-2 py-1.5 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm" />
+        <textarea name="description" rows="2" placeholder="Notes"
+                  class="w-full px-2 py-1.5 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm"></textarea>
+        <input name="color" type="color" value="#0891b2"
+               class="w-full h-9 rounded border border-[var(--border-color)] bg-[var(--bg-primary)]" />
+        <button class="w-full px-3 py-1.5 rounded bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary-hover)]">Add</button>
+      </form>
+    </div>
+
+    <div class="rounded-lg border border-[var(--border-color)] mt-4">
+      <div class="px-4 py-2 border-b border-[var(--border-color)] text-sm font-semibold">Upcoming</div>
+      <div class="max-h-64 overflow-y-auto">
+        <?php
+          $now = date('Y-m-d H:i:s');
+          $upcoming = array_filter($events, fn($e) => ($e['starts_at'] ?? '') >= $now);
+          usort($upcoming, fn($a,$b) => strcmp($a['starts_at'], $b['starts_at']));
+        ?>
+        <?php foreach (array_slice($upcoming, 0, 10) as $e): ?>
+          <a href="<?= htmlspecialchars($e['url'] ?? '#') ?>" class="block px-3 py-2 hover:bg-[var(--bg-tertiary)] border-b border-[var(--border-color)] text-xs">
+            <div class="font-medium"><?= htmlspecialchars($e['title']) ?></div>
+            <div class="text-[var(--text-tertiary)]"><?= htmlspecialchars(substr((string)$e['starts_at'], 0, 16)) ?></div>
+          </a>
+        <?php endforeach ?>
+        <?php if (!$upcoming): ?>
+          <div class="px-3 py-4 text-xs text-[var(--text-tertiary)]">No upcoming events.</div>
+        <?php endif ?>
+      </div>
+    </div>
+  </aside>
+</div>

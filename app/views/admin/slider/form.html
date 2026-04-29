@@ -1,0 +1,136 @@
+<?php
+/** @var Slide $model @var string $action @var int|null $id */
+$lang   = Seven::app()->router->getLanguage();
+$langs  = Seven::app()->config['languages'];
+$isEdit = $action === 'edit';
+$formAction = $isEdit
+  ? '/' . $lang . '/admin/slider/update/' . $id
+  : '/' . $lang . '/admin/slider/store';
+
+$titleData      = json_decode($model->title      ?? '{}', true) ?? [];
+$subtitleData   = json_decode($model->subtitle   ?? '{}', true) ?? [];
+$buttonTextData = json_decode($model->buttonText ?? '{}', true) ?? [];
+?>
+
+<form method="POST" action="<?= $formAction ?>" class="grid gap-6 xl:grid-cols-[1fr_280px]">
+<?= Csrf::field() ?>
+
+  <!-- ── Main column ────────────────────────────── -->
+  <div class="space-y-6">
+
+    <!-- Language tabs -->
+    <div class="card">
+      <!-- Tab bar -->
+      <div class="flex gap-1 border-b border-[var(--border-color)] px-4 pt-3" id="slide-tabs">
+        <?php foreach ($langs as $i => $l): ?>
+          <button type="button"
+            class="lang-tab px-3 py-1.5 text-xs font-semibold rounded-t border border-b-0 transition-colors <?= $i === 0 ? 'border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--primary)]' : 'border-transparent text-[var(--text-tertiary)] hover:text-[var(--primary)]' ?>"
+            data-tab="slide-<?= $l ?>">
+            <?= strtoupper($l) ?>
+          </button>
+        <?php endforeach ?>
+      </div>
+
+      <!-- Tab panels -->
+      <div class="p-5 space-y-5">
+        <?php foreach ($langs as $i => $l): ?>
+          <div id="slide-<?= $l ?>" class="lang-panel space-y-4" <?= $i > 0 ? 'style="display:none"' : '' ?>>
+            <div>
+              <label class="form-label">Title (<?= strtoupper($l) ?>)</label>
+              <input type="text" name="title[<?= $l ?>]"
+                     value="<?= htmlspecialchars($titleData[$l] ?? '') ?>"
+                     class="form-input" />
+            </div>
+            <div>
+              <label class="form-label">Subtitle (<?= strtoupper($l) ?>)</label>
+              <input type="text" name="subtitle[<?= $l ?>]"
+                     value="<?= htmlspecialchars($subtitleData[$l] ?? '') ?>"
+                     class="form-input" />
+            </div>
+            <div>
+              <label class="form-label">Button Text (<?= strtoupper($l) ?>)</label>
+              <input type="text" name="buttonText[<?= $l ?>]"
+                     value="<?= htmlspecialchars($buttonTextData[$l] ?? '') ?>"
+                     class="form-input" />
+            </div>
+          </div>
+        <?php endforeach ?>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Sidebar column ─────────────────────────── -->
+  <div class="space-y-4">
+
+    <!-- Publish card -->
+    <div class="card p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-semibold"><?= AdminLang::t('published', 'common') ?></span>
+        <label class="seven-toggle">
+          <input type="checkbox" name="isActive" value="1" <?= $model->isActive ? 'checked' : '' ?>>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="flex gap-2 pt-2 border-t border-[var(--border-color)]">
+        <button type="submit" class="btn btn-primary flex-1">
+          <?= $isEdit ? AdminLang::t('save', 'common') : AdminLang::t('add', 'common') ?>
+        </button>
+        <a href="/<?= $lang ?>/admin/slider" class="btn btn-secondary"><?= AdminLang::t('cancel', 'common') ?></a>
+      </div>
+    </div>
+
+    <!-- Image card -->
+    <div class="card p-4 space-y-3">
+      <h3 class="text-sm font-semibold">Image URL</h3>
+      <?php if ($model->image): ?>
+        <img src="<?= htmlspecialchars($model->image) ?>" alt="" class="w-full rounded-lg object-cover aspect-video" />
+      <?php endif ?>
+      <input type="text" name="image" value="<?= htmlspecialchars($model->image ?? '') ?>"
+             placeholder="https://..." class="form-input font-mono text-xs" />
+    </div>
+
+    <!-- Settings card -->
+    <div class="card p-4 space-y-3">
+      <h3 class="text-sm font-semibold">Settings</h3>
+      <div>
+        <label class="form-label">Button URL</label>
+        <input type="text" name="buttonUrl" value="<?= htmlspecialchars($model->buttonUrl ?? '') ?>"
+               placeholder="/" class="form-input" />
+      </div>
+      <div>
+        <label class="form-label">Overlay</label>
+        <select name="overlay" class="form-input">
+          <?php foreach (['none','dark','light'] as $o): ?>
+            <option value="<?= $o ?>" <?= ($model->overlay ?? 'none') === $o ? 'selected' : '' ?>><?= ucfirst($o) ?></option>
+          <?php endforeach ?>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Sort Order</label>
+        <input type="number" name="sortOrder" value="<?= (int)($model->sortOrder ?? 0) ?>"
+               min="0" class="form-input" />
+      </div>
+    </div>
+
+  </div>
+
+</form>
+
+<script type="module">
+  document.querySelectorAll('.lang-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll('.lang-tab').forEach(b => {
+        b.classList.toggle('border-[var(--border-color)]', b === btn);
+        b.classList.toggle('bg-[var(--bg-primary)]', b === btn);
+        b.classList.toggle('text-[var(--primary)]', b === btn);
+        b.classList.toggle('border-transparent', b !== btn);
+        b.classList.toggle('text-[var(--text-tertiary)]', b !== btn);
+      });
+      document.querySelectorAll('.lang-panel').forEach(p => {
+        p.style.display = p.id === target ? '' : 'none';
+      });
+    });
+  });
+</script>

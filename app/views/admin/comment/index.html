@@ -1,0 +1,48 @@
+<?php /** @var array $comments */ $lang = Seven::app()->router->getLanguage(); ?>
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold"><?= AdminLang::t('comments', 'nav') ?></h2>
+</div>
+
+<?php if (empty($comments)): ?>
+  <p class="text-[var(--text-secondary)] text-sm">No comments yet.</p>
+<?php else: ?>
+  <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]">
+        <tr>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Author</th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Comment</th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium"><?= AdminLang::t('status', 'common') ?></th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium"><?= AdminLang::t('created_at', 'common') ?></th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($comments as $row): ?>
+          <tr class="border-b border-[var(--border-color)] last:border-0 hover:bg-[var(--bg-tertiary)]">
+            <td class="px-4 py-3 text-[var(--text-secondary)]"><?= htmlspecialchars($row['user_name'] ?? 'Guest') ?></td>
+            <td class="px-4 py-3 max-w-xs truncate"><?= htmlspecialchars($row['body'] ?? '') ?></td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 rounded text-xs <?= ($row['is_approved'] ?? 0) ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' ?>">
+                <?= ($row['is_approved'] ?? 0) ? AdminLang::t('active', 'common') : 'Pending' ?>
+              </span>
+            </td>
+            <td class="px-4 py-3 text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars(substr($row['created_at'] ?? '', 0, 10)) ?></td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <?php if (!($row['is_approved'] ?? 0)): ?>
+                <a href="/<?= $lang ?>/admin/comment/approve/<?= $row['id'] ?>"
+                   class="text-[var(--primary)] hover:underline mr-3 text-xs">Approve</a>
+              <?php endif ?>
+              <a href="/<?= $lang ?>/admin/comment/delete/<?= $row['id'] ?>"
+                 class="text-red-500 hover:underline text-xs"
+                 data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
+                 data-confirm-type="danger"
+                 data-confirm-title="Delete comment by <?= htmlspecialchars($row['user_name'] ?? 'Guest') ?>?"
+                 data-confirm-ok="<?= htmlspecialchars(AdminLang::t('delete', 'common')) ?>"><?= AdminLang::t('delete', 'common') ?></a>
+            </td>
+          </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif ?>

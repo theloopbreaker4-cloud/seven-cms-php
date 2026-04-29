@@ -1,0 +1,47 @@
+<?php
+/** @var array  $subs */
+/** @var string $status */
+$lang = Seven::app()->router->getLanguage();
+?>
+<div class="flex items-center gap-3 mb-6">
+  <h2 class="text-xl font-semibold flex-1">Subscriptions</h2>
+  <form method="GET">
+    <select name="status" onchange="this.form.submit()" class="px-3 py-1.5 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm">
+      <option value="">All</option>
+      <?php foreach (['trialing','active','past_due','paused','cancelled','expired'] as $s): ?>
+        <option value="<?= $s ?>" <?= $status === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option>
+      <?php endforeach ?>
+    </select>
+  </form>
+</div>
+
+<div class="rounded-xl border border-[var(--border-color)] overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--bg-secondary)]"><tr>
+      <th class="text-left px-3 py-2">#</th>
+      <th class="text-left px-3 py-2">Customer</th>
+      <th class="text-left px-3 py-2">Status</th>
+      <th class="text-left px-3 py-2">Renews</th>
+      <th class="text-left px-3 py-2">Price</th>
+      <th class="px-3 py-2"></th>
+    </tr></thead>
+    <tbody>
+      <?php foreach ($subs as $s): ?>
+        <tr class="border-t border-[var(--border-color)]">
+          <td class="px-3 py-2 text-xs">#<?= (int)$s['id'] ?></td>
+          <td class="px-3 py-2 text-xs"><?= htmlspecialchars((string)($s['email'] ?? '')) ?></td>
+          <td class="px-3 py-2 text-xs"><?= htmlspecialchars($s['status']) ?></td>
+          <td class="px-3 py-2 text-xs"><?= htmlspecialchars($s['current_period_end'] ?? '—') ?></td>
+          <td class="px-3 py-2 text-xs"><?= Money::format((int)$s['unit_price'], (string)$s['currency']) ?> / <?= (int)$s['billing_interval'] ?> <?= htmlspecialchars($s['billing_period']) ?></td>
+          <td class="px-3 py-2 text-right">
+            <?php if (!in_array($s['status'], ['cancelled','expired'])): ?>
+              <form method="POST" action="/<?= $lang ?>/admin/ecom/subscriptions/cancel/<?= (int)$s['id'] ?>" class="m-0 inline">
+                <button class="text-xs text-red-500" data-confirm="Cancel this subscription?">Cancel</button>
+              </form>
+            <?php endif ?>
+          </td>
+        </tr>
+      <?php endforeach ?>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,9 @@
+{
+  "name": "Classic",
+  "author": "Seven CMS",
+  "desc": "Clean neutral palette with blue accent",
+  "preview": {
+    "light": { "primary": "#2563eb", "bg": "#ffffff", "text": "#111827" },
+    "dark":  { "primary": "#3b82f6", "bg": "#0f1117", "text": "#f1f5f9" }
+  }
+}

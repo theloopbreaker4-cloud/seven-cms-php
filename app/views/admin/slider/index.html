@@ -1,0 +1,61 @@
+<?php /** @var array $slides */ $lang = Seven::app()->router->getLanguage(); ?>
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold"><?= AdminLang::t('slider', 'nav') ?></h2>
+  <a href="/<?= $lang ?>/admin/slider/create"
+     class="btn btn-primary"><?= AdminLang::t('add', 'common') ?></a>
+</div>
+
+<?php if (empty($slides)): ?>
+  <div class="empty-state">
+    <svg fill="none" viewBox="0 0 48 48" stroke="currentColor" stroke-width="1.2"><rect x="4" y="10" width="40" height="28" rx="3"/><path d="M4 20h40M16 30h4M24 30h8"/></svg>
+    <p>No slides yet. Create your first slide.</p>
+  </div>
+<?php else: ?>
+  <div class="card overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]">
+        <tr>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium w-12">#</th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Image</th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Title (EN)</th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Status</th>
+          <th class="px-4 py-3 w-32"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($slides as $row):
+          $title = json_decode($row['title'] ?? '{}', true) ?? [];
+        ?>
+          <tr class="border-b border-[var(--border-color)] last:border-0 hover:bg-[var(--bg-tertiary)]">
+            <td class="px-4 py-3 text-[var(--text-tertiary)]"><?= (int)$row['sort_order'] ?></td>
+            <td class="px-4 py-3">
+              <?php if ($row['image']): ?>
+                <img src="<?= htmlspecialchars($row['image']) ?>" alt="" class="h-10 w-16 object-cover rounded" />
+              <?php else: ?>
+                <span class="text-[var(--text-tertiary)] text-xs">—</span>
+              <?php endif ?>
+            </td>
+            <td class="px-4 py-3 font-medium"><?= htmlspecialchars($title['en'] ?? '') ?></td>
+            <td class="px-4 py-3">
+              <?php if ($row['is_active']): ?>
+                <span class="badge badge-success">Active</span>
+              <?php else: ?>
+                <span class="badge badge-secondary">Inactive</span>
+              <?php endif ?>
+            </td>
+            <td class="px-4 py-3 text-right space-x-3">
+              <a href="/<?= $lang ?>/admin/slider/edit/<?= $row['id'] ?>"
+                 class="text-[var(--primary)] hover:underline text-sm"><?= AdminLang::t('edit', 'common') ?></a>
+              <a href="/<?= $lang ?>/admin/slider/delete/<?= $row['id'] ?>"
+                 class="text-red-500 hover:underline text-sm"
+                 data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
+                 data-confirm-type="danger"
+                 data-confirm-title="Delete slide: <?= htmlspecialchars($title['en'] ?? '#' . $row['id']) ?>?"
+                 data-confirm-ok="<?= htmlspecialchars(AdminLang::t('delete', 'common')) ?>"><?= AdminLang::t('delete', 'common') ?></a>
+            </td>
+          </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif ?>

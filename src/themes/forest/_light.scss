@@ -1,0 +1,32 @@
+// Theme: forest — light mode (sage / pine green palette)
+[data-palette="forest"]:root,
+[data-palette="forest"][data-theme="light"],
+[data-palette="forest"] {
+  --bg-primary:       #f6f9f4;
+  --bg-secondary:     #eaf1e3;
+  --bg-tertiary:      #d9e6cd;
+  --text-primary:     #1a2914;
+  --text-secondary:   #38502c;
+  --text-tertiary:    #6b8a55;
+  --border-color:     #c2d6b1;
+  --primary:          #166534;
+  --primary-hover:    #14532d;
+  --secondary:        #b45309;
+  --secondary-hover:  #92400e;
+
+  --primary-gradient: linear-gradient(135deg, #166534 0%, #15803d 100%);
+  --primary-gradient-hover: linear-gradient(135deg, #14532d 0%, #166534 100%);
+
+  --sidebar-bg:       #e3edd6;
+  --sidebar-border:   #b6cfa3;
+  --header-bg:        #eef4e6;
+  --success:          #15803d;
+  --warning:          #b45309;
+  --danger:           #b91c1c;
+  --info:             #0284c7;
+
+  --glow-a:  rgba(22,  101, 52,  0.12);
+  --glow-b:  rgba(180, 83,  9,   0.08);
+  --orb-a:   rgba(21,  128, 61,  0.14);
+  --orb-b:   rgba(180, 83,  9,   0.08);
+}

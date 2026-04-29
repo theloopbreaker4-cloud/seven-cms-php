@@ -1,0 +1,74 @@
+<?php
+/** @var array $values */
+$lang = Seven::app()->router->getLanguage();
+$v = fn(string $k) => htmlspecialchars((string)($values[$k] ?? ''));
+?>
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold">Shop Settings</h2>
+</div>
+
+<form method="POST" action="/<?= $lang ?>/admin/ecom/settings/update" class="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl">
+
+  <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-3">
+    <h3 class="font-semibold">General</h3>
+    <label class="block">
+      <span class="text-xs text-[var(--text-secondary)]">Default currency</span>
+      <input name="ecom_currency" value="<?= $v('ecom.currency') ?>" placeholder="USD" maxlength="3"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono uppercase" />
+    </label>
+    <label class="block">
+      <span class="text-xs text-[var(--text-secondary)]">Brand name</span>
+      <input name="ecom_brand_name" value="<?= $v('ecom.brand_name') ?>"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+    </label>
+    <div class="grid grid-cols-2 gap-2">
+      <label class="block">
+        <span class="text-xs text-[var(--text-secondary)]">Default tax rate (%)</span>
+        <input name="ecom_tax_rate" value="<?= $v('ecom.tax_rate') ?>"
+               class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+      </label>
+      <label class="flex items-center gap-2 self-end pb-2 text-sm">
+        <input type="checkbox" name="ecom_tax_inclusive" value="1" <?= ($values['ecom.tax_inclusive'] ?? '0') === '1' ? 'checked' : '' ?> />
+        Tax inclusive in price
+      </label>
+    </div>
+  </div>
+
+  <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-3">
+    <h3 class="font-semibold">Stripe</h3>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Publishable key</span>
+      <input name="ecom_stripe_public_key" value="<?= $v('ecom.stripe_public_key') ?>"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" /></label>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Secret key</span>
+      <input name="ecom_stripe_secret_key" type="password" value="<?= $v('ecom.stripe_secret_key') ?>"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" /></label>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Webhook signing secret</span>
+      <input name="ecom_stripe_webhook_secret" type="password" value="<?= $v('ecom.stripe_webhook_secret') ?>"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" /></label>
+    <p class="text-xs text-[var(--text-tertiary)]">Webhook URL: <code>/api/v1/shop/webhook/stripe</code></p>
+  </div>
+
+  <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-3">
+    <h3 class="font-semibold">PayPal</h3>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Client ID</span>
+      <input name="ecom_paypal_client_id" value="<?= $v('ecom.paypal_client_id') ?>"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" /></label>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Secret</span>
+      <input name="ecom_paypal_secret" type="password" value="<?= $v('ecom.paypal_secret') ?>"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" /></label>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Mode</span>
+      <select name="ecom_paypal_mode" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]">
+        <option value="sandbox" <?= ($values['ecom.paypal_mode'] ?? '') === 'sandbox' ? 'selected' : '' ?>>Sandbox</option>
+        <option value="live"    <?= ($values['ecom.paypal_mode'] ?? '') === 'live'    ? 'selected' : '' ?>>Live</option>
+      </select>
+    </label>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Webhook ID</span>
+      <input name="ecom_paypal_webhook_id" value="<?= $v('ecom.paypal_webhook_id') ?>"
+             class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" /></label>
+    <p class="text-xs text-[var(--text-tertiary)]">Webhook URL: <code>/api/v1/shop/webhook/paypal</code></p>
+  </div>
+
+  <div class="lg:col-span-2 flex justify-end">
+    <button class="px-5 py-2 rounded bg-[var(--primary)] text-white">Save settings</button>
+  </div>
+</form>

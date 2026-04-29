@@ -1,0 +1,201 @@
+<?php
+/** @var ContentType        $type   */
+/** @var ContentEntry|null  $entry  */
+/** @var array              $fields */
+$lang   = Seven::app()->router->getLanguage();
+$isNew  = $entry === null;
+$action = $isNew
+    ? "/{$lang}/admin/content/entries/" . urlencode($type->slug) . '/store'
+    : "/{$lang}/admin/content/entries/" . urlencode($type->slug) . '/update/' . (int)$entry->id;
+
+$values = $entry ? $entry->dataArray() : [];
+
+// Helper to render a single field input.
+$renderField = static function (array $f) use ($values, $lang) {
+    $key      = (string)$f['key'];
+    $label    = (string)$f['label'];
+    $ftype    = (string)$f['field_type'];
+    $required = (int)($f['required'] ?? 0);
+    $value    = $values[$key] ?? null;
+    $settings = is_string($f['settings'] ?? null)
+                  ? (json_decode($f['settings'], true) ?: [])
+                  : (array)($f['settings'] ?? []);
+    ?>
+    <label class="block">
+      <span class="text-xs text-[var(--text-secondary)]"><?= htmlspecialchars($label) ?>
+        <?php if ($required): ?><span class="text-red-500">*</span><?php endif ?>
+      </span>
+    <?php switch ($ftype):
+        case 'text': ?>
+          <input name="data[<?= htmlspecialchars($key) ?>]" type="text"
+                 value="<?= htmlspecialchars((string)($value ?? '')) ?>"
+                 class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+          <?php break;
+        case 'richtext': ?>
+          <textarea name="data[<?= htmlspecialchars($key) ?>]" rows="6"
+                    class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm"><?= htmlspecialchars((string)($value ?? '')) ?></textarea>
+          <?php break;
+        case 'number': ?>
+          <input name="data[<?= htmlspecialchars($key) ?>]" type="number"
+                 step="<?= htmlspecialchars((string)($settings['step'] ?? 'any')) ?>"
+                 value="<?= htmlspecialchars((string)($value ?? '')) ?>"
+                 class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+          <?php break;
+        case 'boolean': ?>
+          <label class="inline-flex items-center gap-2 mt-1">
+            <input name="data[<?= htmlspecialchars($key) ?>]" type="checkbox" value="1"
+                   <?= !empty($value) ? 'checked' : '' ?> />
+            <span class="text-sm"><?= htmlspecialchars($label) ?></span>
+          </label>
+          <?php break;
+        case 'date': case 'datetime': ?>
+          <input name="data[<?= htmlspecialchars($key) ?>]"
+                 type="<?= $ftype === 'date' ? 'date' : 'datetime-local' ?>"
+                 value="<?= htmlspecialchars((string)($value ?? '')) ?>"
+                 class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+          <?php break;
+        case 'select': ?>
+          <select name="data[<?= htmlspecialchars($key) ?>]"
+                  class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]">
+            <option value="">—</option>
+            <?php foreach ((array)($settings['options'] ?? []) as $opt): ?>
+              <option value="<?= htmlspecialchars((string)$opt['value']) ?>"
+                      <?= (string)$value === (string)$opt['value'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars((string)($opt['label'] ?? $opt['value'])) ?>
+              </option>
+            <?php endforeach ?>
+          </select>
+          <?php break;
+        case 'multiselect': ?>
+          <select name="data[<?= htmlspecialchars($key) ?>][]" multiple size="4"
+                  class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]">
+            <?php
+              $sel = is_array($value) ? array_map('strval', $value) : [];
+              foreach ((array)($settings['options'] ?? []) as $opt):
+            ?>
+              <option value="<?= htmlspecialchars((string)$opt['value']) ?>"
+                      <?= in_array((string)$opt['value'], $sel, true) ? 'selected' : '' ?>>
+                <?= htmlspecialchars((string)($opt['label'] ?? $opt['value'])) ?>
+              </option>
+            <?php endforeach ?>
+          </select>
+          <?php break;
+        case 'image': case 'media': ?>
+          <input name="data[<?= htmlspecialchars($key) ?>]" type="number"
+                 placeholder="Media id (use Media library to copy)"
+                 value="<?= htmlspecialchars((string)($value ?? '')) ?>"
+                 class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+          <p class="text-xs text-[var(--text-tertiary)] mt-1">
+            <a href="/<?= $lang ?>/admin/media" target="_blank" class="hover:underline">Open Media library</a>
+          </p>
+          <?php break;
+        case 'relation':
+          $to = $settings['to'] ?? '';
+          $sel = is_array($value) ? $value : (is_numeric($value) ? [(int)$value] : []);
+        ?>
+          <input name="data[<?= htmlspecialchars($key) ?>]" type="text"
+                 placeholder='Comma-separated ids of "<?= htmlspecialchars((string)$to) ?>" entries'
+                 value="<?= htmlspecialchars(implode(',', $sel)) ?>"
+                 class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm"
+                 onchange="this.value.split(',').forEach(()=>{}); /* server splits */" />
+          <p class="text-xs text-[var(--text-tertiary)] mt-1">References content type
+            <code class="px-1 rounded bg-[var(--bg-tertiary)]"><?= htmlspecialchars((string)$to) ?></code>
+          </p>
+          <?php break;
+        case 'json': default: ?>
+          <textarea name="data[<?= htmlspecialchars($key) ?>]" rows="4"
+                    class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-xs"><?= htmlspecialchars(is_array($value) ? json_encode($value, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) : (string)($value ?? '')) ?></textarea>
+          <?php break;
+    endswitch ?>
+    </label>
+    <?php
+};
+?>
+
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold">
+    <?= $isNew ? 'New ' . htmlspecialchars($type->name) : 'Edit ' . htmlspecialchars($type->name) ?>
+  </h2>
+  <div class="flex gap-2">
+    <a href="/<?= $lang ?>/admin/content/entries/<?= htmlspecialchars($type->slug) ?>"
+       class="text-sm text-[var(--text-tertiary)] hover:underline">← Back to list</a>
+
+    <?php if (!$isNew): ?>
+      <button id="preview-btn" type="button"
+              class="px-3 py-1.5 rounded border border-[var(--border-color)] text-sm">Preview link</button>
+      <button id="revisions-btn" type="button"
+              class="px-3 py-1.5 rounded border border-[var(--border-color)] text-sm">History</button>
+    <?php endif ?>
+  </div>
+</div>
+
+<form method="POST" action="<?= htmlspecialchars($action) ?>" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-4">
+    <?php if (empty($fields)): ?>
+      <div class="border border-dashed border-[var(--border-color)] rounded-xl p-6 text-sm text-[var(--text-secondary)]">
+        This content type has no fields yet — add fields in
+        <a href="/<?= $lang ?>/admin/content/types/edit/<?= (int)$type->id ?>" class="text-[var(--primary)] hover:underline">type settings</a>.
+      </div>
+    <?php else: ?>
+      <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-4">
+        <?php foreach ($fields as $f) $renderField($f) ?>
+      </div>
+    <?php endif ?>
+  </div>
+
+  <aside class="space-y-4">
+    <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-3">
+      <label class="block">
+        <span class="text-xs text-[var(--text-secondary)]">Slug</span>
+        <input name="slug" type="text" value="<?= htmlspecialchars($entry->slug ?? '') ?>"
+               class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
+      </label>
+
+      <label class="block">
+        <span class="text-xs text-[var(--text-secondary)]">Status</span>
+        <select name="status" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]">
+          <?php foreach (['draft','published','archived'] as $s): ?>
+            <option value="<?= $s ?>" <?= ($entry->status ?? 'draft') === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option>
+          <?php endforeach ?>
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="text-xs text-[var(--text-secondary)]">Locale</span>
+        <input name="locale" type="text" value="<?= htmlspecialchars($entry->locale ?? 'en') ?>"
+               class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
+      </label>
+
+      <label class="block">
+        <span class="text-xs text-[var(--text-secondary)]">Sort order</span>
+        <input name="sort_order" type="number" value="<?= (int)($entry->sortOrder ?? 0) ?>"
+               class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+      </label>
+    </div>
+
+    <button type="submit" class="w-full px-4 py-2.5 rounded-lg bg-[var(--primary)] text-white font-medium">
+      <?= $isNew ? 'Create' : 'Save changes' ?>
+    </button>
+  </aside>
+</form>
+
+<?php if (!$isNew): ?>
+<script>
+(() => {
+  const baseEntry = <?= json_encode("/{$lang}/admin/content/entries/" . urlencode($type->slug)) ?>;
+  const id        = <?= (int)$entry->id ?>;
+
+  document.getElementById('preview-btn')?.addEventListener('click', async () => {
+    const r = await fetch(`${baseEntry}/preview/${id}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json());
+    if (r.ok) prompt('Preview URL (copy):', window.location.origin + r.url);
+  });
+
+  document.getElementById('revisions-btn')?.addEventListener('click', async () => {
+    const r = await fetch(`${baseEntry}/revisions/${id}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json());
+    if (!r.ok) return;
+    const lines = (r.revisions || []).map(rev => `#${rev.id}  ${rev.created_at}  ${rev.comment || ''}`).join('\n');
+    alert(lines || 'No revisions yet.');
+  });
+})();
+</script>
+<?php endif ?>

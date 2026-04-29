@@ -1,0 +1,39 @@
+<?php
+/** @var array $posts */
+/** @var string $lang */
+?>
+<div class="max-w-3xl mx-auto px-4 py-12">
+  <h1 class="text-3xl font-bold mb-10 text-[var(--text-primary)]"><?= Lang::t('title', 'blog') ?></h1>
+
+  <?php if (empty($posts)): ?>
+    <p class="text-[var(--text-secondary)]"><?= Lang::t('noPostsYet', 'blog') ?></p>
+  <?php else: ?>
+    <div class="space-y-8">
+      <?php foreach ($posts as $row):
+        $title   = json_decode($row['title'] ?? '{}', true) ?? [];
+        $excerpt = json_decode($row['excerpt'] ?? '{}', true) ?? [];
+        $t = $title[$lang] ?? $title['en'] ?? '';
+        $e = $excerpt[$lang] ?? $excerpt['en'] ?? '';
+      ?>
+        <article class="border-b border-[var(--border-color)] pb-8">
+          <?php if (!empty($row['cover_image'])): ?>
+            <img src="<?= htmlspecialchars($row['cover_image']) ?>" alt="<?= htmlspecialchars($t) ?>"
+                 class="w-full h-48 object-cover rounded-lg mb-4" />
+          <?php endif ?>
+          <h2 class="text-xl font-semibold mb-2">
+            <a href="/<?= $lang ?>/blog/<?= htmlspecialchars($row['slug']) ?>" class="hover:text-[var(--primary)]">
+              <?= htmlspecialchars($t) ?>
+            </a>
+          </h2>
+          <?php if ($e): ?>
+            <p class="text-[var(--text-secondary)] text-sm mb-3"><?= htmlspecialchars($e) ?></p>
+          <?php endif ?>
+          <a href="/<?= $lang ?>/blog/<?= htmlspecialchars($row['slug']) ?>"
+             class="text-sm text-[var(--primary)] hover:underline">
+            <?= Lang::t('readMore', 'blog') ?> →
+          </a>
+        </article>
+      <?php endforeach ?>
+    </div>
+  <?php endif ?>
+</div>

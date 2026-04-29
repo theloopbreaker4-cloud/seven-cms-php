@@ -1,0 +1,125 @@
+<?php
+/** @var array $currencies */
+/** @var string $base */
+/** @var bool $enabled */
+/** @var string $provider */
+/** @var array $rates */
+?>
+<div class="mb-4 flex items-center justify-between">
+  <div>
+    <h2 class="text-xl font-semibold">Currencies</h2>
+    <p class="text-sm text-[var(--text-secondary)] mt-1">
+      Base currency: <span class="font-mono font-semibold text-[var(--primary)]"><?= htmlspecialchars($base) ?></span>.
+      Storefront prices are stored in base; non-base values are converted at display time.
+    </p>
+  </div>
+  <a href="/admin/help/topic/multicurrency" class="text-sm text-[var(--primary)] hover:underline self-center">Guide →</a>
+</div>
+
+<form action="/admin/ecom/currencies/update" method="post" class="space-y-6">
+
+  <div class="rounded-lg border border-[var(--border-color)] p-4">
+    <label class="flex items-center gap-2 mb-3">
+      <input type="checkbox" name="multi_currency_enabled" <?= $enabled ? 'checked' : '' ?> />
+      <span class="text-sm font-medium">Enable multi-currency on the storefront</span>
+    </label>
+    <div class="text-xs text-[var(--text-secondary)] mb-2">
+      When off, all customers see prices in <?= htmlspecialchars($base) ?>. When on, the storefront picks a currency
+      from <code>?currency=</code>, the <code>seven_currency</code> cookie, or the customer's preferred currency.
+    </div>
+
+    <label class="block text-sm font-medium mb-1 mt-3">FX provider</label>
+    <select name="fx_provider" class="w-full max-w-xs px-3 py-2 rounded border border-[var(--border-color)] bg-[var(--bg-primary)]">
+      <option value="manual"             <?= $provider === 'manual' ? 'selected' : '' ?>>Manual (admin-entered rates)</option>
+      <option value="exchangerate.host"  <?= $provider === 'exchangerate.host' ? 'selected' : '' ?>>exchangerate.host (free)</option>
+    </select>
+  </div>
+
+  <div class="rounded-lg border border-[var(--border-color)]">
+    <div class="px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between">
+      <h3 class="font-semibold">Available currencies</h3>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
+        <tr>
+          <th class="text-left px-3 py-2">Code</th>
+          <th class="text-left px-3 py-2">Label</th>
+          <th class="text-left px-3 py-2">Status</th>
+          <th class="text-right px-3 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($currencies as $c): ?>
+          <tr class="border-t border-[var(--border-color)]">
+            <td class="px-3 py-2 font-mono"><?= htmlspecialchars($c['code']) ?></td>
+            <td class="px-3 py-2"><?= htmlspecialchars($c['label'] ?? '') ?></td>
+            <td class="px-3 py-2">
+              <?php if ((int)$c['is_base']): ?>
+                <span class="text-xs px-2 py-0.5 rounded bg-[var(--primary)] text-white">base</span>
+              <?php elseif ((int)$c['is_enabled']): ?>
+                <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500">enabled</span>
+              <?php else: ?>
+                <span class="text-xs px-2 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]">disabled</span>
+              <?php endif ?>
+            </td>
+            <td class="px-3 py-2 text-right whitespace-nowrap">
+              <?php if (!(int)$c['is_base']): ?>
+                <a href="/admin/ecom/currencies/toggle/<?= htmlspecialchars($c['code']) ?>"
+                   class="px-2 py-1 text-xs rounded bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white">
+                  <?= (int)$c['is_enabled'] ? 'Disable' : 'Enable' ?>
+                </a>
+                <a href="/admin/ecom/currencies/base/<?= htmlspecialchars($c['code']) ?>"
+                   class="px-2 py-1 text-xs rounded bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white">
+                  Make base
+                </a>
+              <?php endif ?>
+            </td>
+          </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="rounded-lg border border-[var(--border-color)]">
+    <div class="px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between">
+      <h3 class="font-semibold">FX rates</h3>
+      <a href="/admin/ecom/currencies/refresh" class="px-3 py-1.5 rounded bg-[var(--bg-tertiary)] text-sm hover:bg-[var(--primary)] hover:text-white">Refresh now</a>
+    </div>
+
+    <?php if (!$rates): ?>
+      <div class="px-4 py-6 text-sm text-[var(--text-secondary)]">
+        No rates yet. Enable a provider and click <em>Refresh now</em>, or set them manually below.
+      </div>
+    <?php else: ?>
+      <table class="w-full text-sm">
+        <thead class="bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
+          <tr>
+            <th class="text-left px-3 py-2">Pair</th>
+            <th class="text-left px-3 py-2">Rate</th>
+            <th class="text-left px-3 py-2">Source</th>
+            <th class="text-left px-3 py-2">Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($rates as $r): ?>
+            <tr class="border-t border-[var(--border-color)]">
+              <td class="px-3 py-2 font-mono"><?= htmlspecialchars($r['base_code']) ?> → <?= htmlspecialchars($r['quote_code']) ?></td>
+              <td class="px-3 py-2 font-mono">
+                <input type="number" step="0.00000001" min="0"
+                       name="rates[<?= htmlspecialchars($r['base_code'].'_'.$r['quote_code']) ?>]"
+                       value="<?= htmlspecialchars((string)$r['rate']) ?>"
+                       class="w-32 px-2 py-1 rounded border border-[var(--border-color)] bg-[var(--bg-primary)]" />
+              </td>
+              <td class="px-3 py-2 text-[var(--text-secondary)]"><?= htmlspecialchars($r['source']) ?></td>
+              <td class="px-3 py-2 text-[var(--text-secondary)]"><?= htmlspecialchars($r['fetched_at']) ?></td>
+            </tr>
+          <?php endforeach ?>
+        </tbody>
+      </table>
+    <?php endif ?>
+  </div>
+
+  <div class="flex justify-end gap-2">
+    <button type="submit" class="px-4 py-2 rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]">Save</button>
+  </div>
+</form>

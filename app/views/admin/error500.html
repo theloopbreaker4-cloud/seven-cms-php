@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>500 — Server Error</title>
+  <?= Vite::tags('src/admin/main.js') ?>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4 bg-[var(--bg-primary)]">
+
+  <div class="text-center max-w-sm">
+    <div class="text-[100px] font-black leading-none text-[var(--danger)] opacity-15 select-none">500</div>
+    <h1 class="text-xl font-bold text-[var(--text-primary)] -mt-3 mb-2">Server Error</h1>
+    <p class="text-sm text-[var(--text-secondary)] mb-7">
+      An unexpected error occurred. Check the server logs for details.
+    </p>
+    <div class="flex items-center justify-center gap-3">
+      <a href="javascript:location.reload()"
+         class="btn btn-secondary">
+        Try again
+      </a>
+      <a href="/<?= Seven::app()->router->getLanguage() ?>/admin"
+         class="btn btn-primary">
+        Dashboard
+      </a>
+    </div>
+  </div>
+
+  <script>(function(){var h=document.documentElement,t=localStorage.getItem('theme')||'light';h.setAttribute('data-theme',t);})();</script>
+</body>
+</html>

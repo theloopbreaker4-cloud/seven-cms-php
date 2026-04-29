@@ -1,0 +1,45 @@
+<?php /** @var Category $model @var string $action @var int|null $id */
+$langs  = Seven::app()->config['languages'];
+$isEdit = $action === 'edit';
+$formAction = $isEdit
+  ? '/' . Seven::app()->router->getLanguage() . '/admin/category/update/' . $id
+  : '/' . Seven::app()->router->getLanguage() . '/admin/category/store';
+$nameData = json_decode($model->name ?? '{}', true) ?? [];
+?>
+<form method="POST" action="<?= $formAction ?>" class="max-w-lg space-y-5" novalidate>
+  <div>
+    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1"><?= AdminLang::t('slug', 'posts') ?></label>
+    <input type="text" name="slug" value="<?= htmlspecialchars($model->slug ?? '') ?>" required
+           pattern="[a-z0-9\-]+"
+           data-msg-required="Slug is required."
+           data-msg-pattern="Use lowercase letters, digits and dashes only."
+           class="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] font-mono focus:outline-none focus:border-[var(--primary)]" />
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Type</label>
+    <select name="type" class="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] focus:outline-none focus:border-[var(--primary)]">
+      <option value="post" <?= ($model->type ?? '') === 'post' ? 'selected' : '' ?>>Post</option>
+      <option value="page" <?= ($model->type ?? '') === 'page' ? 'selected' : '' ?>>Page</option>
+    </select>
+  </div>
+
+  <div class="space-y-3">
+    <p class="text-sm font-medium text-[var(--text-secondary)]"><?= AdminLang::t('title_field', 'posts') ?></p>
+    <?php foreach ($langs as $l): ?>
+      <div class="flex items-center gap-3">
+        <span class="w-8 text-xs font-mono text-[var(--text-tertiary)] uppercase"><?= $l ?></span>
+        <input type="text" name="name_<?= $l ?>" value="<?= htmlspecialchars($nameData[$l] ?? '') ?>"
+               class="flex-1 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] focus:outline-none focus:border-[var(--primary)]" />
+      </div>
+    <?php endforeach ?>
+  </div>
+
+  <div class="flex gap-3">
+    <button type="submit" class="px-5 py-2.5 rounded-lg bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary-hover)]">
+      <?= $isEdit ? AdminLang::t('save', 'common') : AdminLang::t('add', 'common') ?>
+    </button>
+    <a href="/<?= Seven::app()->router->getLanguage() ?>/admin/category"
+       class="px-5 py-2.5 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--primary)]"><?= AdminLang::t('cancel', 'common') ?></a>
+  </div>
+</form>

@@ -1,0 +1,68 @@
+<?php
+/** @var ContentType $type    */
+/** @var array       $entries */
+$lang = Seven::app()->router->getLanguage();
+$base = "/{$lang}/admin/content/entries/" . htmlspecialchars($type->slug);
+?>
+
+<div class="flex flex-wrap items-center gap-3 mb-6">
+  <h2 class="text-xl font-semibold flex-1"><?= htmlspecialchars($type->name) ?></h2>
+
+  <form method="GET" action="<?= $base ?>" class="flex gap-2">
+    <select name="status" onchange="this.form.submit()"
+            class="px-3 py-1.5 rounded-lg border text-sm bg-[var(--bg-primary)] border-[var(--border-color)]">
+      <option value="">All statuses</option>
+      <?php foreach (['draft','published','archived'] as $s): ?>
+        <option value="<?= $s ?>" <?= ($_GET['status'] ?? '') === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option>
+      <?php endforeach ?>
+    </select>
+    <input type="search" name="q" value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" placeholder="Search…"
+           class="px-3 py-1.5 rounded-lg border text-sm bg-[var(--bg-primary)] border-[var(--border-color)] w-40" />
+  </form>
+
+  <a href="<?= $base ?>/create" class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-sm">+ New</a>
+  <a href="/<?= $lang ?>/admin/content/types/edit/<?= (int)$type->id ?>"
+     class="px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-sm">Type settings</a>
+</div>
+
+<?php if (empty($entries)): ?>
+  <div class="border border-dashed border-[var(--border-color)] rounded-xl p-10 text-center text-[var(--text-secondary)]">
+    No entries yet.
+  </div>
+<?php else: ?>
+  <div class="rounded-xl border border-[var(--border-color)] overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-[var(--bg-secondary)]">
+        <tr>
+          <th class="text-left px-4 py-2 font-medium">Slug</th>
+          <th class="text-left px-4 py-2 font-medium">Status</th>
+          <th class="text-left px-4 py-2 font-medium">Locale</th>
+          <th class="text-left px-4 py-2 font-medium">Updated</th>
+          <th class="px-4 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($entries as $e): ?>
+          <tr class="border-t border-[var(--border-color)] hover:bg-[var(--bg-secondary)]">
+            <td class="px-4 py-2 font-mono text-xs"><?= htmlspecialchars($e['slug']) ?></td>
+            <td class="px-4 py-2">
+              <span class="px-2 py-0.5 rounded text-xs <?= match($e['status']) {
+                  'published' => 'bg-emerald-500/15 text-emerald-500',
+                  'archived'  => 'bg-slate-500/15 text-slate-500',
+                  default     => 'bg-amber-500/15 text-amber-500',
+              } ?>"><?= htmlspecialchars($e['status']) ?></span>
+            </td>
+            <td class="px-4 py-2 text-[var(--text-tertiary)]"><?= htmlspecialchars($e['locale']) ?></td>
+            <td class="px-4 py-2 text-[var(--text-tertiary)] text-xs"><?= htmlspecialchars($e['updated_at']) ?></td>
+            <td class="px-4 py-2 text-right">
+              <a href="<?= $base ?>/edit/<?= (int)$e['id'] ?>" class="text-[var(--primary)] hover:underline text-xs">Edit</a>
+              <form method="POST" action="<?= $base ?>/delete/<?= (int)$e['id'] ?>" class="inline-block ml-2 m-0">
+                <button class="text-red-500 hover:underline text-xs" data-confirm="Delete this entry?">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif ?>

@@ -1,0 +1,31 @@
+// Theme: sand — light mode (warm beige)
+[data-palette="sand"]:root,
+[data-palette="sand"][data-theme="light"],
+[data-palette="sand"] {
+  --bg-primary:      #fdf8f3;
+  --bg-secondary:    #f7f0e6;
+  --bg-tertiary:     #ede4d6;
+  --text-primary:    #1c1410;
+  --text-secondary:  #4a3728;
+  --text-tertiary:   #8a6f58;
+  --border-color:    #ddd0bc;
+  --primary:         #b45309;
+  --primary-hover:   #92400e;
+  --secondary:       #d97706;
+  --secondary-hover: #b45309;
+
+  // admin
+  --sidebar-bg:      #f0e8da;
+  --sidebar-border:  #d8c8b0;
+  --header-bg:       #f7f0e6;
+  --success:         #16a34a;
+  --warning:         #d97706;
+  --danger:          #dc2626;
+  --info:            #0891b2;
+
+  // site animated bg
+  --glow-a:  rgba(180, 83,   9, 0.12);
+  --glow-b:  rgba(217, 119,  6, 0.08);
+  --orb-a:   rgba(251, 191, 36, 0.14);
+  --orb-b:   rgba(180, 83,   9, 0.09);
+}

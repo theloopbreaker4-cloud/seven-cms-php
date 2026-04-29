@@ -1,0 +1,668 @@
+<?php $lang = Seven::app()->router->getLanguage(); ?>
+
+<style>
+/* UI Kit preview blocks */
+.ui-preview {
+  padding: 1.25rem;
+  border-radius: 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  margin-bottom: 1rem;
+}
+.ui-code {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: .85rem 1rem;
+  font-size: .75rem;
+  color: var(--text-secondary);
+  overflow-x: auto;
+  font-family: monospace;
+  white-space: pre;
+  line-height: 1.6;
+}
+.ui-section-label {
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-tertiary);
+  margin-bottom: .5rem;
+}
+</style>
+
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-start justify-between flex-wrap gap-3">
+    <div>
+      <h2 class="text-2xl font-bold text-[var(--text-primary)]">UI Kit</h2>
+      <p class="text-sm text-[var(--text-secondary)] mt-1">Все компоненты используют только <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">var(--token)</code> — автоматически следуют теме и тёмному режиму</p>
+    </div>
+    <div class="flex flex-wrap gap-1.5">
+      <?php foreach (['buttons','badges','forms','pickers','validation','checkbox','toast','spinner','progress','skeleton','avatar','dropdown','alert','steps','widgets'] as $s): ?>
+        <a href="#<?= $s ?>" class="px-2.5 py-1 rounded-full text-xs bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors">#<?= $s ?></a>
+      <?php endforeach ?>
+    </div>
+  </div>
+
+  <!-- ─── BUTTONS ─────────────────────────────────────────────────────────── -->
+  <div class="card" id="buttons">
+    <p class="settings-card-title">Buttons</p>
+
+    <div class="space-y-4">
+      <div>
+        <p class="ui-section-label">Variants</p>
+        <div class="ui-preview flex flex-wrap gap-3 items-center">
+          <button class="btn btn-primary">Primary</button>
+          <button class="btn btn-secondary">Secondary</button>
+          <button class="btn btn-danger">Danger</button>
+          <button class="btn btn-warning">Warning</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="ui-section-label">Sizes</p>
+        <div class="ui-preview flex flex-wrap gap-3 items-center">
+          <button class="btn btn-primary btn-sm">Small</button>
+          <button class="btn btn-primary">Default</button>
+          <button class="btn btn-primary btn-lg">Large</button>
+        </div>
+      </div>
+
+      <div>
+        <p class="ui-section-label">States</p>
+        <div class="ui-preview flex flex-wrap gap-3 items-center">
+          <button class="btn btn-primary"><span class="spinner spinner--sm spinner--white"></span>&nbsp;Loading</button>
+          <button class="btn btn-secondary" disabled style="opacity:.45;cursor:not-allowed">Disabled</button>
+          <a href="#" class="btn btn-secondary">Link as button</a>
+        </div>
+      </div>
+
+      <div class="ui-code">&lt;button class="btn btn-primary"&gt;Primary&lt;/button&gt;
+&lt;button class="btn btn-secondary btn-sm"&gt;Small&lt;/button&gt;
+&lt;button class="btn btn-danger btn-lg"&gt;Large Danger&lt;/button&gt;
+&lt;button class="btn btn-primary"&gt;&lt;span class="spinner spinner--sm spinner--white"&gt;&lt;/span&gt; Loading&lt;/button&gt;
+&lt;a href="#" class="btn btn-secondary"&gt;Link&lt;/a&gt;</div>
+    </div>
+  </div>
+
+  <!-- ─── BADGES ──────────────────────────────────────────────────────────── -->
+  <div class="card" id="badges">
+    <p class="settings-card-title">Badges</p>
+    <div class="ui-preview flex flex-wrap gap-3 items-center">
+      <span class="badge badge-success">Published</span>
+      <span class="badge badge-danger">Error</span>
+      <span class="badge badge-warning">Draft</span>
+      <span class="badge badge-muted">Archived</span>
+      <span class="badge badge-primary">New</span>
+    </div>
+    <div class="ui-code">&lt;span class="badge badge-success"&gt;Published&lt;/span&gt;
+&lt;span class="badge badge-danger"&gt;Error&lt;/span&gt;
+&lt;span class="badge badge-warning"&gt;Draft&lt;/span&gt;
+&lt;span class="badge badge-muted"&gt;Archived&lt;/span&gt;
+&lt;span class="badge badge-primary"&gt;New&lt;/span&gt;</div>
+  </div>
+
+  <!-- ─── FORMS ────────────────────────────────────────────────────────────── -->
+  <div class="card" id="forms">
+    <p class="settings-card-title">Form Elements</p>
+    <div class="ui-preview">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+        <div class="form-group">
+          <label>Text input</label>
+          <input type="text" placeholder="Enter value..." />
+        </div>
+        <div class="form-group">
+          <label>Select</label>
+          <select>
+            <option>Option 1</option>
+            <option>Option 2</option>
+            <option>Option 3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Textarea</label>
+          <textarea rows="3" placeholder="Enter text..."></textarea>
+        </div>
+        <div class="space-y-3">
+          <div class="form-group">
+            <label>With hint</label>
+            <input type="email" placeholder="email@example.com" />
+            <span class="form-hint">We'll never share your email.</span>
+          </div>
+          <div class="form-group">
+            <label>With error</label>
+            <input type="text" style="border-color:var(--danger)" value="bad input" />
+            <span class="form-error">This field is required.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui-code">&lt;div class="form-group"&gt;
+  &lt;label&gt;Label&lt;/label&gt;
+  &lt;input type="text" placeholder="Value..." /&gt;
+  &lt;span class="form-hint"&gt;Hint text.&lt;/span&gt;
+&lt;/div&gt;
+&lt;span class="form-error"&gt;Error message.&lt;/span&gt;</div>
+  </div>
+
+  <!-- ─── PICKERS (date / color / file) ──────────────────────────────────── -->
+  <div class="card" id="pickers">
+    <p class="settings-card-title">Date · Color · File pickers</p>
+    <p class="text-xs text-[var(--text-secondary)] mb-3">Native pickers, restyled to follow the active theme. Calendar / clock icons auto-invert in dark mode.</p>
+
+    <div class="ui-preview">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" />
+        </div>
+        <div class="form-group">
+          <label>Datetime-local</label>
+          <input type="datetime-local" />
+        </div>
+        <div class="form-group">
+          <label>Time</label>
+          <input type="time" />
+        </div>
+        <div class="form-group">
+          <label>Month</label>
+          <input type="month" />
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <div class="flex items-center gap-3">
+            <input type="color" value="#0891b2" />
+            <span class="text-xs text-[var(--text-tertiary)]">44×32 pill swatch</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>File</label>
+          <input type="file" />
+        </div>
+      </div>
+    </div>
+
+    <div class="ui-code">&lt;input type="date" /&gt;
+&lt;input type="datetime-local" /&gt;
+&lt;input type="time" /&gt;
+&lt;input type="color" value="#0891b2" /&gt;
+&lt;input type="file" /&gt;</div>
+  </div>
+
+  <!-- ─── FORM VALIDATION ────────────────────────────────────────────────── -->
+  <div class="card" id="validation">
+    <p class="settings-card-title">Form Validation</p>
+    <p class="text-xs text-[var(--text-secondary)] mb-3">
+      Native browser tooltips are off everywhere. Just write standard HTML constraints
+      (<code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">required</code>,
+      <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">pattern</code>,
+      <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">min</code>,
+      <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">type=email</code>) and the
+      validator handles the rest. Custom messages via
+      <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">data-msg-*</code>.
+      Opt out with <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">data-no-validate</code>.
+    </p>
+
+    <div class="ui-preview">
+      <form class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl" id="demo-validate-form">
+        <div class="form-group">
+          <label>Required text</label>
+          <input type="text" name="title" required
+                 placeholder="Title"
+                 data-msg-required="Title is required." />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" required
+                 placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label>URL</label>
+          <input type="url" name="url"
+                 placeholder="https://…" />
+        </div>
+        <div class="form-group">
+          <label>Number 1–100</label>
+          <input type="number" name="qty"
+                 min="1" max="100" step="1"
+                 data-msg-min="Must be at least 1."
+                 data-msg-max="Must be at most 100." />
+        </div>
+        <div class="form-group">
+          <label>Pattern (3 letters)</label>
+          <input type="text" name="code"
+                 pattern="[A-Z]{3}"
+                 placeholder="ABC"
+                 data-msg-pattern="Use exactly 3 uppercase letters." />
+        </div>
+        <div class="form-group">
+          <label>Required select</label>
+          <select name="kind" required>
+            <option value="">— choose —</option>
+            <option value="a">Option A</option>
+            <option value="b">Option B</option>
+          </select>
+        </div>
+        <div class="form-group md:col-span-2">
+          <label>Notes (max 200) — counter appears below</label>
+          <textarea name="notes" maxlength="200" rows="2"
+                    data-msg-maxlength="Keep it under 200 characters."></textarea>
+        </div>
+        <div class="form-group md:col-span-2">
+          <label>Custom select (keyboard ↑↓, theme-aware menu)</label>
+          <select name="kind2">
+            <option value="">— pick one —</option>
+            <option value="alpha">Alpha</option>
+            <option value="beta">Beta</option>
+            <option value="gamma" disabled>Gamma (disabled)</option>
+            <option value="delta">Delta</option>
+          </select>
+        </div>
+        <div class="md:col-span-2 flex gap-2">
+          <button type="submit" class="btn btn-primary">Validate</button>
+          <button type="reset" class="btn btn-secondary">Reset</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="ui-code">&lt;input type="email" required
+       data-msg-required="Email is required."
+       data-msg-email="That doesn't look right." /&gt;
+
+&lt;input type="number" min="1" max="100"
+       data-msg-min="Must be ≥ 1."
+       data-msg-max="Must be ≤ 100." /&gt;
+
+&lt;!-- Opt out for an entire form --&gt;
+&lt;form data-no-validate&gt;…&lt;/form&gt;</div>
+  </div>
+
+  <!-- ─── CHECKBOX / RADIO / TOGGLE ────────────────────────────────────────── -->
+  <div class="card" id="checkbox">
+    <p class="settings-card-title">Checkbox, Radio &amp; Toggle</p>
+    <div class="ui-preview">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+        <div class="space-y-3">
+          <p class="ui-section-label">Checkbox</p>
+          <label class="seven-check"><input type="checkbox" checked> Active</label>
+          <label class="seven-check"><input type="checkbox"> Inactive</label>
+          <label class="seven-check seven-check--disabled"><input type="checkbox" disabled> Disabled</label>
+        </div>
+
+        <div class="space-y-3">
+          <p class="ui-section-label">Radio</p>
+          <label class="seven-check"><input type="radio" name="demo-r" checked> Option A</label>
+          <label class="seven-check"><input type="radio" name="demo-r"> Option B</label>
+          <label class="seven-check"><input type="radio" name="demo-r"> Option C</label>
+        </div>
+
+        <div class="space-y-3">
+          <p class="ui-section-label">Toggle</p>
+          <label class="seven-toggle"><input type="checkbox" checked> <span>Enabled</span></label>
+          <label class="seven-toggle"><input type="checkbox"> <span>Disabled</span></label>
+          <label class="seven-toggle"><input type="checkbox" disabled> <span style="opacity:.45">Locked</span></label>
+        </div>
+
+      </div>
+    </div>
+    <div class="ui-code">&lt;!-- Checkbox --&gt;
+&lt;label class="seven-check"&gt;&lt;input type="checkbox" checked&gt; Label&lt;/label&gt;
+
+&lt;!-- Radio --&gt;
+&lt;label class="seven-check"&gt;&lt;input type="radio" name="group"&gt; Option A&lt;/label&gt;
+
+&lt;!-- Toggle switch --&gt;
+&lt;label class="seven-toggle"&gt;&lt;input type="checkbox"&gt; &lt;span&gt;Feature&lt;/span&gt;&lt;/label&gt;</div>
+  </div>
+
+  <!-- ─── TOAST ────────────────────────────────────────────────────────────── -->
+  <div class="card" id="toast">
+    <p class="settings-card-title">Toast Notifications</p>
+    <div class="ui-preview flex flex-wrap gap-2">
+      <button class="btn btn-secondary btn-sm" id="demo-toast-success">Success</button>
+      <button class="btn btn-secondary btn-sm" id="demo-toast-danger">Danger</button>
+      <button class="btn btn-secondary btn-sm" id="demo-toast-warning">Warning</button>
+      <button class="btn btn-secondary btn-sm" id="demo-toast-info">Info</button>
+      <button class="btn btn-secondary btn-sm" id="demo-toast-persist">Persistent (×)</button>
+    </div>
+    <div class="ui-code">import { toast } from '/src/admin/ui.js'
+
+toast('Saved!',        'success')    // auto-dismiss 4s
+toast('Error!',        'danger')
+toast('Warning!',      'warning')
+toast('3 comments',    'info')
+toast('Stays open',    'info', 0)    // 0 = no auto-dismiss</div>
+  </div>
+
+  <!-- ─── SPINNER ──────────────────────────────────────────────────────────── -->
+  <div class="card" id="spinner">
+    <p class="settings-card-title">Loading Spinner</p>
+    <div class="ui-preview">
+      <div class="flex flex-wrap gap-6 items-center mb-4">
+        <div class="flex flex-col items-center gap-2">
+          <span class="spinner spinner--sm"></span>
+          <span class="text-[10px] text-[var(--text-tertiary)]">sm</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <span class="spinner"></span>
+          <span class="text-[10px] text-[var(--text-tertiary)]">default</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <span class="spinner spinner--lg"></span>
+          <span class="text-[10px] text-[var(--text-tertiary)]">lg</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <span class="spinner spinner--xl"></span>
+          <span class="text-[10px] text-[var(--text-tertiary)]">xl</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <span class="flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:var(--primary)">
+            <span class="spinner spinner--sm spinner--white"></span>
+            <span class="text-white text-sm">Loading...</span>
+          </span>
+          <span class="text-[10px] text-[var(--text-tertiary)]">on button</span>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="demo-overlay">Show overlay (2s)</button>
+    </div>
+    <div class="ui-code">&lt;span class="spinner"&gt;&lt;/span&gt;
+&lt;span class="spinner spinner--sm"&gt;&lt;/span&gt;
+&lt;span class="spinner spinner--lg"&gt;&lt;/span&gt;
+&lt;span class="spinner spinner--xl"&gt;&lt;/span&gt;
+&lt;span class="spinner spinner--sm spinner--white"&gt;&lt;/span&gt;  &lt;!-- on dark bg --&gt;
+
+import { overlay } from '/src/admin/ui.js'
+overlay.show()
+overlay.hide()</div>
+  </div>
+
+  <!-- ─── PROGRESS ─────────────────────────────────────────────────────────── -->
+  <div class="card" id="progress">
+    <p class="settings-card-title">Progress Bar</p>
+    <div class="ui-preview space-y-3">
+      <div>
+        <p class="ui-section-label mb-1">Default 65%</p>
+        <div class="progress"><div class="progress__bar" style="width:65%"></div></div>
+      </div>
+      <div>
+        <p class="ui-section-label mb-1">Success 80%</p>
+        <div class="progress progress--success"><div class="progress__bar" style="width:80%"></div></div>
+      </div>
+      <div>
+        <p class="ui-section-label mb-1">Danger 40%</p>
+        <div class="progress progress--danger"><div class="progress__bar" style="width:40%"></div></div>
+      </div>
+      <div>
+        <p class="ui-section-label mb-1">Warning + striped 55%</p>
+        <div class="progress progress--warning progress--striped"><div class="progress__bar" style="width:55%"></div></div>
+      </div>
+      <div class="flex gap-4 items-center">
+        <div class="flex-1">
+          <p class="ui-section-label mb-1">sm</p>
+          <div class="progress progress--sm"><div class="progress__bar" style="width:90%"></div></div>
+        </div>
+        <div class="flex-1">
+          <p class="ui-section-label mb-1">lg</p>
+          <div class="progress progress--lg"><div class="progress__bar" style="width:30%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ui-code">&lt;div class="progress"&gt;
+  &lt;div class="progress__bar" style="width:65%"&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;!-- Variants: progress--success  progress--danger  progress--warning --&gt;
+&lt;!-- Effects:  progress--striped --&gt;
+&lt;!-- Sizes:    progress--sm  progress--lg --&gt;</div>
+  </div>
+
+  <!-- ─── SKELETON ─────────────────────────────────────────────────────────── -->
+  <div class="card" id="skeleton">
+    <p class="settings-card-title">Skeleton Loader</p>
+    <div class="ui-preview">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="skeleton skeleton--avatar shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="skeleton skeleton--title" style="width:70%"></div>
+              <div class="skeleton skeleton--text"></div>
+            </div>
+          </div>
+          <div class="skeleton skeleton--text"></div>
+          <div class="skeleton skeleton--text" style="width:80%"></div>
+          <div class="skeleton skeleton--btn" style="width:6rem"></div>
+        </div>
+        <div class="skeleton skeleton--card"></div>
+      </div>
+    </div>
+    <div class="ui-code">&lt;div class="skeleton skeleton--avatar"&gt;&lt;/div&gt;   &lt;!-- circle --&gt;
+&lt;div class="skeleton skeleton--title w-1/2"&gt;&lt;/div&gt;
+&lt;div class="skeleton skeleton--text w-full"&gt;&lt;/div&gt;
+&lt;div class="skeleton skeleton--card"&gt;&lt;/div&gt;
+&lt;div class="skeleton skeleton--btn"&gt;&lt;/div&gt;</div>
+  </div>
+
+  <!-- ─── AVATAR ───────────────────────────────────────────────────────────── -->
+  <div class="card" id="avatar">
+    <p class="settings-card-title">Avatar</p>
+    <div class="ui-preview space-y-4">
+      <div>
+        <p class="ui-section-label">Sizes</p>
+        <div class="flex flex-wrap gap-4 items-end">
+          <div class="flex flex-col items-center gap-1"><span class="avatar avatar--xs">XS</span><span class="text-[10px] text-[var(--text-tertiary)]">xs</span></div>
+          <div class="flex flex-col items-center gap-1"><span class="avatar avatar--sm">SM</span><span class="text-[10px] text-[var(--text-tertiary)]">sm</span></div>
+          <div class="flex flex-col items-center gap-1"><span class="avatar avatar--md">MD</span><span class="text-[10px] text-[var(--text-tertiary)]">md</span></div>
+          <div class="flex flex-col items-center gap-1"><span class="avatar avatar--lg">LG</span><span class="text-[10px] text-[var(--text-tertiary)]">lg</span></div>
+          <div class="flex flex-col items-center gap-1"><span class="avatar avatar--xl">XL</span><span class="text-[10px] text-[var(--text-tertiary)]">xl</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="ui-section-label">Color variants</p>
+        <div class="flex flex-wrap gap-3 items-center">
+          <span class="avatar avatar--md avatar--primary">AB</span>
+          <span class="avatar avatar--md avatar--success">OK</span>
+          <span class="avatar avatar--md avatar--danger">!</span>
+          <span class="avatar avatar--md">JD</span>
+        </div>
+      </div>
+      <div>
+        <p class="ui-section-label">Group</p>
+        <div class="avatar-group">
+          <span class="avatar avatar--sm avatar--primary">A</span>
+          <span class="avatar avatar--sm avatar--success">B</span>
+          <span class="avatar avatar--sm">C</span>
+          <span class="avatar avatar--sm avatar--danger">+5</span>
+        </div>
+      </div>
+    </div>
+    <div class="ui-code">&lt;span class="avatar avatar--md"&gt;JD&lt;/span&gt;
+&lt;span class="avatar avatar--lg avatar--primary"&gt;AB&lt;/span&gt;
+&lt;span class="avatar avatar--md avatar--success"&gt;OK&lt;/span&gt;
+
+&lt;div class="avatar-group"&gt;
+  &lt;span class="avatar avatar--sm"&gt;A&lt;/span&gt;
+  &lt;span class="avatar avatar--sm"&gt;+3&lt;/span&gt;
+&lt;/div&gt;</div>
+  </div>
+
+  <!-- ─── DROPDOWN ─────────────────────────────────────────────────────────── -->
+  <div class="card" id="dropdown">
+    <p class="settings-card-title">Dropdown</p>
+    <div class="ui-preview flex gap-4" style="min-height:160px">
+      <div class="seven-dropdown">
+        <button class="btn btn-secondary" data-dropdown="demo-dd1">Actions ▾</button>
+        <div class="seven-dropdown__menu is-hidden" id="demo-dd1">
+          <a href="#" class="seven-dropdown__item">Edit</a>
+          <a href="#" class="seven-dropdown__item">Duplicate</a>
+          <div class="seven-dropdown__divider"></div>
+          <a href="#" class="seven-dropdown__item seven-dropdown__item--danger">Delete</a>
+        </div>
+      </div>
+      <div class="seven-dropdown">
+        <button class="btn btn-primary" data-dropdown="demo-dd2">Options ▾</button>
+        <div class="seven-dropdown__menu is-hidden" id="demo-dd2">
+          <a href="#" class="seven-dropdown__item seven-dropdown__item--active">✓ Selected</a>
+          <a href="#" class="seven-dropdown__item">Another option</a>
+          <a href="#" class="seven-dropdown__item">Third option</a>
+        </div>
+      </div>
+    </div>
+    <div class="ui-code">&lt;div class="seven-dropdown"&gt;
+  &lt;button class="btn btn-secondary" data-dropdown="my-menu"&gt;Actions ▾&lt;/button&gt;
+  &lt;div class="seven-dropdown__menu is-hidden" id="my-menu"&gt;
+    &lt;a href="#" class="seven-dropdown__item"&gt;Edit&lt;/a&gt;
+    &lt;div class="seven-dropdown__divider"&gt;&lt;/div&gt;
+    &lt;a href="#" class="seven-dropdown__item seven-dropdown__item--danger"&gt;Delete&lt;/a&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;!-- .is-right — выравнивание по правому краю --&gt;</div>
+  </div>
+
+  <!-- ─── ALERT ────────────────────────────────────────────────────────────── -->
+  <div class="card" id="alert">
+    <p class="settings-card-title">Alert / Banner</p>
+    <div class="ui-preview space-y-3">
+      <div class="alert alert--success">
+        <svg class="alert__icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.6"><path d="M3 8l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="alert__body"><p class="alert__title">Success</p><p>Your changes have been saved successfully.</p></div>
+      </div>
+      <div class="alert alert--danger">
+        <svg class="alert__icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.6"><path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="alert__body"><p class="alert__title">Error</p><p>Something went wrong. Please try again.</p></div>
+      </div>
+      <div class="alert alert--warning">
+        <svg class="alert__icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.6"><path d="M8 6v4M8 11.5v.5" stroke-linecap="round"/><path d="M8 2L1 14h14L8 2z" stroke-linejoin="round"/></svg>
+        <div class="alert__body"><p class="alert__title">Warning</p><p>Disk space is running low.</p></div>
+      </div>
+      <div class="alert alert--info">
+        <svg class="alert__icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 5.5v.5" stroke-linecap="round"/></svg>
+        <div class="alert__body"><p>Informational message without title.</p></div>
+      </div>
+    </div>
+    <div class="ui-code">&lt;div class="alert alert--success"&gt;
+  &lt;svg class="alert__icon" ...&gt;&lt;/svg&gt;
+  &lt;div class="alert__body"&gt;
+    &lt;p class="alert__title"&gt;Title&lt;/p&gt;
+    &lt;p&gt;Message text.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;!-- Variants: alert--success  alert--danger  alert--warning  alert--info --&gt;</div>
+  </div>
+
+  <!-- ─── STEPS ────────────────────────────────────────────────────────────── -->
+  <div class="card" id="steps">
+    <p class="settings-card-title">Step Indicator</p>
+    <div class="ui-preview">
+      <div class="steps max-w-xs">
+        <div class="steps__step is-done">
+          <div class="steps__step-dot">✓</div>
+          <div class="steps__step-line"></div>
+        </div>
+        <div class="steps__step is-done">
+          <div class="steps__step-dot">✓</div>
+          <div class="steps__step-line"></div>
+        </div>
+        <div class="steps__step is-active">
+          <div class="steps__step-dot">3</div>
+          <div class="steps__step-line"></div>
+        </div>
+        <div class="steps__step">
+          <div class="steps__step-dot">4</div>
+        </div>
+      </div>
+    </div>
+    <div class="ui-code">&lt;div class="steps"&gt;
+  &lt;div class="steps__step is-done"&gt;
+    &lt;div class="steps__step-dot"&gt;✓&lt;/div&gt;
+    &lt;div class="steps__step-line"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="steps__step is-active"&gt;
+    &lt;div class="steps__step-dot"&gt;2&lt;/div&gt;
+    &lt;div class="steps__step-line"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="steps__step"&gt;
+    &lt;div class="steps__step-dot"&gt;3&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;!-- Классы: is-done  is-active (нет класса = pending) --&gt;</div>
+  </div>
+
+  <!-- ─── WIDGETS ───────────────────────────────────────────────────────────── -->
+  <div class="card" id="widgets">
+    <p class="settings-card-title">Widgets &amp; Composites</p>
+    <div class="ui-preview">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-5">
+
+        <!-- Stat card -->
+        <div class="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
+          <p class="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-1">Total Posts</p>
+          <p class="text-3xl font-bold text-[var(--text-primary)]">142</p>
+          <p class="text-xs mt-1" style="color:var(--success)">↑ 12% this month</p>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state rounded-xl border border-[var(--border-color)] border-dashed">
+          <div class="empty-state__icon">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <p class="empty-state__title">No items yet</p>
+          <p class="empty-state__message">Create your first item to get started.</p>
+          <button class="btn btn-primary btn-sm mt-1">+ Add item</button>
+        </div>
+
+        <!-- User card -->
+        <div class="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 flex items-center gap-3">
+          <span class="avatar avatar--lg avatar--primary">JD</span>
+          <div class="min-w-0">
+            <p class="font-semibold text-[var(--text-primary)] truncate">John Doe</p>
+            <p class="text-xs text-[var(--text-tertiary)] truncate">john@example.com</p>
+            <span class="badge badge-success mt-1">Admin</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tooltip demo -->
+      <div>
+        <p class="ui-section-label">Tooltips (CSS-only, data-tip)</p>
+        <div class="flex flex-wrap gap-3 items-center mt-2">
+          <button class="btn btn-secondary btn-sm" data-tip="Hover tooltip text">Hover me</button>
+          <button class="btn btn-danger btn-sm" data-tip="This cannot be undone!">Danger</button>
+          <span class="badge badge-warning" data-tip="Admin access only">Admin only</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ui-code">&lt;!-- Stat card --&gt;
+&lt;div class="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4"&gt;
+  &lt;p class="text-xs text-[var(--text-tertiary)] uppercase"&gt;Label&lt;/p&gt;
+  &lt;p class="text-3xl font-bold"&gt;142&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;!-- Empty state --&gt;
+&lt;div class="empty-state"&gt;
+  &lt;div class="empty-state__icon"&gt;&lt;svg ...&gt;&lt;/svg&gt;&lt;/div&gt;
+  &lt;p class="empty-state__title"&gt;No items yet&lt;/p&gt;
+  &lt;p class="empty-state__message"&gt;Create your first item.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;!-- Tooltip (CSS only) --&gt;
+&lt;button data-tip="Tooltip text"&gt;Hover&lt;/button&gt;</div>
+  </div>
+
+</div>
+
+<script type="module">
+import { toast, overlay } from '/src/admin/ui.js'
+window.SevenUI = { toast, overlay }
+
+document.getElementById('demo-toast-success')?.addEventListener('click', () => toast('Changes saved successfully!', 'success'))
+document.getElementById('demo-toast-danger')?.addEventListener('click',  () => toast('Something went wrong.', 'danger'))
+document.getElementById('demo-toast-warning')?.addEventListener('click', () => toast('Disk space is running low.', 'warning'))
+document.getElementById('demo-toast-info')?.addEventListener('click',    () => toast('3 new comments received.', 'info'))
+document.getElementById('demo-toast-persist')?.addEventListener('click', () => toast('Click × to dismiss.', 'info', 0))
+document.getElementById('demo-overlay')?.addEventListener('click', () => { overlay.show(); setTimeout(() => overlay.hide(), 2000) })
+</script>

@@ -1,0 +1,52 @@
+// Buttons
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 200ms, color 200ms, border-color 200ms;
+  text-decoration: none;
+
+  &-primary {
+    background: var(--primary-gradient, var(--primary));
+    color: #fff;
+    border-color: transparent;
+    &:hover { background: var(--primary-gradient-hover, var(--primary-hover)); border-color: transparent; }
+  }
+
+  &-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+    &:hover { color: var(--primary); border-color: var(--primary); }
+  }
+
+  &-danger {
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+    color: var(--danger);
+    border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+    &:hover { background: var(--danger); color: #fff; }
+  }
+
+  &-warning {
+    background: color-mix(in srgb, var(--warning) 12%, transparent);
+    color: var(--warning);
+    border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+    &:hover { background: var(--warning); color: #fff; }
+  }
+
+  &-sm  { padding: 0.3rem 0.7rem;  font-size: 0.78rem; }
+  &-lg  { padding: 0.6rem 1.4rem;  font-size: 0.95rem; }
+  &-icon {
+    padding: 0.4rem;
+    border-radius: 6px;
+    line-height: 1;
+  }
+
+  &.w-full { justify-content: center; }
+}

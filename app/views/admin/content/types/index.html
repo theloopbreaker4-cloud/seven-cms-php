@@ -1,0 +1,44 @@
+<?php
+/** @var array $types */
+$lang = Seven::app()->router->getLanguage();
+$base = '/' . $lang . '/admin/content/types';
+?>
+
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold">Content Types</h2>
+  <a href="<?= $base ?>/create"
+     class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-sm">+ New type</a>
+</div>
+
+<?php if (empty($types)): ?>
+  <div class="border border-dashed border-[var(--border-color)] rounded-xl p-10 text-center text-[var(--text-secondary)]">
+    No content types yet. Create your first one to start defining custom data.
+  </div>
+<?php else: ?>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <?php foreach ($types as $t): ?>
+      <a href="<?= $base ?>/edit/<?= (int)$t['id'] ?>"
+         class="block p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--primary)] transition-colors">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white"
+               style="background:var(--primary)">
+            <span class="text-sm font-bold"><?= htmlspecialchars(strtoupper(substr($t['name'], 0, 2))) ?></span>
+          </div>
+          <div class="min-w-0">
+            <p class="font-semibold truncate"><?= htmlspecialchars($t['name']) ?></p>
+            <p class="text-xs text-[var(--text-tertiary)] font-mono"><?= htmlspecialchars($t['slug']) ?></p>
+          </div>
+        </div>
+        <?php if (!empty($t['description'])): ?>
+          <p class="text-xs text-[var(--text-secondary)] line-clamp-2"><?= htmlspecialchars($t['description']) ?></p>
+        <?php endif ?>
+        <div class="flex items-center gap-2 mt-3 text-[10px] text-[var(--text-tertiary)]">
+          <?php if ((int)$t['is_singleton']):     ?><span class="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)]">Singleton</span><?php endif ?>
+          <?php if ((int)$t['enable_revisions']): ?><span class="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)]">Revisions</span><?php endif ?>
+          <?php if ((int)$t['enable_drafts']):    ?><span class="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)]">Drafts</span><?php endif ?>
+          <?php if (!(int)$t['is_active']):       ?><span class="px-1.5 py-0.5 rounded bg-red-500/10 text-red-500">Inactive</span><?php endif ?>
+        </div>
+      </a>
+    <?php endforeach ?>
+  </div>
+<?php endif ?>

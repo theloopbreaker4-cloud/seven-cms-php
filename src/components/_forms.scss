@@ -1,0 +1,317 @@
+// Form elements — only text-like inputs, not checkbox/radio
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+textarea,
+select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.875rem;
+  width: 100%;
+  transition: border-color 200ms, box-shadow 200ms;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.02em;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-hint {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.form-error {
+  font-size: 0.72rem;
+  color: var(--danger);
+}
+
+// ─── Validation states ───────────────────────────────────────────────────
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 15%, transparent);
+}
+
+// Inline error injected by forms.js
+.form-error--inline {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--danger);
+  margin-top: 0.25rem;
+  animation: form-error-slide 180ms ease-out;
+
+  &::before {
+    content: '';
+    width: 12px; height: 12px;
+    flex-shrink: 0;
+    background-color: var(--danger);
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><line x1='12' y1='8' x2='12' y2='12'/><line x1='12' y1='16' x2='12.01' y2='16'/></svg>") center / contain no-repeat;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><line x1='12' y1='8' x2='12' y2='12'/><line x1='12' y1='16' x2='12.01' y2='16'/></svg>") center / contain no-repeat;
+  }
+}
+
+@keyframes form-error-slide {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Shake on invalid submit
+.form-shake { animation: form-shake 480ms cubic-bezier(.36,.07,.19,.97); }
+@keyframes form-shake {
+  10%, 90%  { transform: translateX(-2px); }
+  20%, 80%  { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60%  { transform: translateX(6px); }
+}
+
+// Character counter for textarea/maxlength inputs
+.form-counter {
+  display: block;
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  margin-top: 0.25rem;
+  font-variant-numeric: tabular-nums;
+  transition: color 150ms;
+
+  &.is-near { color: var(--warning, #f59e0b); }
+  &.is-full { color: var(--danger); font-weight: 600; }
+}
+
+// ─── Native pickers — fix dark-theme icons ───────────────────────────────
+// Chromium's calendar/clock indicator is a black SVG mask. On dark
+// backgrounds it becomes invisible. We swap it for our own white SVG
+// (light-mode keeps a dark variant) and use mask-image so the colour
+// follows currentColor / theme tokens.
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="week"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 150ms, filter 150ms;
+  &:hover { opacity: 1; }
+}
+
+// Dark theme: invert the black indicator to near-white. Selector specificity
+// is bumped with `html[...]` to outrank Chromium's UA styles.
+html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] input[type="month"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] input[type="week"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.2) !important;
+}
+
+// ─── Color input — pill swatch ───────────────────────────────────────────
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 44px !important;
+  height: 32px !important;
+  padding: 2px !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  background: var(--bg-primary) !important;
+  cursor: pointer;
+  vertical-align: middle;
+
+  &::-webkit-color-swatch-wrapper { padding: 0; }
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+  }
+  &::-moz-color-swatch { border: none; border-radius: 4px; }
+}
+
+// ─── File input — custom button ──────────────────────────────────────────
+input[type="file"] {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding: 0.3rem 0 !important;
+  border: none !important;
+  background: transparent !important;
+  cursor: pointer;
+  width: auto !important;
+
+  &::-webkit-file-upload-button,
+  &::file-selector-button {
+    margin-right: 0.75rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 150ms, border-color 150ms;
+  }
+  &::-webkit-file-upload-button:hover,
+  &::file-selector-button:hover {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  &:focus {
+    outline: none;
+    box-shadow: none !important;
+  }
+}
+
+// ─── Select — fallback arrow for non-enhanced selects ────────────────────
+// (the JS enhancer hides this native select once it wraps it)
+select:not([data-native-select]):not(.seven-select > select) {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23999'><path d='M5.5 7.5L10 12l4.5-4.5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 16px;
+  padding-right: 2rem !important;
+}
+
+// ─── Custom select (seven-select) ────────────────────────────────────────
+.seven-select {
+  position: relative;
+  width: 100%;
+
+  // Hide native <select> visually but keep it focusable / submittable.
+  > select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  &.is-disabled { opacity: 0.5; pointer-events: none; }
+}
+
+.seven-select__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.875rem;
+  text-align: left;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: border-color 200ms, box-shadow 200ms;
+
+  &:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+  &:disabled { cursor: not-allowed; }
+
+  .seven-select__label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &--placeholder { color: var(--text-tertiary); }
+  }
+  .seven-select__caret {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+    transition: transform 180ms;
+  }
+}
+.seven-select.is-open .seven-select__trigger {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+  .seven-select__caret { transform: rotate(180deg); color: var(--primary); }
+}
+
+// invalid state on the wrapper (when the native <select aria-invalid>)
+.seven-select:has(> select[aria-invalid="true"]) .seven-select__trigger {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 15%, transparent);
+}
+
+.seven-select__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 4px;
+  animation: seven-select-pop 140ms ease-out;
+
+  &.is-hidden { display: none; }
+}
+@keyframes seven-select-pop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.seven-select__option {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.85rem;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background 100ms, color 100ms;
+  user-select: none;
+
+  &:hover, &.is-active {
+    background: var(--bg-tertiary);
+  }
+  &.is-selected {
+    background: color-mix(in srgb, var(--primary) 15%, transparent);
+    color: var(--primary);
+    font-weight: 500;
+  }
+  &.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  &--placeholder {
+    color: var(--text-tertiary);
+    font-style: italic;
+  }
+}

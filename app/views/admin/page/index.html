@@ -1,0 +1,59 @@
+<?php /** @var array $pages */
+$lang = Seven::app()->router->getLanguage();
+?>
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold"><?= AdminLang::t('title', 'pages') ?></h2>
+  <a href="/<?= $lang ?>/admin/page/create" class="btn btn-primary btn-sm">
+    + <?= AdminLang::t('new', 'pages') ?>
+  </a>
+</div>
+
+<?php if (empty($pages)): ?>
+  <p class="text-[var(--text-secondary)] text-sm"><?= AdminLang::t('no_pages', 'pages') ?></p>
+<?php else: ?>
+  <div class="rounded-lg border border-[var(--border-color)] overflow-hidden">
+    <table>
+      <thead>
+        <tr>
+          <th><?= AdminLang::t('title_field', 'pages') ?> (EN)</th>
+          <th>Slug (EN)</th>
+          <th><?= AdminLang::t('published', 'pages') ?></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($pages as $row):
+          $title = json_decode($row['title'] ?? '{}', true) ?? [];
+          $slug  = Slug::get('page', (int)$row['id'], 'en');
+        ?>
+        <tr>
+          <td class="font-medium text-[var(--text-primary)]">
+            <?= htmlspecialchars($title['en'] ?? '—') ?>
+          </td>
+          <td class="font-mono text-xs text-[var(--text-tertiary)]">
+            <?= $slug ? htmlspecialchars($slug) : '<span class="italic">no slug</span>' ?>
+          </td>
+          <td>
+            <?php if ($row['is_published']): ?>
+              <span class="badge badge-success"><?= AdminLang::t('yes', 'common') ?></span>
+            <?php else: ?>
+              <span class="badge badge-muted"><?= AdminLang::t('no', 'common') ?></span>
+            <?php endif ?>
+          </td>
+          <td class="text-right">
+            <a href="/<?= $lang ?>/admin/page/edit/<?= $row['id'] ?>"
+               class="btn btn-secondary btn-sm mr-1"><?= AdminLang::t('edit', 'common') ?></a>
+            <a href="/<?= $lang ?>/admin/page/delete/<?= $row['id'] ?>"
+               class="btn btn-danger btn-sm"
+               data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
+               data-confirm-type="danger"
+               data-confirm-ok="<?= htmlspecialchars(AdminLang::t('delete', 'common')) ?>">
+              <?= AdminLang::t('delete', 'common') ?>
+            </a>
+          </td>
+        </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif ?>

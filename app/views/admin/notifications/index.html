@@ -1,0 +1,47 @@
+<?php /** @var array $items */ /** @var int $unread */ ?>
+<div class="mb-4 flex items-center justify-between">
+  <div>
+    <h2 class="text-xl font-semibold">Notifications</h2>
+    <p class="text-sm text-[var(--text-secondary)] mt-1"><?= (int)$unread ?> unread</p>
+  </div>
+  <?php if ($unread > 0): ?>
+    <a href="/admin/notifications/read-all" class="px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white text-sm">Mark all as read</a>
+  <?php endif ?>
+</div>
+
+<?php if (!$items): ?>
+  <div class="px-4 py-10 text-center text-[var(--text-secondary)] border border-[var(--border-color)] rounded-lg">
+    Nothing here yet. Plugin events show up automatically.
+  </div>
+<?php else: ?>
+  <ul class="rounded-lg border border-[var(--border-color)] divide-y divide-[var(--border-color)]">
+    <?php foreach ($items as $n): ?>
+      <li class="<?= empty($n['read_at']) ? 'bg-[var(--bg-tertiary)]/50' : '' ?>">
+        <a href="/admin/notifications/read/<?= (int)$n['id'] ?>" class="flex items-start gap-3 px-4 py-3 hover:bg-[var(--bg-tertiary)]">
+          <div class="mt-0.5">
+            <?php
+              $sv = $n['severity'] ?? 'info';
+              $color = ['info'=>'blue','success'=>'emerald','warning'=>'amber','error'=>'red'][$sv] ?? 'blue';
+            ?>
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-<?= $color ?>-500/10 text-<?= $color ?>-500 text-sm">
+              <?= htmlspecialchars($n['icon'] ?: '•') ?>
+            </span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-sm"><?= htmlspecialchars($n['title']) ?></span>
+              <?php if (empty($n['read_at'])): ?>
+                <span class="w-1.5 h-1.5 rounded-full bg-[var(--primary)]"></span>
+              <?php endif ?>
+              <span class="ml-auto text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars($n['created_at']) ?></span>
+            </div>
+            <?php if (!empty($n['message'])): ?>
+              <div class="text-xs text-[var(--text-secondary)] mt-1"><?= nl2br(htmlspecialchars($n['message'])) ?></div>
+            <?php endif ?>
+            <div class="text-[10px] text-[var(--text-tertiary)] mt-1 font-mono"><?= htmlspecialchars($n['type']) ?></div>
+          </div>
+        </a>
+      </li>
+    <?php endforeach ?>
+  </ul>
+<?php endif ?>

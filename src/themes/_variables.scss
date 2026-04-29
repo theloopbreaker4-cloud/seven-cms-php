@@ -1,0 +1,29 @@
+// Shared token names — all themes must define these CSS custom properties.
+// This file documents the contract; actual values live in each theme's _light.scss / _dark.scss.
+
+// Layout
+// --bg-primary      main page background
+// --bg-secondary    card / panel background
+// --bg-tertiary     subtle hover / stripe background
+// --border-color    dividers, input borders
+
+// Typography
+// --text-primary    headings, body
+// --text-secondary  labels, secondary copy
+// --text-tertiary   placeholders, muted hints
+
+// Brand
+// --primary         accent colour (buttons, links, focus rings)
+// --primary-hover   darker accent on hover
+// --secondary       secondary accent
+// --secondary-hover darker secondary on hover
+
+// Admin-only
+// --sidebar-bg      sidebar background
+// --sidebar-border  sidebar right border
+// --header-bg       topbar background
+// --success / --warning / --danger / --info   status colours
+
+// Site-only
+// --glow-a / --glow-b   gradient glow overlays
+// --orb-a  / --orb-b    animated background orb colours

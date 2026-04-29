@@ -1,0 +1,29 @@
+// Tables
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+td {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+tr {
+  &:last-child td { border-bottom: none; }
+  &:hover td      { background: var(--bg-tertiary); }
+}

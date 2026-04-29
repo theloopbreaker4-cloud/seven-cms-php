@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<?php $activePalette = Setting::get('theme_palette', 'default'); ?>
+<html lang="<?= Seven::app()->router->getLanguage() ?>"<?= $activePalette !== 'default' ? ' data-palette="' . htmlspecialchars($activePalette) . '"' : '' ?>>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="<?= htmlspecialchars(Lang::t('description', 'meta')) ?>" />
+  <title><?= htmlspecialchars(Seven::app()->getTitle()) ?> — <?= htmlspecialchars(Setting::get('site_name', 'Seven CMS')) ?></title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light');})();</script>
+  <script>
+    // CSRF token for legacy POST forms on the public site.
+    window.__CSRF_TOKEN__ = <?= json_encode(Csrf::token()) ?>;
+    document.addEventListener('DOMContentLoaded', function(){
+      document.querySelectorAll('form').forEach(function(f){
+        if (!f.hasAttribute('data-no-validate')) f.setAttribute('novalidate','');
+        var method = (f.getAttribute('method') || 'GET').toUpperCase();
+        if (method !== 'GET' && !f.querySelector('input[name="_csrf_token"]')) {
+          var i = document.createElement('input');
+          i.type  = 'hidden';
+          i.name  = '_csrf_token';
+          i.value = window.__CSRF_TOKEN__;
+          f.appendChild(i);
+        }
+      });
+    });
+  </script>
+  <?= Vite::tags('src/site/main.js') ?>
+</head>
+<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col">
+
+<!-- Animated background (same as Vue SPA) -->
+<div class="site-bg" aria-hidden="true">
+  <div class="site-bg__dots"></div>
+  <div class="site-bg__orb site-bg__orb--a"></div>
+  <div class="site-bg__orb site-bg__orb--b"></div>
+  <div class="site-bg__orb site-bg__orb--c"></div>
+  <svg class="site-bg__svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+    <polygon class="site-bg__shape site-bg__shape--spin" points="720,120 820,175 820,285 720,340 620,285 620,175" stroke-width="1.5" transform-origin="720 230"/>
+    <circle class="site-bg__shape site-bg__shape--spin-rev" cx="180" cy="700" r="120" stroke-width="1" transform-origin="180 700"/>
+    <polygon class="site-bg__shape site-bg__shape--pulse" points="1300,100 1380,240 1220,240" stroke-width="1.2"/>
+    <line x1="0" y1="450" x2="350" y2="450" stroke="var(--primary)" stroke-opacity="0.05" stroke-width="1"/>
+    <line x1="1090" y1="450" x2="1440" y2="450" stroke="var(--primary)" stroke-opacity="0.05" stroke-width="1"/>
+    <circle class="site-bg__shape site-bg__shape--spin" cx="1200" cy="650" r="60" stroke-width="1" transform-origin="1200 650"/>
+    <polygon class="site-bg__shape site-bg__shape--pulse" points="120,200 160,260 120,320 80,260" stroke-width="1"/>
+  </svg>
+</div>
+
+<script>
+window.__DATA__ = <?= json_encode($viewData ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?>;
+window.__LANG__ = "<?= Seven::app()->router->getLanguage() ?>";
+window.__ROUTE__ = "<?= Seven::app()->router->getController() ?>/<?= Seven::app()->router->getAction() ?>";
+</script>
+
+<?php if (!empty($content)):
+  $lang      = Seven::app()->router->getLanguage();
+  $langRows  = Language::getActive();
+  $socialRows = (new SocialLink())->getActive();
+
+  $socialIcons = [
+    'github'    => '<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>',
+    'twitter'   => '<path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>',
+    'x'         => '<path d="M17.751 3h3.067l-6.588 7.533L22 21h-6.064l-4.738-6.2L5.54 21H2.47l7.049-8.057L2 3h6.214l4.273 5.616L17.751 3zm-1.076 16.172h1.7L7.404 4.74H5.58l11.095 14.432z"/>',
+    'instagram' => '<rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>',
+    'facebook'  => '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>',
+    'youtube'   => '<path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/>',
+    'linkedin'  => '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>',
+    'telegram'  => '<path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/>',
+    'tiktok'    => '<path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>',
+    'discord'   => '<circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M7.5 7.5c.5-1 3-1.5 4.5-1.5s4 .5 4.5 1.5M7.5 16.5c.5 1 3 1.5 4.5 1.5s4-.5 4.5-1.5"/>',
+  ];
+?>
+<!-- PHP-rendered page (no Vue) -->
+<header class="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/80 backdrop-blur-sm sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+    <a href="/<?= $lang ?>/" class="flex items-center gap-2">
+      <img src="/brand.svg" alt="Seven CMS" class="w-8 h-8 rounded-lg" />
+      <span class="font-bold text-lg text-[var(--primary)]">Seven <span class="text-[var(--text-secondary)] font-normal">CMS</span></span>
+    </a>
+    <nav class="flex items-center gap-5 text-sm font-medium">
+      <a href="/<?= $lang ?>/"     class="hover:text-[var(--primary)] transition-colors"><?= Lang::t('home', 'nav') ?></a>
+      <a href="/<?= $lang ?>/blog" class="hover:text-[var(--primary)] transition-colors"><?= Lang::t('blog', 'nav') ?></a>
+
+      <!-- Language dropdown -->
+      <?php
+        $langToCountry = ['en'=>'gb','ru'=>'ru','ka'=>'ge','uk'=>'ua','az'=>'az','hy'=>'am',
+                          'be'=>'by','de'=>'de','fr'=>'fr','es'=>'es','tr'=>'tr','ar'=>'sa',
+                          'zh'=>'cn','ja'=>'jp','pt'=>'pt','it'=>'it','pl'=>'pl','nl'=>'nl','sv'=>'se','ko'=>'kr'];
+        $currentRow = null;
+        foreach ($langRows as $lr) { if ($lr->code === $lang) { $currentRow = $lr; break; } }
+        $cc = $langToCountry[$lang] ?? $lang;
+      ?>
+      <div class="relative normal-case tracking-normal font-normal" id="langDrop">
+        <button onclick="document.getElementById('langMenu').classList.toggle('hidden')"
+                class="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-[var(--bg-tertiary)] transition-colors text-sm">
+          <img src="https://flagcdn.com/w40/<?= $cc ?>.png" alt="<?= $lang ?>" class="w-5 h-3.5 rounded-[3px] object-cover" />
+          <span class="text-[var(--text-secondary)]"><?= strtoupper($lang) ?></span>
+          <svg class="w-3 h-3 text-[var(--text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="langMenu" class="hidden absolute right-0 top-full mt-1 min-w-44 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg overflow-hidden z-50">
+          <?php foreach ($langRows as $lr):
+            $lcc = $langToCountry[$lr->code] ?? $lr->code;
+          ?>
+            <a href="<?= Lang::change($lr->code) ?>"
+               class="flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-[var(--bg-tertiary)] transition-colors <?= $lr->code === $lang ? 'text-[var(--primary)] font-semibold bg-[var(--bg-tertiary)]' : 'text-[var(--text-secondary)]' ?>">
+              <img src="https://flagcdn.com/w40/<?= $lcc ?>.png" alt="<?= $lr->code ?>" class="w-6 h-4 rounded-[3px] object-cover flex-shrink-0" />
+              <span><?= htmlspecialchars($lr->native_name) ?></span>
+              <span class="ml-auto text-xs text-[var(--text-tertiary)] font-mono"><?= strtoupper($lr->code) ?></span>
+            </a>
+          <?php endforeach ?>
+        </div>
+      </div>
+      <script>
+        document.addEventListener('click', function(e) {
+          var d = document.getElementById('langDrop');
+          if (d && !d.contains(e.target)) document.getElementById('langMenu')?.classList.add('hidden');
+        });
+      </script>
+
+      <!-- Theme toggle -->
+      <button id="themeToggleHeader"
+              class="p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+              aria-label="Toggle theme">
+        <svg id="hdrSun" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07-6.07-.7.7M6.34 17.66l-.7.7M17.66 17.66l.7.7M6.34 6.34l.7.7M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+        </svg>
+        <svg id="hdrMoon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="flex-1"><?= $content ?></main>
+
+<!-- Footer -->
+<footer class="border-t border-[var(--border-color)] bg-[var(--bg-secondary)]">
+  <div class="max-w-5xl mx-auto px-4 py-12">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-10">
+
+      <!-- Brand -->
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <img src="/brand.svg" alt="Seven CMS" class="w-7 h-7 rounded-lg" />
+          <span class="font-bold text-base"><span class="text-[var(--primary)]">Seven</span> <span class="text-[var(--text-secondary)]">CMS</span></span>
+        </div>
+        <p class="text-sm text-[var(--text-tertiary)] leading-relaxed">
+          <?= Lang::t('tagline', 'footer') ?>
+        </p>
+        <?php if ($socialRows): ?>
+        <div class="flex items-center gap-3 mt-4">
+          <?php foreach ($socialRows as $sl):
+            $icon = $socialIcons[strtolower($sl['platform'])] ?? '<circle cx="12" cy="12" r="10"/>';
+          ?>
+            <a href="<?= htmlspecialchars($sl['url']) ?>" target="_blank" rel="noopener noreferrer"
+               title="<?= htmlspecialchars($sl['label'] ?: $sl['platform']) ?>"
+               class="text-[var(--text-tertiary)] hover:text-[var(--primary)] transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <?= $icon ?>
+              </svg>
+            </a>
+          <?php endforeach ?>
+        </div>
+        <?php endif ?>
+      </div>
+
+      <!-- Navigation -->
+      <div>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3"><?= Lang::t('navigation', 'footer') ?></h3>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/<?= $lang ?>/"      class="text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors"><?= Lang::t('home', 'nav') ?></a></li>
+          <li><a href="/<?= $lang ?>/blog"  class="text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors"><?= Lang::t('blog', 'nav') ?></a></li>
+          <li><a href="/<?= $lang ?>/about" class="text-[var(--primary)] font-medium"><?= Lang::t('about', 'nav') ?></a></li>
+          <li><a href="/<?= $lang ?>/auth"  class="text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors"><?= Lang::t('signin', 'nav') ?></a></li>
+        </ul>
+      </div>
+
+      <!-- Social links or Stack -->
+      <?php if ($socialRows): ?>
+      <div>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3"><?= Lang::t('followUs', 'footer') ?></h3>
+        <ul class="space-y-2 text-sm">
+          <?php foreach ($socialRows as $sl):
+            $icon = $socialIcons[strtolower($sl['platform'])] ?? '<circle cx="12" cy="12" r="10"/>';
+          ?>
+            <li>
+              <a href="<?= htmlspecialchars($sl['url']) ?>" target="_blank" rel="noopener noreferrer"
+                 class="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <?= $icon ?>
+                </svg>
+                <span><?= htmlspecialchars($sl['label'] ?: ucfirst($sl['platform'])) ?></span>
+              </a>
+            </li>
+          <?php endforeach ?>
+        </ul>
+      </div>
+      <?php else: ?>
+      <div>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3"><?= Lang::t('stack', 'footer') ?></h3>
+        <ul class="space-y-1.5 text-sm">
+          <li><a href="https://www.php.net/releases/8.4" target="_blank" rel="noopener noreferrer" class="text-[var(--text-tertiary)] hover:text-[var(--primary)] transition-colors">PHP 8.4 MVC</a></li>
+          <li><a href="https://vuejs.org" target="_blank" rel="noopener noreferrer" class="text-[var(--text-tertiary)] hover:text-[var(--primary)] transition-colors">Vue 3 + Vite</a></li>
+          <li><a href="https://tailwindcss.com" target="_blank" rel="noopener noreferrer" class="text-[var(--text-tertiary)] hover:text-[var(--primary)] transition-colors">Tailwind CSS</a></li>
+          <li><a href="https://redbeanphp.com" target="_blank" rel="noopener noreferrer" class="text-[var(--text-tertiary)] hover:text-[var(--primary)] transition-colors">RedBeanPHP ORM</a></li>
+        </ul>
+      </div>
+      <?php endif ?>
+    </div>
+
+    <div class="border-t border-[var(--border-color)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[var(--text-tertiary)]">
+      <span>&copy; <?= date('Y') ?> Seven CMS. <?= Lang::t('allRights', 'footer') ?></span>
+      <div class="flex items-center gap-4">
+        <a href="/<?= $lang ?>/about" class="hover:text-[var(--primary)] transition-colors"><?= Lang::t('about', 'nav') ?></a>
+        <a href="/<?= $lang ?>/blog"  class="hover:text-[var(--primary)] transition-colors"><?= Lang::t('blog', 'nav') ?></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var h=document.documentElement,
+      t=localStorage.getItem('theme')||'light',
+      btn=document.getElementById('themeToggleHeader'),
+      sun=document.getElementById('hdrSun'),
+      moon=document.getElementById('hdrMoon');
+  function apply(v){
+    h.setAttribute('data-theme',v);
+    if(sun)sun.classList.toggle('hidden',v==='light');
+    if(moon)moon.classList.toggle('hidden',v==='dark');
+    localStorage.setItem('theme',v);
+  }
+  apply(t);
+  if(btn)btn.addEventListener('click',function(){apply(h.getAttribute('data-theme')==='light'?'dark':'light');});
+})();
+</script>
+<?php else: ?>
+<!-- Vue SPA -->
+<div id="app"></div>
+<?php endif ?>
+
+</body>
+</html>

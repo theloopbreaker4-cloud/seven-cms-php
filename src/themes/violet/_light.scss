@@ -1,0 +1,31 @@
+// Theme: violet — light mode
+[data-palette="violet"]:root,
+[data-palette="violet"][data-theme="light"],
+[data-palette="violet"] {
+  --bg-primary:      #faf8ff;
+  --bg-secondary:    #f3effe;
+  --bg-tertiary:     #ebe4fd;
+  --text-primary:    #1a0e2e;
+  --text-secondary:  #4a3570;
+  --text-tertiary:   #8b72b8;
+  --border-color:    #d4c4f0;
+  --primary:         #7c3aed;
+  --primary-hover:   #6d28d9;
+  --secondary:       #db2777;
+  --secondary-hover: #be185d;
+
+  // admin
+  --sidebar-bg:      #ede8fb;
+  --sidebar-border:  #c9b8f0;
+  --header-bg:       #f0ebfc;
+  --success:         #16a34a;
+  --warning:         #d97706;
+  --danger:          #dc2626;
+  --info:            #0284c7;
+
+  // site animated bg
+  --glow-a:  rgba(124, 58,  237, 0.13);
+  --glow-b:  rgba(219, 39,  119, 0.09);
+  --orb-a:   rgba(139, 92,  246, 0.16);
+  --orb-b:   rgba(236, 72,  153, 0.10);
+}

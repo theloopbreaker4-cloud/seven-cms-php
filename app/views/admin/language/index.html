@@ -1,0 +1,110 @@
+<div class="max-w-3xl">
+
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-lg font-semibold text-[var(--text-primary)]"><?= AdminLang::t('title', 'language') ?></h2>
+  </div>
+
+  <!-- Active languages -->
+  <div class="card mb-8">
+    <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4"><?= AdminLang::t('active', 'language') ?></h3>
+    <table>
+      <thead>
+        <tr>
+          <th><?= AdminLang::t('flag', 'language') ?></th>
+          <th><?= AdminLang::t('code', 'language') ?></th>
+          <th><?= AdminLang::t('name', 'language') ?></th>
+          <th><?= AdminLang::t('native', 'language') ?></th>
+          <th><?= AdminLang::t('default', 'language') ?></th>
+          <th><?= AdminLang::t('actions', 'common') ?></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($rows as $row): ?>
+        <tr>
+          <td class="text-2xl leading-none py-2"><?= htmlspecialchars($row->flag) ?></td>
+          <td><span class="font-mono text-[var(--primary)] font-semibold"><?= htmlspecialchars($row->code) ?></span></td>
+          <td class="text-[var(--text-primary)]"><?= htmlspecialchars($row->name) ?></td>
+          <td class="text-[var(--text-secondary)]"><?= htmlspecialchars($row->native_name) ?></td>
+          <td>
+            <?php if ($row->is_default): ?>
+              <span class="badge badge-success"><?= AdminLang::t('default', 'language') ?></span>
+            <?php else: ?>
+              <a href="/<?= $lang ?>/admin/language/setdefault/<?= $row->code ?>"
+                 class="text-xs text-[var(--text-tertiary)] hover:text-[var(--primary)] transition-colors"><?= AdminLang::t('set_default', 'language') ?></a>
+            <?php endif ?>
+          </td>
+          <td>
+            <?php if (!$row->is_default): ?>
+            <a href="/<?= $lang ?>/admin/language/delete/<?= $row->code ?>"
+               class="btn btn-warning btn-sm"
+               data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_archive', 'language')) ?>"
+               data-confirm-type="warning"
+               data-confirm-ok="<?= htmlspecialchars(AdminLang::t('archive', 'language')) ?>">
+              <?= AdminLang::t('archive', 'language') ?>
+            </a>
+            <?php else: ?>
+            <span class="text-xs text-[var(--text-tertiary)]">—</span>
+            <?php endif ?>
+          </td>
+        </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+
+    <?php if (!empty($archived)): ?>
+    <details class="mt-4">
+      <summary class="cursor-pointer text-xs text-[var(--text-tertiary)] hover:text-[var(--primary)] select-none mb-2">
+        <?= AdminLang::t('archived', 'language') ?> (<?= count($archived) ?>)
+      </summary>
+      <table class="mt-2">
+        <tbody>
+          <?php foreach ($archived as $row): ?>
+          <tr class="opacity-60">
+            <td class="text-2xl leading-none py-2"><?= htmlspecialchars($row->flag) ?></td>
+            <td><span class="font-mono text-[var(--primary)] font-semibold"><?= htmlspecialchars($row->code) ?></span></td>
+            <td><?= htmlspecialchars($row->name) ?></td>
+            <td><?= htmlspecialchars($row->native_name) ?></td>
+            <td></td>
+            <td>
+              <a href="/<?= $lang ?>/admin/language/restore/<?= $row->code ?>"
+                 class="btn btn-primary btn-sm"><?= AdminLang::t('restore', 'language') ?></a>
+            </td>
+          </tr>
+          <?php endforeach ?>
+        </tbody>
+      </table>
+    </details>
+    <?php endif ?>
+  </div>
+
+  <!-- Add language -->
+  <div class="card">
+    <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4"><?= AdminLang::t('add', 'language') ?></h3>
+    <form method="post" action="/<?= $lang ?>/admin/language/store" class="flex flex-wrap gap-3 items-end" novalidate>
+      <?= Csrf::field() ?>
+      <div class="flex-1 min-w-48">
+        <label><?= AdminLang::t('select_known', 'language') ?></label>
+        <select name="code" class="mt-1">
+          <option value="">— choose —</option>
+          <?php foreach ($known as $code => $info): ?>
+            <?php if (!in_array($code, $active, true)): ?>
+            <option value="<?= $code ?>"><?= $info['flag'] ?> <?= htmlspecialchars($info['native']) ?> (<?= htmlspecialchars($info['name']) ?>)</option>
+            <?php endif ?>
+          <?php endforeach ?>
+        </select>
+      </div>
+      <div>
+        <label><?= AdminLang::t('enter_code', 'language') ?></label>
+        <input type="text" name="code" placeholder="e.g. fi" maxlength="5"
+               class="mt-1 w-28" pattern="[a-z]{2,5}"
+               data-msg-pattern="Use 2–5 lowercase letters (e.g. en, fi, zh-cn)."
+               oninput="this.previousElementSibling.previousElementSibling.value=''" />
+      </div>
+      <button type="submit" class="btn btn-primary"><?= AdminLang::t('add', 'common') ?></button>
+    </form>
+    <p class="text-xs text-[var(--text-tertiary)] mt-3">
+      <?= AdminLang::t('add_note', 'language') ?>
+    </p>
+  </div>
+
+</div>

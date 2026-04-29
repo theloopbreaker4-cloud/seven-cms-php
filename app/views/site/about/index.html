@@ -1,0 +1,33 @@
+<?php
+/** @var string $version */
+/** @var string $lang */
+?>
+<div class="max-w-3xl mx-auto px-4 py-16">
+  <h1 class="text-4xl font-bold mb-4 text-[var(--text-primary)]"><?= Lang::t('title', 'about') ?></h1>
+  <p class="text-[var(--text-tertiary)] text-sm mb-10"><?= Lang::t('version', 'about') ?> <?= htmlspecialchars($version) ?></p>
+
+  <div class="space-y-6 text-[var(--text-secondary)] leading-relaxed">
+    <p><?= Lang::t('description', 'about') ?></p>
+    <p><?= Lang::t('description2', 'about') ?></p>
+  </div>
+
+  <div class="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3">
+    <?php $items = [
+      ['PHP', '8.4'],
+      ['Vue', '3.5'],
+      ['Vite', '6'],
+      ['Tailwind', 'v3'],
+      ['RedBeanPHP', '5.7'],
+      ['Version', $version],
+    ]; foreach ($items as [$label, $val]): ?>
+    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-4">
+      <div class="text-xs text-[var(--text-tertiary)] mb-1"><?= $label ?></div>
+      <div class="font-semibold text-[var(--primary)]"><?= htmlspecialchars($val) ?></div>
+    </div>
+    <?php endforeach ?>
+  </div>
+
+  <div class="mt-10">
+    <a href="/<?= $lang ?>/" class="text-sm text-[var(--primary)] hover:underline"><?= Lang::t('backHome', 'about') ?></a>
+  </div>
+</div>

@@ -1,0 +1,49 @@
+<?php
+/** @var array $sites       */
+/** @var array $hostsBySite */
+$lang = Seven::app()->router->getLanguage();
+$base = "/{$lang}/admin/sites";
+?>
+
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold">Sites</h2>
+</div>
+
+<form method="POST" action="<?= $base ?>/store"
+      class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-6 p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]" novalidate>
+  <input name="name" placeholder="Site name" required
+         data-msg-required="Site name is required."
+         class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+  <input name="slug" placeholder="slug (auto)" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
+  <input name="default_locale" value="en" maxlength="8" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
+  <button class="px-3 py-2 rounded bg-[var(--primary)] text-white text-sm">Create site</button>
+</form>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <?php foreach ($sites as $s):
+    $hosts = $hostsBySite[(int)$s['id']] ?? [];
+  ?>
+    <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+      <div class="flex items-center gap-2 mb-2">
+        <a href="<?= $base ?>/edit/<?= (int)$s['id'] ?>" class="font-semibold text-[var(--primary)] hover:underline">
+          <?= htmlspecialchars($s['name']) ?>
+        </a>
+        <?php if ((int)$s['is_default']): ?><span class="text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-500">default</span><?php endif ?>
+        <?php if (!(int)$s['is_active']): ?><span class="text-xs px-1.5 py-0.5 rounded bg-red-500/15 text-red-500">inactive</span><?php endif ?>
+        <span class="ml-auto text-xs font-mono text-[var(--text-tertiary)]"><?= htmlspecialchars($s['slug']) ?></span>
+      </div>
+      <p class="text-xs text-[var(--text-tertiary)] mb-2">Theme: <code><?= htmlspecialchars($s['theme'] ?? '—') ?></code> · Locale: <code><?= htmlspecialchars($s['default_locale']) ?></code></p>
+      <ul class="space-y-1 text-sm">
+        <?php foreach ($hosts as $h): ?>
+          <li class="flex items-center gap-2">
+            <code class="text-xs"><?= htmlspecialchars($h['host']) ?></code>
+            <?php if ((int)$h['is_primary']): ?><span class="text-[10px] text-emerald-500">primary</span><?php endif ?>
+          </li>
+        <?php endforeach ?>
+        <?php if (empty($hosts)): ?>
+          <li class="text-xs text-[var(--text-tertiary)]">No host names yet — open the site editor to add one.</li>
+        <?php endif ?>
+      </ul>
+    </div>
+  <?php endforeach ?>
+</div>

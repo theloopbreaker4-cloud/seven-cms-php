@@ -1,0 +1,375 @@
+<?php
+/**
+ * @var array  $settings
+ * @var array  $adminLangs
+ * @var array  $siteLangs
+ * @var array  $siteArchived
+ * @var array  $siteActive
+ * @var array  $knownLangs
+ * @var string $activeDriver
+ * @var bool   $isRedis
+ * @var bool   $redisAvail
+ * @var array  $cfg
+ * @var array  $redisCfg
+ */
+$byKey = [];
+foreach ($settings as $s) $byKey[$s['key']] = $s['value'];
+
+$activeLangs   = array_values(array_filter($adminLangs, fn($a) =>  ($a['isActive'] ?? true)));
+$archivedLangs = array_values(array_filter($adminLangs, fn($a) => !($a['isActive'] ?? true)));
+
+$tabs = ['site', 'languages', 'admin', 'cache'];
+$activeTab = $_GET['tab'] ?? 'site';
+if (!in_array($activeTab, $tabs)) $activeTab = 'site';
+
+function stCls(string $id, string $active): string {
+    return $id === $active ? 'tab-btn tab-btn--active' : 'tab-btn';
+}
+?>
+
+<!-- Tab bar -->
+<div class="settings-tabs mb-6">
+  <a href="?tab=site"      class="<?= stCls('site',      $activeTab) ?>"><?= AdminLang::t('tab_site',      'settings') ?></a>
+  <a href="?tab=languages" class="<?= stCls('languages', $activeTab) ?>"><?= AdminLang::t('tab_languages', 'settings') ?></a>
+  <a href="?tab=admin"     class="<?= stCls('admin',     $activeTab) ?>"><?= AdminLang::t('tab_admin',     'settings') ?></a>
+  <a href="?tab=cache"     class="<?= stCls('cache',     $activeTab) ?>"><?= AdminLang::t('tab_cache',     'settings') ?></a>
+</div>
+
+<div class="max-w-2xl space-y-6">
+
+<?php if ($activeTab === 'site'): ?>
+<!-- ══════════════════ SITE ══════════════════ -->
+
+  <div class="card">
+    <h2 class="settings-card-title"><?= AdminLang::t('general', 'settings') ?></h2>
+    <form method="POST" action="/<?= $lang ?>/admin/setting/save?tab=site" class="space-y-4">
+      <?php foreach ([
+        'site_name'    => AdminLang::t('site_name',    'settings'),
+        'site_tagline' => AdminLang::t('site_tagline', 'settings'),
+        'site_email'   => AdminLang::t('site_email',   'settings'),
+      ] as $key => $label): ?>
+        <div>
+          <label><?= $label ?></label>
+          <input type="text" name="<?= $key ?>" value="<?= htmlspecialchars($byKey[$key] ?? '') ?>" />
+        </div>
+      <?php endforeach ?>
+      <button type="submit" class="btn btn-primary"><?= AdminLang::t('save', 'common') ?></button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2 class="settings-card-title"><?= AdminLang::t('title', 'security') ?></h2>
+    <form method="POST" action="/<?= $lang ?>/admin/setting/save?tab=site" class="space-y-3">
+      <?php foreach ([
+        'captcha_on_login'    => AdminLang::t('captcha_on_login',    'security'),
+        'captcha_on_register' => AdminLang::t('captcha_on_register', 'security'),
+        'captcha_on_forgot'   => AdminLang::t('captcha_on_forgot',   'security'),
+      ] as $key => $label): ?>
+        <label class="flex items-center gap-3 cursor-pointer normal-case tracking-normal font-normal text-sm text-[var(--text-secondary)]">
+          <input type="hidden"   name="<?= $key ?>" value="0" />
+          <input type="checkbox" name="<?= $key ?>" value="1"
+                 <?= ($byKey[$key] ?? '0') === '1' ? 'checked' : '' ?>
+                 class="w-4 h-4 accent-[var(--primary)]" />
+          <?= $label ?>
+        </label>
+      <?php endforeach ?>
+      <div class="pt-2">
+        <button type="submit" class="btn btn-primary"><?= AdminLang::t('save', 'common') ?></button>
+      </div>
+    </form>
+  </div>
+
+<?php elseif ($activeTab === 'languages'): ?>
+<!-- ══════════════════ SITE LANGUAGES ══════════════════ -->
+
+  <div class="card">
+    <h2 class="settings-card-title"><?= AdminLang::t('active', 'language') ?></h2>
+    <table class="mb-4">
+      <thead>
+        <tr>
+          <th><?= AdminLang::t('flag', 'language') ?></th>
+          <th><?= AdminLang::t('code', 'language') ?></th>
+          <th><?= AdminLang::t('name', 'language') ?></th>
+          <th><?= AdminLang::t('native', 'language') ?></th>
+          <th><?= AdminLang::t('default', 'language') ?></th>
+          <th><?= AdminLang::t('actions', 'common') ?></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($siteLangs as $row): ?>
+        <tr>
+          <td class="text-2xl leading-none"><?= htmlspecialchars($row->flag) ?></td>
+          <td><span class="font-mono text-[var(--primary)] font-semibold"><?= htmlspecialchars($row->code) ?></span></td>
+          <td class="text-[var(--text-primary)]"><?= htmlspecialchars($row->name) ?></td>
+          <td class="text-[var(--text-secondary)]"><?= htmlspecialchars($row->native_name) ?></td>
+          <td>
+            <?php if ($row->is_default): ?>
+              <span class="badge badge-success"><?= AdminLang::t('default', 'language') ?></span>
+            <?php else: ?>
+              <a href="/<?= $lang ?>/admin/language/setdefault/<?= $row->code ?>?tab=languages"
+                 class="text-xs text-[var(--text-tertiary)] hover:text-[var(--primary)] transition-colors">
+                <?= AdminLang::t('set_default', 'language') ?>
+              </a>
+            <?php endif ?>
+          </td>
+          <td>
+            <?php if (!$row->is_default): ?>
+            <a href="/<?= $lang ?>/admin/language/delete/<?= $row->code ?>"
+               class="btn btn-warning btn-sm"
+               data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_archive', 'language')) ?>"
+               data-confirm-type="warning"
+               data-confirm-ok="<?= htmlspecialchars(AdminLang::t('archive', 'language')) ?>">
+              <?= AdminLang::t('archive', 'language') ?>
+            </a>
+            <?php else: ?>
+            <span class="text-xs text-[var(--text-tertiary)]">—</span>
+            <?php endif ?>
+          </td>
+        </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+
+    <?php if (!empty($siteArchived)): ?>
+    <details class="mb-4">
+      <summary class="cursor-pointer text-xs text-[var(--text-tertiary)] hover:text-[var(--primary)] select-none">
+        <?= AdminLang::t('archived', 'language') ?> (<?= count($siteArchived) ?>)
+      </summary>
+      <table class="mt-2">
+        <tbody>
+          <?php foreach ($siteArchived as $row): ?>
+          <tr class="opacity-60">
+            <td class="text-2xl leading-none"><?= htmlspecialchars($row->flag) ?></td>
+            <td><span class="font-mono text-[var(--primary)] font-semibold"><?= htmlspecialchars($row->code) ?></span></td>
+            <td><?= htmlspecialchars($row->name) ?></td>
+            <td><?= htmlspecialchars($row->native_name) ?></td>
+            <td></td>
+            <td>
+              <a href="/<?= $lang ?>/admin/language/restore/<?= $row->code ?>"
+                 class="btn btn-primary btn-sm"><?= AdminLang::t('restore', 'language') ?></a>
+            </td>
+          </tr>
+          <?php endforeach ?>
+        </tbody>
+      </table>
+    </details>
+    <?php endif ?>
+  </div>
+
+  <div class="card">
+    <h2 class="settings-card-title"><?= AdminLang::t('add', 'language') ?></h2>
+    <form method="post" action="/<?= $lang ?>/admin/language/store" class="flex flex-wrap gap-3 items-end">
+      <?= Csrf::field() ?>
+      <div class="flex-1 min-w-48">
+        <label><?= AdminLang::t('select_known', 'language') ?></label>
+        <select name="code" class="mt-1">
+          <option value="">— choose —</option>
+          <?php foreach ($knownLangs as $code => $info): ?>
+            <?php if (!in_array($code, $siteActive, true)): ?>
+            <option value="<?= $code ?>"><?= $info['flag'] ?> <?= htmlspecialchars($info['native']) ?> (<?= htmlspecialchars($info['name']) ?>)</option>
+            <?php endif ?>
+          <?php endforeach ?>
+        </select>
+      </div>
+      <div>
+        <label><?= AdminLang::t('enter_code', 'language') ?></label>
+        <input type="text" name="code" placeholder="e.g. fi" maxlength="5" class="mt-1 w-28"
+               pattern="[a-z]{2,5}"
+               oninput="this.previousElementSibling.previousElementSibling.value=''" />
+      </div>
+      <button type="submit" class="btn btn-primary"><?= AdminLang::t('add', 'common') ?></button>
+    </form>
+    <p class="text-xs text-[var(--text-tertiary)] mt-3"><?= AdminLang::t('add_note', 'language') ?></p>
+  </div>
+
+<?php elseif ($activeTab === 'admin'): ?>
+<!-- ══════════════════ ADMIN UI LANGS ══════════════════ -->
+
+  <div class="card">
+    <h2 class="settings-card-title"><?= AdminLang::t('admin_langs', 'settings') ?></h2>
+
+    <div class="flex items-center gap-3 mb-5">
+      <span class="text-sm text-[var(--text-tertiary)]"><?= AdminLang::t('admin_lang', 'settings') ?>:</span>
+      <?php foreach ($activeLangs as $al): ?>
+        <form method="POST" action="/<?= $lang ?>/admin/setting/setuilang?tab=admin" class="inline">
+          <input type="hidden" name="code" value="<?= htmlspecialchars($al['code']) ?>" />
+          <button type="submit"
+                  class="px-3 py-1 rounded-md text-sm font-medium transition-colors
+                  <?= AdminLang::current() === $al['code']
+                    ? 'bg-[var(--primary)] text-white'
+                    : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--primary)]' ?>">
+            <?= htmlspecialchars($al['name']) ?>
+          </button>
+        </form>
+      <?php endforeach ?>
+    </div>
+
+    <table class="mb-4">
+      <thead>
+        <tr>
+          <th><?= AdminLang::t('lang_code', 'settings') ?></th>
+          <th><?= AdminLang::t('lang_name', 'settings') ?></th>
+          <th class="w-28"><?= AdminLang::t('actions', 'common') ?></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($activeLangs as $al): ?>
+        <tr>
+          <td><span class="font-mono text-xs bg-[var(--bg-tertiary)] px-2 py-0.5 rounded"><?= strtoupper($al['code']) ?></span></td>
+          <td><?= htmlspecialchars($al['name']) ?></td>
+          <td>
+            <?php if ($al['isDefault']): ?>
+              <span class="badge badge-success"><?= AdminLang::t('lang_default', 'settings') ?></span>
+            <?php else: ?>
+            <form method="POST" action="/<?= $lang ?>/admin/setting/archiveuilang?tab=admin" class="inline">
+              <input type="hidden" name="code" value="<?= htmlspecialchars($al['code']) ?>" />
+              <button type="submit" class="btn btn-secondary btn-sm"
+                      data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_archive', 'settings')) ?>"
+                      data-confirm-type="warning"
+                      data-confirm-ok="<?= htmlspecialchars(AdminLang::t('archive', 'settings')) ?>">
+                <?= AdminLang::t('archive', 'settings') ?>
+              </button>
+            </form>
+            <?php endif ?>
+          </td>
+        </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+
+    <?php if (!empty($archivedLangs)): ?>
+    <details class="mb-4">
+      <summary class="cursor-pointer text-xs text-[var(--text-tertiary)] hover:text-[var(--primary)] select-none">
+        <?= AdminLang::t('archived', 'settings') ?> (<?= count($archivedLangs) ?>)
+      </summary>
+      <table class="mt-2">
+        <tbody>
+          <?php foreach ($archivedLangs as $al): ?>
+          <tr class="opacity-60">
+            <td><span class="font-mono text-xs bg-[var(--bg-tertiary)] px-2 py-0.5 rounded"><?= strtoupper($al['code']) ?></span></td>
+            <td><?= htmlspecialchars($al['name']) ?></td>
+            <td>
+              <form method="POST" action="/<?= $lang ?>/admin/setting/restoreuilang?tab=admin" class="inline">
+                <input type="hidden" name="code" value="<?= htmlspecialchars($al['code']) ?>" />
+                <button type="submit" class="btn btn-primary btn-sm"><?= AdminLang::t('restore', 'settings') ?></button>
+              </form>
+            </td>
+          </tr>
+          <?php endforeach ?>
+        </tbody>
+      </table>
+    </details>
+    <?php endif ?>
+
+    <form method="POST" action="/<?= $lang ?>/admin/setting/adduilang?tab=admin" class="flex items-end gap-3" novalidate>
+      <div class="flex-1">
+        <label><?= AdminLang::t('lang_code', 'settings') ?> <span class="font-normal text-[var(--text-tertiary)]">(en, de, fr…)</span></label>
+        <input type="text" name="code" maxlength="2" pattern="[a-z]{2}" placeholder="de" class="mt-1" required
+               data-msg-required="Language code is required."
+               data-msg-pattern="Use 2 lowercase letters (e.g. de, fr)." />
+      </div>
+      <div class="flex-1">
+        <label><?= AdminLang::t('lang_name', 'settings') ?></label>
+        <input type="text" name="name" placeholder="Deutsch" class="mt-1" required
+               data-msg-required="Language name is required." />
+      </div>
+      <button type="submit" class="btn btn-primary mb-px"><?= AdminLang::t('add_lang', 'settings') ?></button>
+    </form>
+  </div>
+
+<?php elseif ($activeTab === 'cache'): ?>
+<!-- ══════════════════ CACHE ══════════════════ -->
+
+  <div class="grid grid-cols-3 gap-4">
+    <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg p-4">
+      <div class="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide mb-2"><?= AdminLang::t('active_driver', 'cache') ?></div>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full <?= $isRedis ? 'bg-emerald-500' : 'bg-sky-500' ?>"></span>
+        <span class="font-medium text-sm"><?= htmlspecialchars($activeDriver) ?></span>
+      </div>
+    </div>
+    <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg p-4">
+      <div class="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide mb-2"><?= AdminLang::t('default_ttl', 'cache') ?></div>
+      <div class="font-medium text-sm"><?= (int)($cfg['ttl'] ?? 3600) ?>s
+        <span class="text-[var(--text-tertiary)] font-normal">(<?= round(($cfg['ttl'] ?? 3600) / 60) ?> min)</span>
+      </div>
+    </div>
+    <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg p-4">
+      <div class="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide mb-2"><?= AdminLang::t('redis_status', 'cache') ?></div>
+      <div class="flex items-center gap-2">
+        <?php if (!extension_loaded('redis')): ?>
+          <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+          <span class="text-sm text-[var(--text-secondary)]"><?= AdminLang::t('ext_not_loaded', 'cache') ?></span>
+        <?php elseif ($redisAvail): ?>
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span class="text-sm text-emerald-600"><?= AdminLang::t('reachable', 'cache') ?></span>
+        <?php else: ?>
+          <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+          <span class="text-sm text-rose-600"><?= AdminLang::t('unreachable', 'cache') ?></span>
+        <?php endif ?>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="settings-card-title"><?= AdminLang::t('settings', 'cache') ?></h2>
+    <form method="POST" action="/<?= $lang ?>/admin/cache/save?tab=cache" class="space-y-4">
+      <?= Csrf::field() ?>
+      <div>
+        <label><?= AdminLang::t('cache_driver', 'cache') ?></label>
+        <select name="driver" class="mt-1">
+          <option value="file"  <?= ($cfg['driver'] ?? 'file') === 'file'  ? 'selected' : '' ?>>File</option>
+          <option value="redis" <?= ($cfg['driver'] ?? 'file') === 'redis' ? 'selected' : '' ?>
+                  <?= !$redisAvail && !extension_loaded('redis') ? 'disabled' : '' ?>>
+            Redis<?= !extension_loaded('redis') ? ' (ext not loaded)' : (!$redisAvail ? ' (unreachable)' : '') ?>
+          </option>
+        </select>
+      </div>
+      <div>
+        <label><?= AdminLang::t('ttl_seconds', 'cache') ?></label>
+        <input type="number" name="ttl" min="60" max="86400"
+               value="<?= (int)($cfg['ttl'] ?? 3600) ?>" class="mt-1" />
+      </div>
+      <div class="pt-2 border-t border-[var(--border-color)]">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] my-3">
+          <?= AdminLang::t('redis_settings', 'cache') ?>
+        </h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label><?= AdminLang::t('host', 'cache') ?></label>
+            <input type="text" name="redis_host" value="<?= htmlspecialchars($redisCfg['host'] ?? '127.0.0.1') ?>" class="mt-1" />
+          </div>
+          <div>
+            <label><?= AdminLang::t('port', 'cache') ?></label>
+            <input type="number" name="redis_port" min="1" max="65535"
+                   value="<?= (int)($redisCfg['port'] ?? 6379) ?>" class="mt-1" />
+          </div>
+        </div>
+        <div class="mt-4">
+          <label><?= AdminLang::t('key_prefix', 'cache') ?></label>
+          <input type="text" name="redis_prefix" value="<?= htmlspecialchars($redisCfg['prefix'] ?? 'seven:') ?>" class="mt-1" />
+        </div>
+      </div>
+      <div class="flex items-center gap-4 pt-2">
+        <button type="submit" class="btn btn-primary"><?= AdminLang::t('save_settings', 'cache') ?></button>
+        <span class="text-xs text-[var(--text-tertiary)]"><?= AdminLang::t('env_note', 'cache') ?></span>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2 class="settings-card-title"><?= AdminLang::t('flush', 'cache') ?></h2>
+    <p class="text-sm text-[var(--text-secondary)] mb-4"><?= AdminLang::t('desc', 'cache') ?></p>
+    <form method="POST" action="/<?= $lang ?>/admin/cache/flush?tab=cache">
+      <?= Csrf::field() ?>
+      <button type="submit" class="btn btn-danger"
+              data-confirm="<?= htmlspecialchars(AdminLang::t('flush_confirm', 'cache')) ?>"
+              data-confirm-type="danger"
+              data-confirm-ok="<?= htmlspecialchars(AdminLang::t('flush', 'cache')) ?>">
+        <?= AdminLang::t('flush', 'cache') ?>
+      </button>
+    </form>
+  </div>
+
+<?php endif ?>
+</div>

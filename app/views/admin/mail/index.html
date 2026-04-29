@@ -1,0 +1,76 @@
+<?php /** @var array $rows */ /** @var array $stats */ /** @var string $filter */ ?>
+<div class="mb-4 flex items-center justify-between">
+  <div>
+    <h2 class="text-xl font-semibold">Mail queue</h2>
+    <p class="text-sm text-[var(--text-secondary)] mt-1">
+      Outbound emails are queued and flushed by <code class="px-1 rounded bg-[var(--bg-tertiary)]">cron:run</code>.
+    </p>
+  </div>
+  <div class="flex gap-2">
+    <a href="/admin/help/topic/mail" class="text-sm text-[var(--primary)] hover:underline self-center">Setup →</a>
+    <a href="/admin/mail/flush" class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary-hover)]">Flush now</a>
+  </div>
+</div>
+
+<div class="grid grid-cols-4 gap-3 mb-4">
+  <?php foreach (['pending'=>'amber','sending'=>'blue','sent'=>'emerald','failed'=>'red'] as $k => $color): ?>
+    <a href="/admin/mail?status=<?= $k ?>"
+       class="block px-4 py-3 rounded-lg border border-[var(--border-color)] hover:border-[var(--primary)] <?= $filter === $k ? 'border-[var(--primary)] ring-1 ring-[var(--primary)]' : '' ?>">
+      <div class="text-xs uppercase text-[var(--text-tertiary)]"><?= $k ?></div>
+      <div class="text-2xl font-bold mt-1 text-<?= $color ?>-500"><?= (int)($stats[$k] ?? 0) ?></div>
+    </a>
+  <?php endforeach ?>
+</div>
+
+<?php if ($filter): ?>
+  <div class="mb-3 text-sm">
+    <a href="/admin/mail" class="text-[var(--primary)] hover:underline">Clear filter</a>
+  </div>
+<?php endif ?>
+
+<div class="overflow-x-auto rounded-lg border border-[var(--border-color)]">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
+      <tr>
+        <th class="text-left px-3 py-2">#</th>
+        <th class="text-left px-3 py-2">To</th>
+        <th class="text-left px-3 py-2">Subject</th>
+        <th class="text-left px-3 py-2">Status</th>
+        <th class="text-left px-3 py-2">Attempts</th>
+        <th class="text-left px-3 py-2">Created</th>
+        <th class="text-right px-3 py-2"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($rows as $r): ?>
+        <tr class="border-t border-[var(--border-color)]">
+          <td class="px-3 py-2 font-mono text-xs"><?= (int)$r['id'] ?></td>
+          <td class="px-3 py-2"><?= htmlspecialchars($r['to_email']) ?></td>
+          <td class="px-3 py-2"><?= htmlspecialchars(mb_strimwidth($r['subject'], 0, 60, '…')) ?></td>
+          <td class="px-3 py-2">
+            <?php $st = $r['status']; ?>
+            <span class="inline-flex text-xs px-2 py-0.5 rounded
+              <?= $st === 'sent' ? 'bg-emerald-500/10 text-emerald-500' :
+                  ($st === 'failed' ? 'bg-red-500/10 text-red-500' :
+                  ($st === 'sending' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-600')) ?>">
+              <?= htmlspecialchars($st) ?>
+            </span>
+            <?php if (!empty($r['last_error'])): ?>
+              <span class="ml-1 text-xs text-[var(--text-tertiary)]" title="<?= htmlspecialchars($r['last_error']) ?>">⚠</span>
+            <?php endif ?>
+          </td>
+          <td class="px-3 py-2"><?= (int)$r['attempts'] ?></td>
+          <td class="px-3 py-2 text-[var(--text-secondary)]"><?= htmlspecialchars($r['created_at']) ?></td>
+          <td class="px-3 py-2 text-right">
+            <?php if ($r['status'] === 'failed'): ?>
+              <a href="/admin/mail/retry/<?= (int)$r['id'] ?>" class="px-2 py-1 text-xs rounded bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white">Retry</a>
+            <?php endif ?>
+          </td>
+        </tr>
+      <?php endforeach ?>
+      <?php if (!$rows): ?>
+        <tr><td colspan="7" class="px-3 py-6 text-center text-[var(--text-secondary)]">No messages.</td></tr>
+      <?php endif ?>
+    </tbody>
+  </table>
+</div>

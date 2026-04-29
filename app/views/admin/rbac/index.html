@@ -1,0 +1,66 @@
+<?php
+/** @var array $roles  */
+/** @var array $perms  */
+/** @var array $matrix */
+$lang = Seven::app()->router->getLanguage();
+$base = "/{$lang}/admin/roles";
+
+// Group permissions by module for readability.
+$grouped = [];
+foreach ($perms as $p) $grouped[$p['module']][] = $p;
+?>
+
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold">Roles &amp; Permissions</h2>
+  <a href="<?= $base ?>/create" class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-sm">+ New role</a>
+</div>
+
+<div class="overflow-x-auto rounded-xl border border-[var(--border-color)]">
+  <table class="text-sm">
+    <thead class="bg-[var(--bg-secondary)]">
+      <tr>
+        <th class="text-left px-4 py-2 font-medium sticky left-0 bg-[var(--bg-secondary)] z-10">Permission</th>
+        <?php foreach ($roles as $r): ?>
+          <th class="px-3 py-2 font-medium text-center min-w-[6rem]">
+            <a href="<?= $base ?>/edit/<?= (int)$r['id'] ?>"
+               class="hover:underline"><?= htmlspecialchars($r['name']) ?></a>
+            <?php if ((int)$r['is_system']): ?><div class="text-[9px] text-[var(--text-tertiary)]">system</div><?php endif ?>
+          </th>
+        <?php endforeach ?>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($grouped as $module => $list): ?>
+        <tr class="bg-[var(--bg-tertiary)]">
+          <td class="px-4 py-1 font-semibold text-xs uppercase tracking-wider"
+              colspan="<?= count($roles) + 1 ?>"><?= htmlspecialchars($module) ?></td>
+        </tr>
+        <?php foreach ($list as $p): ?>
+          <tr class="border-t border-[var(--border-color)]">
+            <td class="px-4 py-1.5 sticky left-0 bg-[var(--bg-primary)]">
+              <span class="font-mono text-xs"><?= htmlspecialchars($p['slug']) ?></span>
+              <?php if (!empty($p['description'])): ?>
+                <span class="text-[var(--text-tertiary)] text-xs ml-2"><?= htmlspecialchars($p['description']) ?></span>
+              <?php endif ?>
+            </td>
+            <?php foreach ($roles as $r): ?>
+              <td class="px-3 py-1.5 text-center">
+                <?php if ($r['slug'] === 'admin'): ?>
+                  <span class="text-emerald-500" title="Admin always has all permissions">★</span>
+                <?php elseif (!empty($matrix[(int)$r['id']][$p['slug']])): ?>
+                  <span class="text-emerald-500">✓</span>
+                <?php else: ?>
+                  <span class="text-[var(--text-tertiary)]">·</span>
+                <?php endif ?>
+              </td>
+            <?php endforeach ?>
+          </tr>
+        <?php endforeach ?>
+      <?php endforeach ?>
+    </tbody>
+  </table>
+</div>
+
+<p class="text-xs text-[var(--text-tertiary)] mt-3">
+  ★ = built-in superuser. Click a role header to edit its permissions.
+</p>

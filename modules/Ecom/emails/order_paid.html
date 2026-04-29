@@ -1,0 +1,4 @@
+<?php /** @var Order $order */ ?>
+<h2>Payment received ✓</h2>
+<p>Order <strong><?= htmlspecialchars($order->number) ?></strong> is now paid. Thank you!</p>
+<p>Total: <strong><?= Money::format($order->total, $order->currency) ?></strong></p>

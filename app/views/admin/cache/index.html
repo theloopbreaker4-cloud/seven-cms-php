@@ -1,0 +1,114 @@
+<?php
+/** @var string $activeDriver  Current cache driver class name */
+/** @var bool   $isRedis       Whether Redis driver is active */
+/** @var bool   $redisAvail    Whether Redis server is reachable */
+/** @var array  $cfg           Cache config (driver, ttl) */
+/** @var array  $redisCfg      Redis config (host, port, prefix) */
+$lang = Seven::app()->router->getLanguage();
+?>
+<div class="mb-6">
+  <h2 class="text-lg font-semibold"><?= AdminLang::t('title', 'cache') ?></h2>
+  <p class="text-sm text-[var(--text-secondary)] mt-0.5"><?= AdminLang::t('desc', 'cache') ?></p>
+</div>
+
+<!-- Status cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+  <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg p-5">
+    <div class="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide mb-2"><?= AdminLang::t('active_driver', 'cache') ?></div>
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full <?= $isRedis ? 'bg-emerald-500' : 'bg-sky-500' ?>"></span>
+      <span class="font-medium text-sm"><?= htmlspecialchars($activeDriver) ?></span>
+    </div>
+  </div>
+  <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg p-5">
+    <div class="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide mb-2"><?= AdminLang::t('default_ttl', 'cache') ?></div>
+    <div class="font-medium text-sm"><?= (int)($cfg['ttl'] ?? 3600) ?>s
+      <span class="text-[var(--text-tertiary)] font-normal">(<?= round(($cfg['ttl'] ?? 3600) / 60) ?> min)</span>
+    </div>
+  </div>
+  <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg p-5">
+    <div class="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide mb-2"><?= AdminLang::t('redis_status', 'cache') ?></div>
+    <div class="flex items-center gap-2">
+      <?php if (!extension_loaded('redis')): ?>
+        <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+        <span class="text-sm text-[var(--text-secondary)]"><?= AdminLang::t('ext_not_loaded', 'cache') ?></span>
+      <?php elseif ($redisAvail): ?>
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span class="text-sm text-emerald-600 dark:text-emerald-400"><?= AdminLang::t('reachable', 'cache') ?></span>
+      <?php else: ?>
+        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+        <span class="text-sm text-rose-600 dark:text-rose-400"><?= AdminLang::t('unreachable', 'cache') ?></span>
+      <?php endif ?>
+    </div>
+  </div>
+</div>
+
+<!-- Settings form -->
+<form method="POST" action="/<?= $lang ?>/admin/cache/save"
+      class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg p-6 mb-6 max-w-lg" novalidate>
+  <?= Csrf::field() ?>
+  <h3 class="font-medium mb-4"><?= AdminLang::t('settings', 'cache') ?></h3>
+
+  <div class="mb-4">
+    <label class="block text-sm font-medium mb-1"><?= AdminLang::t('cache_driver', 'cache') ?></label>
+    <select name="driver"
+            class="w-full px-3 py-2 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]">
+      <option value="file"  <?= ($cfg['driver'] ?? 'file') === 'file'  ? 'selected' : '' ?>>File</option>
+      <option value="redis" <?= ($cfg['driver'] ?? 'file') === 'redis' ? 'selected' : '' ?>
+              <?= !$redisAvail && !extension_loaded('redis') ? 'disabled' : '' ?>>
+        Redis<?= !extension_loaded('redis') ? ' (ext not loaded)' : (!$redisAvail ? ' (unreachable)' : '') ?>
+      </option>
+    </select>
+  </div>
+
+  <div class="mb-6">
+    <label class="block text-sm font-medium mb-1"><?= AdminLang::t('ttl_seconds', 'cache') ?></label>
+    <input type="number" name="ttl" min="60" max="86400"
+           value="<?= (int)($cfg['ttl'] ?? 3600) ?>"
+           data-msg-min="Minimum 60 seconds."
+           data-msg-max="Maximum 86400 seconds (24h)."
+           class="w-full px-3 py-2 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" />
+  </div>
+
+  <h4 class="font-medium text-sm mb-3 text-[var(--text-secondary)]"><?= AdminLang::t('redis_settings', 'cache') ?></h4>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <label class="block text-sm font-medium mb-1"><?= AdminLang::t('host', 'cache') ?></label>
+      <input type="text" name="redis_host"
+             value="<?= htmlspecialchars($redisCfg['host'] ?? '127.0.0.1') ?>"
+             class="w-full px-3 py-2 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1"><?= AdminLang::t('port', 'cache') ?></label>
+      <input type="number" name="redis_port" min="1" max="65535"
+             value="<?= (int)($redisCfg['port'] ?? 6379) ?>"
+             data-msg-min="Port must be 1 or higher."
+             data-msg-max="Port must be ≤ 65535."
+             class="w-full px-3 py-2 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" />
+    </div>
+  </div>
+
+  <div class="mb-6">
+    <label class="block text-sm font-medium mb-1"><?= AdminLang::t('key_prefix', 'cache') ?></label>
+    <input type="text" name="redis_prefix"
+           value="<?= htmlspecialchars($redisCfg['prefix'] ?? 'seven:') ?>"
+           class="w-full px-3 py-2 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" />
+  </div>
+
+  <button type="submit"
+          class="px-4 py-2 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-sm font-medium">
+    <?= AdminLang::t('save_settings', 'cache') ?>
+  </button>
+  <p class="mt-2 text-xs text-[var(--text-tertiary)]"><?= AdminLang::t('env_note', 'cache') ?></p>
+</form>
+
+<!-- Flush -->
+<form method="POST" action="/<?= $lang ?>/admin/cache/flush"
+      onsubmit="return confirm('<?= AdminLang::t('flush_confirm', 'cache') ?>');">
+  <?= Csrf::field() ?>
+  <button type="submit"
+          class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium">
+    <?= AdminLang::t('flush', 'cache') ?>
+  </button>
+</form>

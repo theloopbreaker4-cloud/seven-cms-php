@@ -1,0 +1,35 @@
+// Theme: aurora — light mode (teal → violet gradient)
+[data-palette="aurora"]:root,
+[data-palette="aurora"][data-theme="light"],
+[data-palette="aurora"] {
+  --bg-primary:       #f5faff;
+  --bg-secondary:     #eaf4fb;
+  --bg-tertiary:      #daedf8;
+  --text-primary:     #0a1628;
+  --text-secondary:   #1e3a5a;
+  --text-tertiary:    #4a7090;
+  --border-color:     #b8d8ee;
+  --primary:          #0891b2;
+  --primary-hover:    #7c3aed;
+  --secondary:        #7c3aed;
+  --secondary-hover:  #6d28d9;
+
+  // gradient from teal to violet
+  --primary-gradient: linear-gradient(135deg, #0891b2 0%, #6366f1 50%, #7c3aed 100%);
+  --primary-gradient-hover: linear-gradient(135deg, #0e7490 0%, #4f46e5 50%, #6d28d9 100%);
+
+  // admin
+  --sidebar-bg:       #e2f2fb;
+  --sidebar-border:   #aad0e8;
+  --header-bg:        #eaf4fb;
+  --success:          #16a34a;
+  --warning:          #d97706;
+  --danger:           #dc2626;
+  --info:             #0284c7;
+
+  // site animated bg
+  --glow-a:  rgba(8,   145, 178, 0.14);
+  --glow-b:  rgba(124, 58,  237, 0.10);
+  --orb-a:   rgba(99,  102, 241, 0.16);
+  --orb-b:   rgba(6,   182, 212, 0.11);
+}

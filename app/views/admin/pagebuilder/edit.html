@@ -1,0 +1,273 @@
+<?php
+/** @var string $entityType */
+/** @var int    $entityId   */
+/** @var array  $catalog    */
+/** @var array  $tree       */
+$lang = Seven::app()->router->getLanguage();
+$baseSave    = "/{$lang}/admin/pagebuilder/save/" . urlencode($entityType) . '/' . (int)$entityId;
+$basePreview = "/{$lang}/admin/pagebuilder/preview/" . urlencode($entityType) . '/' . (int)$entityId;
+?>
+
+<div class="flex items-center justify-between mb-4">
+  <h2 class="text-xl font-semibold">Page builder
+    <span class="text-xs text-[var(--text-tertiary)] font-mono ml-2"><?= htmlspecialchars($entityType) ?>#<?= (int)$entityId ?></span>
+  </h2>
+  <div class="flex gap-2">
+    <button id="pb-preview" class="px-3 py-1.5 rounded border border-[var(--border-color)] text-sm">Preview</button>
+    <button id="pb-save"    class="px-3 py-1.5 rounded bg-[var(--primary)] text-white text-sm">Save</button>
+  </div>
+</div>
+
+<div id="pb-app" class="grid grid-cols-1 lg:grid-cols-[260px_1fr_320px] gap-4">
+  <!-- Catalog -->
+  <aside class="p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] max-h-[80vh] overflow-y-auto">
+    <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-2">Blocks</h3>
+    <?php foreach ($catalog as $group => $items): ?>
+      <p class="text-xs text-[var(--text-tertiary)] mt-2 mb-1"><?= htmlspecialchars($group) ?></p>
+      <?php foreach ($items as $b): ?>
+        <button type="button"
+                class="pb-add w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-[var(--bg-tertiary)]"
+                data-key="<?= htmlspecialchars($b['key']) ?>">
+          <span><?= $b['icon'] ?></span>
+          <span><?= htmlspecialchars($b['label']) ?></span>
+        </button>
+      <?php endforeach ?>
+    <?php endforeach ?>
+  </aside>
+
+  <!-- Canvas -->
+  <main class="p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] min-h-[60vh]">
+    <ul id="pb-canvas" class="space-y-2"></ul>
+    <p id="pb-empty" class="text-center text-sm text-[var(--text-tertiary)] py-12">
+      Drop blocks here or click in the catalog to add them.
+    </p>
+  </main>
+
+  <!-- Inspector -->
+  <aside class="p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+    <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-2">Inspector</h3>
+    <div id="pb-inspector" class="text-sm text-[var(--text-tertiary)]">Select a block on the left to edit its fields.</div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const SAVE_URL    = <?= json_encode($baseSave) ?>;
+  const PREVIEW_URL = <?= json_encode($basePreview) ?>;
+
+  // Catalog and initial tree from server
+  const CATALOG = <?= json_encode($catalog, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+  const SCHEMA  = (() => {
+    const out = {};
+    Object.values(CATALOG).flat().forEach(b => out[b.key] = b);
+    return out;
+  })();
+
+  const initial = <?= json_encode($tree, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+  // Convert flat rows into a tree the UI can manipulate.
+  let blocks = initial.map(r => ({
+    id:         r.id,
+    uid:        'b' + r.id,
+    parent_uid: r.parent_id ? 'b' + r.parent_id : null,
+    block_type: r.block_type,
+    data:       (typeof r.data === 'string' ? JSON.parse(r.data || '{}') : r.data) || {},
+    sort_order: r.sort_order,
+    is_visible: r.is_visible,
+    slot:       r.slot || 'default',
+  }));
+
+  let selectedUid = null;
+
+  // ── Render canvas ──────────────────────────────────────────────────
+  const canvas = document.getElementById('pb-canvas');
+  const empty  = document.getElementById('pb-empty');
+
+  function render() {
+    canvas.innerHTML = '';
+    const roots = childrenOf(null).sort((a,b) => a.sort_order - b.sort_order);
+    roots.forEach(b => canvas.appendChild(renderBlock(b)));
+    empty.style.display = blocks.length ? 'none' : '';
+  }
+
+  function childrenOf(parentUid) {
+    return blocks.filter(b => (b.parent_uid || null) === parentUid);
+  }
+
+  function renderBlock(b) {
+    const meta = SCHEMA[b.block_type] || { label: b.block_type, icon: '🧱', isContainer: false };
+    const li = document.createElement('li');
+    li.className = 'pb-block rounded border border-[var(--border-color)] p-2 bg-[var(--bg-primary)]';
+    li.draggable = true;
+    li.dataset.uid = b.uid;
+
+    const head = document.createElement('div');
+    head.className = 'flex items-center gap-2';
+    head.innerHTML = `
+      <span class="cursor-move opacity-60">⋮⋮</span>
+      <span>${meta.icon}</span>
+      <span class="flex-1 text-sm">${meta.label}</span>
+      <button class="pb-up text-xs opacity-60">▲</button>
+      <button class="pb-down text-xs opacity-60">▼</button>
+      <button class="pb-del text-xs text-red-500">×</button>
+    `;
+    head.addEventListener('click', e => {
+      if (e.target.closest('button')) return;
+      selectedUid = b.uid;
+      renderInspector();
+      document.querySelectorAll('.pb-block').forEach(x => x.classList.remove('ring-2'));
+      li.classList.add('ring-2','ring-[var(--primary)]');
+    });
+    head.querySelector('.pb-del').onclick = () => removeBlock(b.uid);
+    head.querySelector('.pb-up').onclick   = () => move(b.uid, -1);
+    head.querySelector('.pb-down').onclick = () => move(b.uid, +1);
+    li.appendChild(head);
+
+    if (meta.isContainer) {
+      const slot = document.createElement('ul');
+      slot.className = 'pb-slot mt-2 ml-6 pl-2 border-l-2 border-dashed border-[var(--border-color)] space-y-2 min-h-[2rem]';
+      slot.dataset.parent = b.uid;
+      childrenOf(b.uid).sort((a, c) => a.sort_order - c.sort_order).forEach(c => slot.appendChild(renderBlock(c)));
+      li.appendChild(slot);
+    }
+    return li;
+  }
+
+  // ── Inspector ───────────────────────────────────────────────────────
+  const inspector = document.getElementById('pb-inspector');
+  function renderInspector() {
+    const b = blocks.find(x => x.uid === selectedUid);
+    if (!b) { inspector.textContent = 'Select a block on the left to edit its fields.'; return; }
+    const meta = SCHEMA[b.block_type];
+    if (!meta) { inspector.textContent = 'Unknown block type'; return; }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'space-y-3';
+    wrap.innerHTML = `<p class="text-xs uppercase tracking-wider opacity-60">${meta.label}</p>`;
+
+    (meta.schema || []).forEach(f => {
+      const v = b.data[f.key] ?? '';
+      const id = 'pb-f-' + f.key;
+      const label = `<label class="block text-xs mt-2">${f.label}</label>`;
+      let input = '';
+      switch (f.field_type) {
+        case 'richtext':
+        case 'json':
+          input = `<textarea id="${id}" rows="4" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-xs">${escapeHtml(typeof v === 'string' ? v : JSON.stringify(v, null, 2))}</textarea>`;
+          break;
+        case 'boolean':
+          input = `<label class="flex items-center gap-2 mt-1"><input id="${id}" type="checkbox" ${v ? 'checked' : ''} /> Yes</label>`;
+          break;
+        case 'select':
+          const opts = (f.settings?.options || []).map(o => `<option value="${escapeHtml(o.value)}" ${o.value == v ? 'selected' : ''}>${escapeHtml(o.label)}</option>`).join('');
+          input = `<select id="${id}" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]"><option value="">—</option>${opts}</select>`;
+          break;
+        case 'number':
+          input = `<input id="${id}" type="number" value="${escapeHtml(String(v))}" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />`;
+          break;
+        case 'image':
+        case 'media':
+          input = `<input id="${id}" type="number" placeholder="Media id" value="${escapeHtml(String(v))}" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />`;
+          break;
+        default:
+          input = `<input id="${id}" type="text" value="${escapeHtml(String(v))}" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />`;
+      }
+      const div = document.createElement('div');
+      div.innerHTML = label + input;
+      wrap.appendChild(div);
+
+      const el = div.querySelector('#' + id);
+      el.addEventListener('input', () => {
+        let val = (f.field_type === 'boolean') ? !!el.checked
+                : (f.field_type === 'number')  ? Number(el.value)
+                : el.value;
+        if (f.field_type === 'json') {
+          try { val = JSON.parse(el.value); } catch { /* keep raw string */ val = el.value; }
+        }
+        b.data[f.key] = val;
+      });
+    });
+
+    inspector.replaceChildren(wrap);
+  }
+
+  // ── Actions ─────────────────────────────────────────────────────────
+  document.querySelectorAll('.pb-add').forEach(btn => btn.addEventListener('click', () => {
+    const key = btn.dataset.key;
+    const meta = SCHEMA[key];
+    if (!meta) return;
+    const uid = 'n' + Math.random().toString(36).slice(2, 8);
+    const sortOrder = (childrenOf(null).reduce((m, x) => Math.max(m, x.sort_order), 0) || 0) + 10;
+    blocks.push({
+      uid, block_type: key, parent_uid: null,
+      data: {}, sort_order: sortOrder, is_visible: 1, slot: 'default',
+    });
+    selectedUid = uid;
+    render();
+    renderInspector();
+  }));
+
+  function removeBlock(uid) {
+    blocks = blocks.filter(b => b.uid !== uid && b.parent_uid !== uid);
+    if (selectedUid === uid) selectedUid = null;
+    render();
+    renderInspector();
+  }
+
+  function move(uid, dir) {
+    const b = blocks.find(x => x.uid === uid);
+    if (!b) return;
+    const siblings = childrenOf(b.parent_uid).sort((a, c) => a.sort_order - c.sort_order);
+    const idx = siblings.findIndex(x => x.uid === uid);
+    const swap = siblings[idx + dir];
+    if (!swap) return;
+    [b.sort_order, swap.sort_order] = [swap.sort_order, b.sort_order];
+    render();
+  }
+
+  // Drag & drop reordering (basic)
+  let dragUid = null;
+  canvas.addEventListener('dragstart', e => {
+    const t = e.target.closest('.pb-block'); if (!t) return;
+    dragUid = t.dataset.uid;
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  canvas.addEventListener('dragover', e => e.preventDefault());
+  canvas.addEventListener('drop', e => {
+    e.preventDefault();
+    if (!dragUid) return;
+    const target = e.target.closest('.pb-block');
+    if (!target || target.dataset.uid === dragUid) return;
+    const dragB = blocks.find(b => b.uid === dragUid);
+    const tgtB  = blocks.find(b => b.uid === target.dataset.uid);
+    if (!dragB || !tgtB) return;
+    dragB.parent_uid = tgtB.parent_uid;
+    dragB.sort_order = tgtB.sort_order + 1;
+    // Renumber siblings
+    childrenOf(dragB.parent_uid).sort((a, c) => a.sort_order - c.sort_order).forEach((b, i) => b.sort_order = (i + 1) * 10);
+    render();
+    dragUid = null;
+  });
+
+  // ── Save ────────────────────────────────────────────────────────────
+  document.getElementById('pb-save').addEventListener('click', async () => {
+    const r = await fetch(SAVE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ blocks }),
+    }).then(r => r.json());
+    alert(r.ok ? `Saved ${r.count} block(s).` : 'Save failed: ' + (r.message || ''));
+  });
+
+  document.getElementById('pb-preview').addEventListener('click', () => {
+    window.open(PREVIEW_URL, '_blank', 'noopener');
+  });
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  render();
+})();
+</script>

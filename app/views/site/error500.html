@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>500 — Server Error</title>
+  <?= Vite::tags('src/site/main.js') ?>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+  <div class="site-bg" aria-hidden="true">
+    <div class="site-bg__dots"></div>
+    <div class="site-bg__orb site-bg__orb--a"></div>
+    <div class="site-bg__orb site-bg__orb--b"></div>
+  </div>
+
+  <div class="text-center max-w-md">
+    <div class="text-[120px] font-black leading-none text-[var(--danger)] opacity-20 select-none">500</div>
+    <h1 class="text-2xl font-bold text-[var(--text-primary)] -mt-4 mb-3">Server Error</h1>
+    <p class="text-[var(--text-secondary)] mb-8 leading-relaxed">
+      Something went wrong on our end. Please try again later.
+    </p>
+    <div class="flex items-center justify-center gap-3">
+      <a href="javascript:location.reload()"
+         class="px-5 py-2.5 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] text-sm font-medium hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors">
+        Try again
+      </a>
+      <a href="/<?= Seven::app()->router->getLanguage() ?>/"
+         class="px-5 py-2.5 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:bg-[var(--primary-hover)] transition-colors">
+        Home
+      </a>
+    </div>
+  </div>
+
+  <script>(function(){var h=document.documentElement,t=localStorage.getItem('theme')||'light';h.setAttribute('data-theme',t);})();</script>
+</body>
+</html>

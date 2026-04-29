@@ -1,0 +1,4 @@
+<?php /** @var Subscription $subscription */ ?>
+<h2>Subscription cancelled</h2>
+<p>Your subscription has been cancelled. You will retain access until <strong><?= htmlspecialchars($subscription->currentPeriodEnd ?? '') ?></strong>.</p>
+<p>Re-subscribe any time from your account.</p>

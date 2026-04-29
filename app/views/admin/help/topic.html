@@ -1,0 +1,104 @@
+<?php
+/** @var array  $topics */
+/** @var array  $current */
+/** @var string $html */
+$lang = Seven::app()->router->getLanguage();
+?>
+
+<div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
+
+  <!-- Sidebar -->
+  <aside class="space-y-3 max-h-[calc(100vh-8rem)] overflow-y-auto sticky top-4">
+    <div class="text-xs">
+      <a href="/<?= $lang ?>/admin/help" class="text-[var(--primary)] hover:underline">← All topics</a>
+    </div>
+
+    <?php foreach ($topics as $cat): ?>
+      <details class="group" open>
+        <summary class="cursor-pointer flex items-center gap-2 px-2 py-1 rounded hover:bg-[var(--bg-tertiary)]">
+          <span><?= $cat['icon'] ?></span>
+          <span class="text-xs font-semibold uppercase tracking-wider"><?= htmlspecialchars($cat['label']) ?></span>
+        </summary>
+        <ul class="ml-2 mt-1 space-y-0.5">
+          <?php foreach ($cat['topics'] as $t):
+            $isCurrent = $t['slug'] === $current['slug'];
+          ?>
+            <li>
+              <a href="/<?= $lang ?>/admin/help/topic/<?= htmlspecialchars($t['slug']) ?>"
+                 class="block px-2 py-1 rounded text-sm <?= $isCurrent ? 'bg-[var(--primary)] text-white' : 'hover:bg-[var(--bg-tertiary)]' ?>">
+                <?= htmlspecialchars($t['title']) ?>
+              </a>
+              <?php if ($isCurrent && !empty($t['anchors'])): ?>
+                <ul class="ml-3 mt-1 space-y-0.5 border-l border-[var(--border-color)] pl-2">
+                  <?php foreach ($t['anchors'] as $a): ?>
+                    <li>
+                      <a href="<?= htmlspecialchars($a['hash']) ?>"
+                         class="block px-2 py-0.5 rounded text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]">
+                        → <?= htmlspecialchars($a['label']) ?>
+                      </a>
+                    </li>
+                  <?php endforeach ?>
+                </ul>
+              <?php endif ?>
+            </li>
+          <?php endforeach ?>
+        </ul>
+      </details>
+    <?php endforeach ?>
+  </aside>
+
+  <!-- Content -->
+  <article>
+    <nav class="text-xs text-[var(--text-tertiary)] mb-4">
+      <a href="/<?= $lang ?>/admin/help" class="hover:underline">Help</a>
+      <span> / </span>
+      <span><?= htmlspecialchars($current['title']) ?></span>
+    </nav>
+
+    <div class="md-doc rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-6 prose-doc">
+      <?= $html ?>
+    </div>
+
+    <p class="text-xs text-[var(--text-tertiary)] mt-3">
+      Source: <code>docs/<?= htmlspecialchars($current['file']) ?></code>
+    </p>
+  </article>
+</div>
+
+<style>
+  .prose-doc h1, .prose-doc h2, .prose-doc h3, .prose-doc h4 {
+    color: var(--text-primary);
+    margin-top: 1.5rem; margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+  .prose-doc h1 { font-size: 1.875rem; }
+  .prose-doc h2 { font-size: 1.5rem;   border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem; }
+  .prose-doc h3 { font-size: 1.25rem;  }
+  .prose-doc h4 { font-size: 1rem;     }
+  .prose-doc p, .prose-doc ul, .prose-doc ol, .prose-doc blockquote { color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.7; }
+  .prose-doc ul, .prose-doc ol { padding-left: 1.5rem; }
+  .prose-doc ul li { list-style: disc; }
+  .prose-doc ol li { list-style: decimal; }
+  .prose-doc a   { color: var(--primary); text-decoration: underline; }
+  .prose-doc code:not(.md-code code) {
+    background: var(--bg-tertiary); padding: 0.125rem 0.375rem; border-radius: 0.25rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.875em;
+  }
+  .prose-doc pre.md-code {
+    background: var(--bg-tertiary); border-radius: 0.5rem; padding: 1rem;
+    overflow-x: auto; margin-bottom: 1rem;
+  }
+  .prose-doc pre.md-code code { background: transparent; padding: 0; font-size: 0.875em; }
+  .prose-doc table.md-table {
+    width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.875em;
+  }
+  .prose-doc table.md-table th, .prose-doc table.md-table td {
+    border: 1px solid var(--border-color); padding: 0.5rem 0.75rem; text-align: left;
+  }
+  .prose-doc table.md-table th { background: var(--bg-tertiary); font-weight: 600; }
+  .prose-doc blockquote {
+    border-left: 4px solid var(--primary); padding-left: 1rem; color: var(--text-secondary);
+  }
+  .prose-doc hr { border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0; }
+  .prose-doc img { max-width: 100%; border-radius: 0.5rem; }
+</style>

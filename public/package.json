@@ -1,0 +1,30 @@
+{
+    "name": "seven-php",
+    "version": "1.0.0",
+    "description": "SevenCMS — PHP 8.4 MVC + Vue 3 + Tailwind v3 frontend",
+    "author": {
+        "name": "TheLoopBreaker",
+        "email": "the.loop.breaker4@gmail.com",
+        "url": "https://github.com/theloopbreaker4-cloud"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/theloopbreaker4-cloud/seven-php.git"
+    },
+    "bugs": {
+        "url": "https://github.com/theloopbreaker4-cloud/seven-php/issues"
+    },
+    "homepage": "https://github.com/theloopbreaker4-cloud/seven-php#readme",
+    "keywords": [
+        "php",
+        "mvc",
+        "vue",
+        "tailwind",
+        "cms"
+    ],
+    "private": true,
+    "dependencies": {
+        "jquery": "^3.4.1"
+    }
+}

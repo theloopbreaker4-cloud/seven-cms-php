@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<?php
+$activePalette = Setting::get('theme_palette', 'default');
+$lang = Seven::app()->router->getLanguage();
+$ctrl = Seven::app()->router->getController();
+
+// Helper: is any of these controllers active?
+$is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
+
+// Submenu open state stored in localStorage key 'nav_open_{group}'
+?>
+<html lang="<?= $lang ?>"<?= $activePalette !== 'default' ? ' data-palette="' . htmlspecialchars($activePalette) . '"' : '' ?>>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><?= htmlspecialchars(Seven::app()->getTitle()) ?> — <?= htmlspecialchars(Setting::get('site_name', 'Seven CMS')) ?> Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script>
+    (function(){
+      var h=document.documentElement;
+      h.setAttribute('data-theme', localStorage.getItem('theme')||'light');
+    })();
+    // Disable browser-native validation tooltips and inject CSRF token into
+    // every admin form. Both run before the Vite bundle so they apply even
+    // if JS modules fail to load.
+    window.__CSRF_TOKEN__ = <?= json_encode(Csrf::token()) ?>;
+    document.addEventListener('DOMContentLoaded', function(){
+      document.querySelectorAll('form').forEach(function(f){
+        if (!f.hasAttribute('data-no-validate')) f.setAttribute('novalidate','');
+        // Auto-inject CSRF token if missing (only for state-changing methods)
+        var method = (f.getAttribute('method') || 'GET').toUpperCase();
+        if (method !== 'GET' && !f.querySelector('input[name="_csrf_token"]')) {
+          var i = document.createElement('input');
+          i.type  = 'hidden';
+          i.name  = '_csrf_token';
+          i.value = window.__CSRF_TOKEN__;
+          f.appendChild(i);
+        }
+      });
+    });
+  </script>
+  <?= Vite::tags('src/admin/main.js') ?>
+  <style>
+    .nav-group-btn { width:100%; display:flex; align-items:center; gap:.5rem; padding:.45rem 1rem; font-size:.8rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--text-tertiary); cursor:pointer; background:none; border:none; transition:color 150ms; }
+    .nav-group-btn:hover { color:var(--primary); }
+    .nav-group-btn svg.chevron { margin-left:auto; width:12px; height:12px; transition:transform 200ms; }
+    .nav-group-btn.open svg.chevron { transform:rotate(180deg); }
+    .nav-sub { display:none; }
+    .nav-sub.open { display:block; }
+    .nav-link { display:flex; align-items:center; gap:.5rem; padding:.4rem 1rem .4rem 2.25rem; font-size:.825rem; color:var(--text-secondary); text-decoration:none; transition:color 120ms, background 120ms; border-radius:0; }
+    .nav-link:hover { color:var(--primary); background:var(--bg-tertiary); }
+    .nav-link.active { color:var(--primary); background:var(--bg-tertiary); font-weight:600; }
+    .nav-link-top { display:flex; align-items:center; gap:.5rem; padding:.45rem 1rem; font-size:.825rem; color:var(--text-secondary); text-decoration:none; transition:color 120ms, background 120ms; }
+    .nav-link-top:hover { color:var(--primary); background:var(--bg-tertiary); }
+    .nav-link-top.active { color:var(--primary); background:var(--bg-tertiary); font-weight:600; }
+    .nav-divider { height:1px; background:var(--border-color); margin:.4rem .75rem; }
+    .nav-icon { width:15px; height:15px; flex-shrink:0; opacity:.7; }
+    .nav-link.active .nav-icon, .nav-link-top.active .nav-icon { opacity:1; }
+  </style>
+</head>
+<body class="bg-[var(--bg-secondary)] text-[var(--text-primary)] min-h-screen flex">
+
+  <aside class="w-56 min-h-screen border-r flex flex-col" style="background:var(--sidebar-bg);border-color:var(--sidebar-border)">
+
+    <!-- Logo -->
+    <div class="h-14 flex items-center px-4 gap-2 border-b border-[var(--border-color)]">
+      <img src="/brand.svg" alt="Seven CMS" class="w-7 h-7 rounded-lg" />
+      <span class="font-bold text-sm"><span class="text-[var(--primary)]">Seven</span> <span class="text-[var(--text-secondary)]">CMS</span></span>
+      <span class="text-xs text-[var(--text-tertiary)] ml-auto">Admin</span>
+    </div>
+
+    <nav class="flex-1 py-3 overflow-y-auto" id="sidebar-nav">
+
+      <!-- Dashboard -->
+      <a href="/<?= $lang ?>/admin/" class="nav-link-top <?= $ctrl === 'home' ? 'active' : '' ?>">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        <?= AdminLang::t('dashboard', 'nav') ?>
+      </a>
+
+      <div class="nav-divider"></div>
+
+      <!-- ── CONTENT ─────────────────────────────── -->
+      <?php $contentOpen = $is(['blog','page','media','slider']) ?>
+      <button class="nav-group-btn <?= $contentOpen ? 'open' : '' ?>" data-group="content">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10" stroke-linecap="round"/></svg>
+        <?= AdminLang::t('content', 'nav') ?>
+        <svg class="chevron" fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 3l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="nav-sub <?= $contentOpen ? 'open' : '' ?>" id="nav-content">
+        <a href="/<?= $lang ?>/admin/blog"  class="nav-link <?= $ctrl === 'blog'  ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10M3 6h10M3 9h6" stroke-linecap="round"/><circle cx="12" cy="12" r="2.5"/><path d="M14 13.5l1.5 1.5" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('blog', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/page"  class="nav-link <?= $ctrl === 'page'  ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M4 1h6l3 3v10a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1z"/><path d="M9 1v4h3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <?= AdminLang::t('pages', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/media" class="nav-link <?= $ctrl === 'media' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1"/><path d="M1 10l4-3 3 2 3-3 4 4"/><circle cx="5" cy="6.5" r="1"/></svg>
+          <?= AdminLang::t('media', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/slider" class="nav-link <?= $ctrl === 'slider' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="14" height="8" rx="1"/><path d="M1 8h14M4 4V2M12 4V2M4 12v2M12 12v2" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('slider', 'nav') ?>
+        </a>
+      </div>
+
+      <!-- ── BLOG TAXONOMY ──────────────────────── -->
+      <?php $taxOpen = $is(['category','tag','comment']) ?>
+      <button class="nav-group-btn <?= $taxOpen ? 'open' : '' ?>" data-group="taxonomy">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M8 2v12" stroke-linecap="round"/><circle cx="8" cy="8" r="6"/></svg>
+        <?= AdminLang::t('taxonomy', 'nav') ?>
+        <svg class="chevron" fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 3l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="nav-sub <?= $taxOpen ? 'open' : '' ?>" id="nav-taxonomy">
+        <a href="/<?= $lang ?>/admin/category" class="nav-link <?= $ctrl === 'category' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 4a2 2 0 012-2h2l2 2h4a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V4z"/></svg>
+          <?= AdminLang::t('categories', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/tag"      class="nav-link <?= $ctrl === 'tag'      ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 2h5l7 7a2 2 0 010 2.83l-2.17 2.17a2 2 0 01-2.83 0L2 7V2z"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg>
+          <?= AdminLang::t('tags', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/comment"  class="nav-link <?= $ctrl === 'comment'  ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 2V3a1 1 0 011-1z"/></svg>
+          <?= AdminLang::t('comments', 'nav') ?>
+        </a>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <!-- ── STRUCTURE ──────────────────────────── -->
+      <?php $structOpen = $is(['menu','social']) ?>
+      <button class="nav-group-btn <?= $structOpen ? 'open' : '' ?>" data-group="structure">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 4h3M7 4h7M2 8h7M11 8h3M2 12h5M9 12h5" stroke-linecap="round"/></svg>
+        <?= AdminLang::t('structure', 'nav') ?>
+        <svg class="chevron" fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 3l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="nav-sub <?= $structOpen ? 'open' : '' ?>" id="nav-structure">
+        <a href="/<?= $lang ?>/admin/menu"   class="nav-link <?= $ctrl === 'menu'   ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h12" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('menus', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/social" class="nav-link <?= $ctrl === 'social' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="4" r="2"/><circle cx="4" cy="8" r="2"/><circle cx="12" cy="12" r="2"/><path d="M6 7l4-2M6 9l4 2"/></svg>
+          <?= AdminLang::t('social', 'nav') ?>
+        </a>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <!-- ── USERS ──────────────────────────────── -->
+      <a href="/<?= $lang ?>/admin/user" class="nav-link-top <?= $ctrl === 'user' ? 'active' : '' ?>">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14a6 6 0 0112 0"/></svg>
+        <?= AdminLang::t('users', 'nav') ?>
+      </a>
+
+      <div class="nav-divider"></div>
+
+      <!-- ── OPERATIONS ──────────────────────────── -->
+      <?php $opsOpen = $is(['calendar','notifications','mail','cron','activity']) ?>
+      <button class="nav-group-btn <?= $opsOpen ? 'open' : '' ?>" data-group="ops">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6h12M5 1v3M11 1v3" stroke-linecap="round"/></svg>
+        Operations
+        <svg class="chevron" fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 3l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="nav-sub <?= $opsOpen ? 'open' : '' ?>" id="nav-ops">
+        <a href="/<?= $lang ?>/admin/calendar" class="nav-link <?= $ctrl === 'calendar' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6h12M5 1v3M11 1v3" stroke-linecap="round"/></svg>
+          Calendar
+        </a>
+        <a href="/<?= $lang ?>/admin/notifications" class="nav-link <?= $ctrl === 'notifications' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M3 6a5 5 0 1110 0v3l1 2H2l1-2V6z"/><path d="M6 13a2 2 0 004 0"/></svg>
+          Notifications
+        </a>
+        <a href="/<?= $lang ?>/admin/mail" class="nav-link <?= $ctrl === 'mail' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1"/><path d="M1 4l7 5 7-5"/></svg>
+          Mail queue
+        </a>
+        <a href="/<?= $lang ?>/admin/cron" class="nav-link <?= $ctrl === 'cron' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2" stroke-linecap="round"/></svg>
+          Cron jobs
+        </a>
+        <a href="/<?= $lang ?>/admin/activity" class="nav-link <?= $ctrl === 'activity' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 8h3l2-5 2 10 2-5h3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Activity log
+        </a>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <!-- ── SYSTEM ──────────────────────────────── -->
+      <?php $sysOpen = $is(['setting','theme','module','cache','language']) ?>
+      <button class="nav-group-btn <?= $sysOpen ? 'open' : '' ?>" data-group="system">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
+        <?= AdminLang::t('system', 'nav') ?>
+        <svg class="chevron" fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 3l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="nav-sub <?= $sysOpen ? 'open' : '' ?>" id="nav-system">
+        <a href="/<?= $lang ?>/admin/setting"  class="nav-link <?= $ctrl === 'setting'  ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M7 2h2l.5 2a5 5 0 011.2.7l1.9-.8 1.4 1.4-.8 1.9a5 5 0 01.7 1.2L16 9v2l-2 .5a5 5 0 01-.7 1.2l.8 1.9-1.4 1.4-1.9-.8A5 5 0 019 16l-.5 2H7l-.5-2a5 5 0 01-1.2-.7l-1.9.8L2 14.6l.8-1.9A5 5 0 012 11.5L0 11V9l2-.5A5 5 0 012.8 7.3L2 5.4 3.4 4l1.9.8A5 5 0 016.5 4L7 2z"/><circle cx="8" cy="8" r="2"/></svg>
+          <?= AdminLang::t('settings', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/theme"    class="nav-link <?= $ctrl === 'theme'    ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 010 12" fill="currentColor" stroke="none" opacity=".2"/><circle cx="5" cy="6" r="1" fill="currentColor"/><circle cx="8" cy="4.5" r="1" fill="currentColor"/><circle cx="11" cy="6" r="1" fill="currentColor"/></svg>
+          <?= AdminLang::t('themes', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/module"   class="nav-link <?= $ctrl === 'module'   ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><path d="M9 12h6M12 9v6"/></svg>
+          <?= AdminLang::t('modules', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/cache"    class="nav-link <?= $ctrl === 'cache'    ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><ellipse cx="8" cy="4" rx="6" ry="2.5"/><path d="M2 4v4c0 1.38 2.69 2.5 6 2.5S14 9.38 14 8V4"/><path d="M2 8v4c0 1.38 2.69 2.5 6 2.5S14 13.38 14 12V8"/></svg>
+          <?= AdminLang::t('cache', 'nav') ?>
+        </a>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <!-- ── DEV ────────────────────────────────── -->
+      <?php $devOpen = $is(['ui','help']) ?>
+      <button class="nav-group-btn <?= $devOpen ? 'open' : '' ?>" data-group="dev">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M5 4l-3 4 3 4M11 4l3 4-3 4M9 2l-2 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <?= AdminLang::t('developer', 'nav') ?>
+        <svg class="chevron" fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 3l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="nav-sub <?= $devOpen ? 'open' : '' ?>" id="nav-dev">
+        <a href="/<?= $lang ?>/admin/ui"   class="nav-link <?= $ctrl === 'ui'   ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M4 8h2M7 6l2 2-2 2M10 8h2" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('ui_kit', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/help" class="nav-link <?= $ctrl === 'help' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M6.5 6a1.5 1.5 0 013 .5c0 1-1.5 1.5-1.5 2.5M8 12v.5" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('help', 'nav') ?>
+        </a>
+      </div>
+
+    </nav>
+
+    <!-- Bottom: view site -->
+    <div class="border-t border-[var(--border-color)] p-3">
+      <a href="/<?= $lang ?>/" class="nav-link-top text-xs" style="padding:.35rem .75rem">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2a10 7 0 010 12M8 2a10 7 0 000 12M2 8h12" stroke-linecap="round"/></svg>
+        <?= AdminLang::t('view_site', 'nav') ?>
+      </a>
+    </div>
+
+  </aside>
+
+  <div class="flex-1 flex flex-col min-w-0">
+    <header class="admin-header h-14 border-b flex items-center justify-between px-6" style="background:var(--header-bg);border-color:var(--border-color)">
+      <h1 class="font-semibold text-base"><?= htmlspecialchars(Seven::app()->getTitle()) ?></h1>
+      <div class="flex items-center gap-4 text-sm">
+        <!-- Notifications bell -->
+        <div class="relative" id="notifyWrap">
+          <button id="notifyBtn" class="relative text-[var(--text-secondary)] hover:text-[var(--primary)]" aria-label="Notifications">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .53-.21 1.04-.59 1.41L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span id="notifyCount" class="hidden absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+          </button>
+          <div id="notifyPanel" class="hidden absolute right-0 mt-2 w-80 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg shadow-lg z-50">
+            <div class="px-3 py-2 border-b border-[var(--border-color)] flex items-center justify-between">
+              <span class="text-sm font-semibold">Notifications</span>
+              <button id="notifyMarkAll" class="text-xs text-[var(--primary)] hover:underline">Mark all read</button>
+            </div>
+            <div id="notifyList" class="max-h-80 overflow-y-auto">
+              <div class="px-3 py-6 text-center text-xs text-[var(--text-tertiary)]">Loading…</div>
+            </div>
+            <a href="/<?= $lang ?>/admin/notifications" class="block text-center text-xs py-2 border-t border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--primary)]">View all →</a>
+          </div>
+        </div>
+
+        <button id="themeToggle" class="text-[var(--text-secondary)] hover:text-[var(--primary)]" aria-label="Toggle theme">
+          <svg id="iconSun" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07-6.07-.7.7M6.34 17.66l-.7.7M17.66 17.66l.7.7M6.34 6.34l.7.7M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+          <svg id="iconMoon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
+        <a href="/<?= $lang ?>/auth/logout?next=/<?= $lang ?>/admin" class="text-[var(--text-secondary)] hover:text-[var(--primary)]"><?= AdminLang::t('signout', 'auth') ?></a>
+      </div>
+    </header>
+    <main class="flex-1 p-6">
+      <?php if (Session::hasFlash()): ?>
+        <div class="mb-4 px-4 py-3 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-sm"><?php Session::flash() ?></div>
+      <?php endif ?>
+      <?= $content ?? '' ?>
+    </main>
+  </div>
+
+  <script>
+    (function(){
+      // Theme toggle
+      var h=document.documentElement,b=document.getElementById('themeToggle'),
+          s=document.getElementById('iconSun'),m=document.getElementById('iconMoon'),
+          t=localStorage.getItem('theme')||'light';
+      function apply(v){
+        h.setAttribute('data-theme',v);
+        s.classList.toggle('hidden',v==='light');
+        m.classList.toggle('hidden',v==='dark');
+        localStorage.setItem('theme',v);
+      }
+      apply(t);
+      b.addEventListener('click',function(){ apply(h.getAttribute('data-theme')==='light'?'dark':'light'); });
+
+      // Collapsible nav groups
+      document.querySelectorAll('.nav-group-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var group = btn.dataset.group;
+          var sub   = document.getElementById('nav-' + group);
+          var open  = sub.classList.toggle('open');
+          btn.classList.toggle('open', open);
+          localStorage.setItem('nav_open_' + group, open ? '1' : '0');
+        });
+      });
+
+      // Restore open state from localStorage (only for groups not forced open by PHP)
+      document.querySelectorAll('.nav-group-btn:not(.open)').forEach(function(btn){
+        var group = btn.dataset.group;
+        if (localStorage.getItem('nav_open_' + group) === '1') {
+          btn.classList.add('open');
+          var sub = document.getElementById('nav-' + group);
+          if (sub) sub.classList.add('open');
+        }
+      });
+
+      // Notifications bell
+      var btn = document.getElementById('notifyBtn');
+      var panel = document.getElementById('notifyPanel');
+      var list = document.getElementById('notifyList');
+      var count = document.getElementById('notifyCount');
+      var markAll = document.getElementById('notifyMarkAll');
+      if (btn && panel) {
+        function severity(c){return ({info:'#3b82f6',success:'#10b981',warning:'#f59e0b',error:'#ef4444'})[c]||'#3b82f6';}
+        function render(data){
+          if (!data.items || !data.items.length) {
+            list.innerHTML = '<div class="px-3 py-6 text-center text-xs" style="color:var(--text-tertiary)">No notifications</div>';
+          } else {
+            list.innerHTML = data.items.map(function(n){
+              var dot = n.read_at ? '' : '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);margin-left:auto"></span>';
+              var icon = n.icon || '•';
+              return '<a href="/<?= $lang ?>/admin/notifications/read/'+n.id+'" class="flex items-start gap-2 px-3 py-2 hover:bg-[var(--bg-tertiary)] border-b border-[var(--border-color)] text-sm" style="text-decoration:none;color:var(--text-primary)">'
+                + '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:'+severity(n.severity)+'22;color:'+severity(n.severity)+';font-size:12px">'+icon+'</span>'
+                + '<span style="flex:1;min-width:0">'
+                +   '<span style="display:flex;align-items:center;gap:6px"><span style="font-weight:500;font-size:13px">'+escape(n.title)+'</span>'+dot+'</span>'
+                +   (n.message ? '<span style="display:block;font-size:11px;color:var(--text-secondary);margin-top:2px">'+escape(n.message).slice(0,90)+'</span>' : '')
+                + '</span>'
+              + '</a>';
+            }).join('');
+          }
+          if (data.unread > 0) { count.textContent = data.unread > 99 ? '99+' : data.unread; count.classList.remove('hidden'); }
+          else                 { count.classList.add('hidden'); }
+        }
+        function escape(s){return String(s||'').replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+        function load(){ fetch('/<?= $lang ?>/admin/notifications/feed.json',{credentials:'same-origin'}).then(function(r){return r.json();}).then(render).catch(function(){}); }
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          panel.classList.toggle('hidden');
+          if (!panel.classList.contains('hidden')) load();
+        });
+        document.addEventListener('click', function(e){
+          if (!document.getElementById('notifyWrap').contains(e.target)) panel.classList.add('hidden');
+        });
+        if (markAll) markAll.addEventListener('click', function(e){
+          e.preventDefault();
+          fetch('/<?= $lang ?>/admin/notifications/read-all', {method:'POST',credentials:'same-origin'}).then(load);
+        });
+        // Initial load + 60s poll
+        load();
+        setInterval(load, 60000);
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<?php
+/** @var array  $stats */
+/** @var array  $chart */
+/** @var string $currency */
+/** @var array  $recentOrders */
+$lang = Seven::app()->router->getLanguage();
+$max  = max(1, max(array_column($chart, 'revenue')));
+?>
+
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-semibold">Shop Dashboard</h2>
+  <div class="flex gap-2 text-xs">
+    <a href="/<?= $lang ?>/admin/ecom/orders"   class="px-3 py-1.5 rounded border border-[var(--border-color)]">Orders</a>
+    <a href="/<?= $lang ?>/admin/ecom/products" class="px-3 py-1.5 rounded border border-[var(--border-color)]">Products</a>
+    <a href="/<?= $lang ?>/admin/ecom/settings" class="px-3 py-1.5 rounded border border-[var(--border-color)]">Settings</a>
+  </div>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <?php
+    $cards = [
+      ['Today',          $stats['orders_today'],       'orders'],
+      ['Revenue today',  Money::format((int)$stats['revenue_today'], $currency)],
+      ['Last 30 days',   Money::format((int)$stats['revenue_30d'],   $currency)],
+      ['Active subs',    $stats['active_subs']],
+      ['Pending',        $stats['pending_orders'],     'orders'],
+      ['Unfulfilled',    $stats['unfulfilled_orders'], 'orders'],
+      ['All orders',     $stats['orders_total']],
+      ['Customers',      $stats['customers_total']],
+    ];
+    foreach ($cards as $c):
+  ?>
+    <div class="p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+      <p class="text-xs text-[var(--text-tertiary)] uppercase tracking-wider"><?= htmlspecialchars($c[0]) ?></p>
+      <p class="text-2xl font-bold mt-1"><?= htmlspecialchars((string)$c[1]) ?></p>
+      <?php if (isset($c[2])): ?><p class="text-[10px] text-[var(--text-tertiary)] mt-0.5"><?= htmlspecialchars($c[2]) ?></p><?php endif ?>
+    </div>
+  <?php endforeach ?>
+</div>
+
+<div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] mb-6">
+  <h3 class="font-semibold mb-3 text-sm">Revenue — last 30 days</h3>
+  <svg viewBox="0 0 600 120" class="w-full h-32" preserveAspectRatio="none">
+    <?php $w = 600 / max(1, count($chart)); foreach ($chart as $i => $c):
+      $h = (int)round(($c['revenue'] / $max) * 100);
+      $x = $i * $w;
+    ?>
+      <rect x="<?= $x ?>" y="<?= 110 - $h ?>" width="<?= max(1, $w - 2) ?>" height="<?= $h ?>"
+            fill="var(--primary)" opacity="0.85">
+        <title><?= $c['date'] ?>: <?= Money::format((int)$c['revenue'], $currency) ?></title>
+      </rect>
+    <?php endforeach ?>
+  </svg>
+</div>
+
+<div class="rounded-xl border border-[var(--border-color)] overflow-hidden">
+  <h3 class="font-semibold p-4 border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">Recent orders</h3>
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--bg-secondary)]">
+      <tr>
+        <th class="text-left px-4 py-2">Order</th>
+        <th class="text-left px-4 py-2">Customer</th>
+        <th class="text-left px-4 py-2">Status</th>
+        <th class="text-left px-4 py-2">Total</th>
+        <th class="text-left px-4 py-2">Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($recentOrders as $o): ?>
+        <tr class="border-t border-[var(--border-color)] hover:bg-[var(--bg-secondary)]">
+          <td class="px-4 py-2">
+            <a href="/<?= $lang ?>/admin/ecom/orders/view/<?= (int)$o['id'] ?>"
+               class="font-mono text-xs text-[var(--primary)] hover:underline"><?= htmlspecialchars($o['number']) ?></a>
+          </td>
+          <td class="px-4 py-2 text-xs"><?= htmlspecialchars($o['email']) ?></td>
+          <td class="px-4 py-2"><span class="text-xs px-2 py-0.5 rounded bg-[var(--bg-tertiary)]"><?= htmlspecialchars($o['status']) ?></span></td>
+          <td class="px-4 py-2 text-xs"><?= Money::format((int)$o['total'], (string)$o['currency']) ?></td>
+          <td class="px-4 py-2 text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars($o['created_at']) ?></td>
+        </tr>
+      <?php endforeach ?>
+    </tbody>
+  </table>
+</div>

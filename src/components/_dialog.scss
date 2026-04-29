@@ -1,0 +1,73 @@
+// Custom dialog / modal
+@keyframes dialog-overlay-in  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes dialog-overlay-out { from { opacity: 1 } to { opacity: 0 } }
+@keyframes dialog-in  { from { opacity: 0; transform: scale(.92) translateY(-8px) } to { opacity: 1; transform: none } }
+@keyframes dialog-out { from { opacity: 1; transform: none } to { opacity: 0; transform: scale(.92) translateY(-8px) } }
+
+#seven-dialog-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, .45);
+  backdrop-filter: blur(3px);
+  align-items: center;
+  justify-content: center;
+
+  &.is-open {
+    display: flex;
+    animation: dialog-overlay-in 200ms ease forwards;
+    .seven-dialog { animation: dialog-in 240ms cubic-bezier(.34,1.56,.64,1) forwards; }
+  }
+
+  &.is-closing {
+    display: flex;
+    animation: dialog-overlay-out 180ms ease forwards;
+    .seven-dialog { animation: dialog-out 180ms ease forwards; }
+  }
+}
+
+.seven-dialog {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 360px;
+  margin: 1rem;
+  box-shadow: 0 24px 60px rgba(0,0,0,.25), 0 4px 12px rgba(0,0,0,.12);
+  text-align: center;
+
+  &__icon {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.1rem;
+    svg { width: 24px; height: 24px; }
+
+    &--danger  { background: color-mix(in srgb, var(--danger)  14%, transparent); color: var(--danger);  }
+    &--success { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+    &--info    { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+    &--warning { background: color-mix(in srgb, var(--warning) 14%, transparent); color: var(--warning); }
+  }
+
+  &__title   { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0 0 .5rem; }
+  &__message { font-size: .875rem; color: var(--text-secondary); margin: 0 0 1.5rem; line-height: 1.55; }
+  &__actions { display: flex; gap: .6rem; justify-content: center; }
+
+  &__btn {
+    padding: .5rem 1.25rem;
+    border-radius: 8px;
+    font-size: .85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 150ms, color 150ms, border-color 150ms, transform 100ms;
+    &:active { transform: scale(.96); }
+
+    &--cancel  { background: var(--bg-tertiary); color: var(--text-secondary); border-color: var(--border-color); &:hover { color: var(--primary); border-color: var(--primary); } }
+    &--danger  { background: var(--danger);  color: #fff; border-color: var(--danger);  &:hover { background: color-mix(in srgb, var(--danger)  85%, #000); } }
+    &--warning { background: var(--warning); color: #fff; border-color: var(--warning); &:hover { background: color-mix(in srgb, var(--warning) 85%, #000); } }
+    &--primary { background: var(--primary); color: #fff; border-color: var(--primary); &:hover { background: var(--primary-hover); } }
+  }
+}

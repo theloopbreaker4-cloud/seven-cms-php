@@ -1,0 +1,59 @@
+<?php
+/** @var EcomCustomer $customer */
+/** @var array $orders */
+/** @var array $subs */
+$lang = Seven::app()->router->getLanguage();
+$cur  = (string)(DB::getCell('SELECT value FROM settings WHERE `key`="ecom.currency"') ?? 'USD');
+?>
+<div class="flex items-center gap-3 mb-6">
+  <h2 class="text-xl font-semibold flex-1"><?= htmlspecialchars($customer->email) ?></h2>
+  <a href="/<?= $lang ?>/admin/ecom/customers" class="text-sm text-[var(--text-tertiary)] hover:underline">← Back</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <form method="POST" action="/<?= $lang ?>/admin/ecom/customers/update/<?= (int)$customer->id ?>"
+        class="space-y-3 p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">First name</span>
+      <input name="first_name" value="<?= htmlspecialchars($customer->firstName ?? '') ?>" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" /></label>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Last name</span>
+      <input name="last_name" value="<?= htmlspecialchars($customer->lastName ?? '') ?>" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" /></label>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Phone</span>
+      <input name="phone" value="<?= htmlspecialchars($customer->phone ?? '') ?>" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" /></label>
+    <label class="block"><span class="text-xs text-[var(--text-secondary)]">Notes</span>
+      <textarea name="notes" rows="3" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm"><?= htmlspecialchars($customer->notes ?? '') ?></textarea></label>
+    <label class="flex items-center gap-2 text-sm">
+      <input type="checkbox" name="accepts_marketing" value="1" <?= $customer->acceptsMarketing ? 'checked' : '' ?> /> Accepts marketing
+    </label>
+    <button class="w-full px-3 py-2 rounded bg-[var(--primary)] text-white text-sm">Save</button>
+  </form>
+
+  <div class="lg:col-span-2 space-y-4">
+    <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+      <h3 class="font-semibold mb-3">Orders (<?= (int)$customer->ordersCount ?> · <?= Money::format((int)$customer->totalSpent, $cur) ?>)</h3>
+      <ul class="space-y-1 text-sm">
+        <?php foreach ($orders as $o): ?>
+          <li class="flex items-center justify-between border-b border-[var(--border-color)] py-1">
+            <a class="font-mono text-xs text-[var(--primary)] hover:underline" href="/<?= $lang ?>/admin/ecom/orders/view/<?= (int)$o['id'] ?>"><?= htmlspecialchars($o['number']) ?></a>
+            <span class="text-xs"><?= htmlspecialchars($o['status']) ?></span>
+            <span class="text-xs"><?= Money::format((int)$o['total'], (string)$o['currency']) ?></span>
+          </li>
+        <?php endforeach ?>
+      </ul>
+    </div>
+
+    <?php if ($subs): ?>
+      <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+        <h3 class="font-semibold mb-3">Subscriptions</h3>
+        <ul class="space-y-1 text-sm">
+          <?php foreach ($subs as $s): ?>
+            <li class="flex items-center justify-between border-b border-[var(--border-color)] py-1">
+              <span class="text-xs">#<?= (int)$s['id'] ?> · <?= htmlspecialchars($s['gateway']) ?></span>
+              <span class="text-xs"><?= htmlspecialchars($s['status']) ?></span>
+              <span class="text-xs"><?= Money::format((int)$s['unit_price'], (string)$s['currency']) ?> / <?= (int)$s['billing_interval'] ?> <?= htmlspecialchars($s['billing_period']) ?></span>
+            </li>
+          <?php endforeach ?>
+        </ul>
+      </div>
+    <?php endif ?>
+  </div>
+</div>

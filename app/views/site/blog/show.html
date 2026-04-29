@@ -1,0 +1,30 @@
+<?php
+/** @var Post $model */
+/** @var string $lang */
+?>
+<div class="max-w-3xl mx-auto px-4 py-12">
+  <a href="/<?= $lang ?>/blog" class="text-sm text-[var(--text-tertiary)] hover:text-[var(--primary)] mb-8 inline-block">
+    ← <?= Lang::t('backToList', 'blog') ?>
+  </a>
+
+  <?php if ($model->coverImage): ?>
+    <img src="<?= htmlspecialchars($model->coverImage) ?>" alt="<?= htmlspecialchars($model->t('title', $lang)) ?>"
+         class="w-full h-64 object-cover rounded-xl mb-8" />
+  <?php endif ?>
+
+  <h1 class="text-3xl font-bold mb-4 text-[var(--text-primary)]">
+    <?= htmlspecialchars($model->t('title', $lang)) ?>
+  </h1>
+
+  <?php $excerpt = $model->t('excerpt', $lang); if ($excerpt): ?>
+    <p class="text-lg text-[var(--text-secondary)] mb-8 italic"><?= htmlspecialchars($excerpt) ?></p>
+  <?php endif ?>
+
+  <div class="text-[var(--text-secondary)] leading-relaxed">
+    <?= $model->t('content', $lang) ?>
+  </div>
+
+  <div class="mt-12 pt-6 border-t border-[var(--border-color)] text-xs text-[var(--text-tertiary)]">
+    <?= $model->createdAt ?>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+// Theme: default — dark mode
+[data-theme="dark"] {
+  --bg-primary:      #0f1117;
+  --bg-secondary:    #161b27;
+  --bg-tertiary:     #1e2436;
+  --text-primary:    #f1f5f9;
+  --text-secondary:  #94a3b8;
+  --text-tertiary:   #475569;
+  --border-color:    #1e2d45;
+  --primary:         #3b82f6;
+  --primary-hover:   #2563eb;
+  --secondary:       #a78bfa;
+  --secondary-hover: #8b5cf6;
+
+  // admin
+  --sidebar-bg:      #0b0f1a;
+  --sidebar-border:  #1a2235;
+  --header-bg:       #10141f;
+  --success:         #22c55e;
+  --warning:         #f59e0b;
+  --danger:          #ef4444;
+  --info:            #22d3ee;
+
+  // site animated bg
+  --glow-a:  rgba(59,  130, 246, 0.11);
+  --glow-b:  rgba(167, 139, 250, 0.07);
+  --orb-a:   rgba(96,  165, 250, 0.13);
+  --orb-b:   rgba(196, 181, 253, 0.08);
+}

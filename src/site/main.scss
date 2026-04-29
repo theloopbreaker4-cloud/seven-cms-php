@@ -1,0 +1,23 @@
+@use '../themes/all' as *;
+@use '../components/all' as *;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ── Site layout ───────────────────────────────────────────────────────────
+html { font-size: 16px; }
+
+#app {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  > main { flex: 1 1 auto; }
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  > main { flex: 1 1 auto; }
+}

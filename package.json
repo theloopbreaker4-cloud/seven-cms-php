@@ -1,0 +1,27 @@
+{
+    "name": "seven-cms-php",
+    "version": "1.0.0",
+    "description": "Seven CMS — PHP MVC + Vue 3 + Vite",
+    "author": "TheLoopBreaker",
+    "license": "MIT",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "prebuild": "node -e \"['public/admin/js','public/admin/css','public/site/js','public/site/css','public/site/img','public/.vite'].forEach(p=>require('fs').rmSync(p,{recursive:true,force:true}))\"",
+        "build": "vite build",
+        "preview": "vite preview",
+        "serve": "wsl -d Ubuntu bash -c 'php -S 0.0.0.0:8085 /mnt/d/Works/Seven CMSProjects/sevenPHP/public/router.php'"
+    },
+    "dependencies": {
+        "vue": "^3.5.0",
+        "vue-router": "^4.6.4"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^5.2.0",
+        "autoprefixer": "^10.4.0",
+        "postcss": "^8.4.0",
+        "sass": "^1.99.0",
+        "tailwindcss": "^3.4.3",
+        "vite": "^6.0.0"
+    }
+}

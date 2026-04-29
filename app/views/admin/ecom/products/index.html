@@ -1,0 +1,70 @@
+<?php
+/** @var array $products */
+/** @var string $kind */
+/** @var string $search */
+$lang = Seven::app()->router->getLanguage();
+$base = "/{$lang}/admin/ecom/products";
+$cur  = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.currency"') ?? 'USD');
+?>
+
+<div class="flex flex-wrap items-center gap-3 mb-6">
+  <h2 class="text-xl font-semibold flex-1">Products</h2>
+  <form method="GET" class="flex gap-2">
+    <select name="kind" onchange="this.form.submit()" class="px-3 py-1.5 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm">
+      <option value="">All kinds</option>
+      <?php foreach (['physical' => 'Physical', 'digital' => 'Digital', 'service' => 'Service'] as $k => $v): ?>
+        <option value="<?= $k ?>" <?= $kind === $k ? 'selected' : '' ?>><?= $v ?></option>
+      <?php endforeach ?>
+    </select>
+    <input name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Search…"
+           class="px-3 py-1.5 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm w-48" />
+  </form>
+  <a href="<?= $base ?>/create" class="px-3 py-1.5 rounded bg-[var(--primary)] text-white text-sm">+ New product</a>
+</div>
+
+<?php if (empty($products)): ?>
+  <div class="border border-dashed border-[var(--border-color)] rounded-xl p-10 text-center text-[var(--text-secondary)]">
+    No products yet.
+  </div>
+<?php else: ?>
+  <div class="rounded-xl border border-[var(--border-color)] overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-[var(--bg-secondary)]">
+        <tr>
+          <th class="text-left px-3 py-2">Name</th>
+          <th class="text-left px-3 py-2">Kind</th>
+          <th class="text-left px-3 py-2">Price</th>
+          <th class="text-left px-3 py-2">Stock</th>
+          <th class="text-left px-3 py-2">Status</th>
+          <th class="px-3 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($products as $p):
+          $name = json_decode((string)$p['name'], true);
+          $title = is_array($name) ? ($name['en'] ?? array_values($name)[0] ?? $p['slug']) : $p['slug'];
+        ?>
+          <tr class="border-t border-[var(--border-color)] hover:bg-[var(--bg-secondary)]">
+            <td class="px-3 py-2">
+              <p class="font-medium"><?= htmlspecialchars((string)$title) ?></p>
+              <p class="text-[11px] font-mono text-[var(--text-tertiary)]"><?= htmlspecialchars($p['slug']) ?></p>
+            </td>
+            <td class="px-3 py-2"><span class="text-xs px-2 py-0.5 rounded bg-[var(--bg-tertiary)]"><?= htmlspecialchars($p['kind']) ?></span></td>
+            <td class="px-3 py-2 text-xs"><?= Money::format((int)$p['base_price'], $cur) ?></td>
+            <td class="px-3 py-2 text-xs"><?= (int)$p['track_inventory'] ? (int)$p['stock'] : '∞' ?></td>
+            <td class="px-3 py-2">
+              <?php if ((int)$p['is_active']): ?>
+                <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-500">Active</span>
+              <?php else: ?>
+                <span class="text-xs px-2 py-0.5 rounded bg-slate-500/15 text-slate-500">Hidden</span>
+              <?php endif ?>
+            </td>
+            <td class="px-3 py-2 text-right">
+              <a href="<?= $base ?>/edit/<?= (int)$p['id'] ?>" class="text-xs text-[var(--primary)] hover:underline">Edit</a>
+            </td>
+          </tr>
+        <?php endforeach ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif ?>

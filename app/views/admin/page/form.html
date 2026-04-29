@@ -1,0 +1,141 @@
+<?php
+/** @var Page $model */
+/** @var string $action */
+/** @var int|null $id */
+$langs      = Seven::app()->config['languages'];
+$isEdit     = $action === 'edit';
+$lang       = Seven::app()->router->getLanguage();
+$formAction = $isEdit
+  ? "/$lang/admin/page/update/$id"
+  : "/$lang/admin/page/store";
+$titleData   = json_decode($model->title   ?? '{}', true) ?? [];
+$contentData = json_decode($model->content ?? '{}', true) ?? [];
+$metaData    = json_decode($model->metaDesc ?? '{}', true) ?? [];
+$slugData    = $isEdit ? $model->getSlugs() : [];
+?>
+
+<form method="POST" action="<?= $formAction ?>">
+<?= Csrf::field() ?>
+
+<div class="max-w-5xl space-y-5">
+
+  <!-- Header row -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-xl font-bold text-[var(--text-primary)]">
+        <?= $isEdit ? AdminLang::t('edit_page', 'pages') : AdminLang::t('new_page', 'pages') ?>
+      </h2>
+      <?php if ($isEdit): ?>
+        <p class="text-xs text-[var(--text-tertiary)] mt-0.5">ID: <?= $id ?></p>
+      <?php endif ?>
+    </div>
+    <div class="flex items-center gap-3">
+      <label class="seven-toggle" data-tip="<?= AdminLang::t('published', 'pages') ?>">
+        <input type="checkbox" name="isPublished" value="1" <?= ($model->isPublished ?? 0) ? 'checked' : '' ?>>
+        <span class="text-sm text-[var(--text-secondary)]"><?= AdminLang::t('published', 'pages') ?></span>
+      </label>
+      <a href="/<?= $lang ?>/admin/page" class="btn btn-secondary btn-sm"><?= AdminLang::t('cancel', 'common') ?></a>
+      <button type="submit" class="btn btn-primary btn-sm"><?= $isEdit ? AdminLang::t('save', 'pages') : AdminLang::t('create', 'pages') ?></button>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5">
+
+    <!-- LEFT: language tabs -->
+    <div class="space-y-5">
+
+      <div class="card p-0 overflow-hidden">
+        <!-- Tab bar -->
+        <div class="flex border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">
+          <?php foreach ($langs as $i => $l): ?>
+            <button type="button"
+              class="lang-tab px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors <?= $i === 0 ? 'text-[var(--primary)] border-b-2 border-[var(--primary)] bg-[var(--bg-primary)]' : 'text-[var(--text-tertiary)] hover:text-[var(--primary)]' ?>"
+              data-lang="<?= $l ?>">
+              <?= strtoupper($l) ?>
+            </button>
+          <?php endforeach ?>
+        </div>
+
+        <!-- Tab panels -->
+        <?php foreach ($langs as $i => $l): ?>
+          <div class="lang-panel p-5 space-y-4 <?= $i > 0 ? 'hidden' : '' ?>" data-lang="<?= $l ?>">
+
+            <div class="form-group">
+              <label><?= AdminLang::t('title_field', 'pages') ?></label>
+              <input type="text" name="title_<?= $l ?>"
+                     value="<?= htmlspecialchars($titleData[$l] ?? '') ?>"
+                     placeholder="<?= strtoupper($l) ?>: Page title..." />
+            </div>
+
+            <div class="form-group">
+              <label><?= AdminLang::t('content', 'pages') ?></label>
+              <textarea name="content_<?= $l ?>" rows="14"
+                        class="font-mono text-sm resize-y"
+                        placeholder="Page content..."><?= htmlspecialchars($contentData[$l] ?? '') ?></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Meta Description</label>
+              <input type="text" name="metaDesc_<?= $l ?>"
+                     value="<?= htmlspecialchars($metaData[$l] ?? '') ?>"
+                     placeholder="SEO description..." />
+            </div>
+
+          </div>
+        <?php endforeach ?>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: sidebar -->
+    <div class="space-y-5">
+
+      <!-- Slugs -->
+      <div class="card">
+        <h3 class="settings-card-title"><?= AdminLang::t('slug', 'pages') ?></h3>
+        <div class="space-y-2">
+          <?php foreach ($langs as $l): ?>
+            <div class="flex items-center gap-2">
+              <span class="w-7 text-[10px] font-bold font-mono text-[var(--text-tertiary)] uppercase shrink-0"><?= $l ?></span>
+              <input type="text" name="slug_<?= $l ?>"
+                     value="<?= htmlspecialchars($slugData[$l] ?? '') ?>"
+                     class="font-mono text-xs"
+                     placeholder="my-page-slug" />
+            </div>
+          <?php endforeach ?>
+        </div>
+        <p class="form-hint mt-2">/{lang}/page/{slug}</p>
+      </div>
+
+      <!-- Save button repeat -->
+      <button type="submit" class="btn btn-primary w-full">
+        <?= $isEdit ? AdminLang::t('save', 'pages') : AdminLang::t('create', 'pages') ?>
+      </button>
+
+    </div>
+  </div>
+
+</div>
+</form>
+
+<script>
+(function(){
+  var tabs   = document.querySelectorAll('.lang-tab');
+  var panels = document.querySelectorAll('.lang-panel');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      var l = tab.dataset.lang;
+      tabs.forEach(function(t){
+        var on = t.dataset.lang === l;
+        t.classList.toggle('text-[var(--primary)]',  on);
+        t.classList.toggle('border-b-2',             on);
+        t.classList.toggle('border-[var(--primary)]',on);
+        t.classList.toggle('bg-[var(--bg-primary)]', on);
+        t.classList.toggle('text-[var(--text-tertiary)]', !on);
+      });
+      panels.forEach(function(p){ p.classList.toggle('hidden', p.dataset.lang !== l); });
+    });
+  });
+})();
+</script>

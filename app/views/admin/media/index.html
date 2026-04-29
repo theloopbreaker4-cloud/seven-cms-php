@@ -1,0 +1,293 @@
+<?php
+/** @var array       $media    */
+/** @var array       $folders  */
+/** @var int|null    $folderId */
+/** @var string      $mime     */
+/** @var string      $search   */
+$lang = Seven::app()->router->getLanguage();
+$base = '/' . $lang . '/admin/media';
+?>
+
+<div class="flex flex-wrap items-center gap-3 mb-6">
+  <h2 class="text-xl font-semibold flex-1"><?= AdminLang::t('media', 'nav') ?></h2>
+
+  <select id="mime-filter"
+          class="px-3 py-1.5 rounded-lg border text-sm bg-[var(--bg-primary)] border-[var(--border-color)]"
+          onchange="window.location.href = updateQuery({ mime: this.value })">
+    <option value=""        <?= $mime === ''       ? 'selected' : '' ?>>All types</option>
+    <option value="image/"  <?= $mime === 'image/' ? 'selected' : '' ?>>Images</option>
+    <option value="video/"  <?= $mime === 'video/' ? 'selected' : '' ?>>Videos</option>
+    <option value="audio/"  <?= $mime === 'audio/' ? 'selected' : '' ?>>Audio</option>
+    <option value="application/pdf" <?= $mime === 'application/pdf' ? 'selected' : '' ?>>PDF</option>
+  </select>
+
+  <form method="GET" action="<?= $base ?>" class="flex items-center gap-2">
+    <?php if ($folderId): ?><input type="hidden" name="folder" value="<?= (int)$folderId ?>" /><?php endif ?>
+    <?php if ($mime !== ''): ?><input type="hidden" name="mime" value="<?= htmlspecialchars($mime) ?>" /><?php endif ?>
+    <input type="search" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Search…"
+           class="px-3 py-1.5 rounded-lg border text-sm bg-[var(--bg-primary)] border-[var(--border-color)] w-48" />
+  </form>
+
+  <button id="bulk-delete" disabled
+          class="px-3 py-1.5 rounded-lg text-sm bg-red-500/10 text-red-500 disabled:opacity-40">
+    Delete selected (<span id="sel-count">0</span>)
+  </button>
+</div>
+
+<div class="flex gap-6">
+  <aside class="w-56 flex-shrink-0">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Folders</h3>
+      <button id="folder-add" class="text-xs text-[var(--primary)] hover:underline">+ New</button>
+    </div>
+
+    <ul class="space-y-0.5 text-sm">
+      <li>
+        <a href="<?= $base ?>"
+           class="block px-2 py-1.5 rounded <?= $folderId === null ? 'bg-[var(--primary)] text-white' : 'hover:bg-[var(--bg-tertiary)]' ?>">
+          All media
+        </a>
+      </li>
+      <?php foreach ($folders as $f): ?>
+        <li class="flex items-center gap-1 group">
+          <a href="<?= $base ?>?folder=<?= (int)$f['id'] ?>"
+             class="flex-1 block px-2 py-1.5 rounded truncate <?= $folderId === (int)$f['id'] ? 'bg-[var(--primary)] text-white' : 'hover:bg-[var(--bg-tertiary)]' ?>"
+             style="padding-left: <?= 8 + ((int)($f['depth'] ?? 0) * 12) ?>px;">
+            <?= htmlspecialchars($f['name']) ?>
+          </a>
+          <button class="folder-del opacity-0 group-hover:opacity-100 px-1 text-xs text-red-500"
+                  data-id="<?= (int)$f['id'] ?>"
+                  title="Delete folder">×</button>
+        </li>
+      <?php endforeach ?>
+    </ul>
+  </aside>
+
+  <div class="flex-1 min-w-0">
+    <div id="dropzone"
+         class="border-2 border-dashed border-[var(--border-color)] rounded-xl p-8 mb-6 text-center cursor-pointer transition-colors hover:border-[var(--primary)]">
+      <p class="text-[var(--text-secondary)] text-sm mb-2">
+        Drag &amp; drop files here, or
+        <label class="text-[var(--primary)] hover:underline cursor-pointer">
+          browse
+          <input id="file-picker" type="file" multiple class="hidden"
+                 accept="image/*,video/*,audio/*,application/pdf" />
+        </label>
+      </p>
+      <p class="text-xs text-[var(--text-tertiary)]">Max 25 MB per file. Images, video, audio, PDF.</p>
+      <div id="upload-progress" class="hidden mt-4">
+        <div class="h-2 rounded-full bg-[var(--bg-tertiary)] overflow-hidden">
+          <div class="bar h-full bg-[var(--primary)] transition-all" style="width:0%"></div>
+        </div>
+        <p class="text-xs mt-2 text-[var(--text-secondary)]">
+          <span class="done">0</span> / <span class="total">0</span> uploaded
+        </p>
+      </div>
+    </div>
+
+    <?php if (empty($media)): ?>
+      <p class="text-[var(--text-secondary)] text-sm py-12 text-center">No media yet — drop a file above to start.</p>
+    <?php else: ?>
+      <div id="media-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <?php foreach ($media as $row):
+          $isImage = preg_match('/\.(jpg|jpeg|png|gif|webp|avif|svg)$/i', $row['path'] ?? '');
+        ?>
+          <div class="media-card group relative bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg overflow-hidden"
+               data-id="<?= (int)$row['id'] ?>">
+            <input type="checkbox" class="select-box absolute top-2 left-2 z-10 opacity-0 group-hover:opacity-100 checked:opacity-100" />
+
+            <div class="aspect-square bg-[var(--bg-tertiary)] flex items-center justify-center overflow-hidden">
+              <?php if ($isImage): ?>
+                <img src="<?= htmlspecialchars($row['path']) ?>" alt=""
+                     loading="lazy" class="w-full h-full object-cover" />
+              <?php else: ?>
+                <svg class="w-10 h-10 text-[var(--text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+              <?php endif ?>
+            </div>
+
+            <div class="p-2">
+              <p class="text-xs text-[var(--text-secondary)] truncate" title="<?= htmlspecialchars($row['original_name'] ?? $row['filename']) ?>">
+                <?= htmlspecialchars($row['original_name'] ?? $row['filename']) ?>
+              </p>
+              <p class="text-[10px] text-[var(--text-tertiary)] mt-0.5">
+                <?= number_format((int)$row['size'] / 1024, 0) ?> KB
+                <?php if (!empty($row['width'])): ?>· <?= (int)$row['width'] ?>×<?= (int)$row['height'] ?><?php endif ?>
+              </p>
+            </div>
+
+            <div class="absolute inset-x-0 bottom-0 flex bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2 gap-1">
+              <button class="edit-btn flex-1 text-xs text-white py-1 rounded bg-white/10 hover:bg-white/20"
+                      data-id="<?= (int)$row['id'] ?>"
+                      data-row='<?= htmlspecialchars(json_encode($row, JSON_UNESCAPED_UNICODE), ENT_QUOTES) ?>'>
+                Edit
+              </button>
+              <a href="<?= $base ?>/delete/<?= (int)$row['id'] ?>"
+                 class="text-xs text-white py-1 px-2 rounded bg-red-500/70 hover:bg-red-500"
+                 data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
+                 data-confirm-type="danger">×</a>
+            </div>
+          </div>
+        <?php endforeach ?>
+      </div>
+    <?php endif ?>
+  </div>
+</div>
+
+<dialog id="edit-modal" class="rounded-xl p-0 backdrop:bg-black/40 w-full max-w-md">
+  <form id="edit-form" class="p-5 bg-[var(--bg-primary)] text-[var(--text-primary)]">
+    <h3 class="font-semibold mb-4">Edit media</h3>
+    <input type="hidden" name="id" />
+    <label class="block mb-3">
+      <span class="text-xs text-[var(--text-secondary)]">Title</span>
+      <input name="title" type="text" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-secondary)] border-[var(--border-color)]" />
+    </label>
+    <label class="block mb-3">
+      <span class="text-xs text-[var(--text-secondary)]">Alt text (en)</span>
+      <input name="alt_en" type="text" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-secondary)] border-[var(--border-color)]" />
+    </label>
+    <label class="block mb-4">
+      <span class="text-xs text-[var(--text-secondary)]">Description</span>
+      <textarea name="description" rows="3" class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-secondary)] border-[var(--border-color)]"></textarea>
+    </label>
+    <div class="flex gap-2 justify-end">
+      <button type="button" data-close class="px-3 py-1.5 text-sm rounded border border-[var(--border-color)]">Cancel</button>
+      <button type="submit"           class="px-3 py-1.5 text-sm rounded bg-[var(--primary)] text-white">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+  const BASE   = <?= json_encode($base) ?>;
+  const FOLDER = <?= json_encode($folderId) ?>;
+
+  window.updateQuery = (patch) => {
+    const u = new URL(window.location.href);
+    Object.entries(patch).forEach(([k, v]) => {
+      if (v === '' || v === null || v === undefined) u.searchParams.delete(k);
+      else u.searchParams.set(k, v);
+    });
+    return u.pathname + u.search;
+  };
+
+  const post = async (url, formData) => {
+    const r = await fetch(url, {
+      method: 'POST', body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    return r.json();
+  };
+
+  const dz       = document.getElementById('dropzone');
+  const picker   = document.getElementById('file-picker');
+  const progress = document.getElementById('upload-progress');
+  const bar      = progress.querySelector('.bar');
+  const doneEl   = progress.querySelector('.done');
+  const totalEl  = progress.querySelector('.total');
+
+  ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => {
+    e.preventDefault();
+  }));
+  dz.addEventListener('drop',  e => { e.preventDefault(); upload(e.dataTransfer.files); });
+  picker.addEventListener('change', e => upload(e.target.files));
+
+  async function upload(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+
+    progress.classList.remove('hidden');
+    totalEl.textContent = files.length;
+    doneEl.textContent  = 0;
+    bar.style.width     = '0%';
+
+    let done = 0;
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append('files[]', file);
+      if (FOLDER) fd.append('folder_id', FOLDER);
+      try { await post(BASE + '/upload', fd); } catch (e) {}
+      done++;
+      doneEl.textContent = done;
+      bar.style.width    = Math.round((done / files.length) * 100) + '%';
+    }
+    setTimeout(() => window.location.reload(), 400);
+  }
+
+  const grid     = document.getElementById('media-grid');
+  const bulkBtn  = document.getElementById('bulk-delete');
+  const selCount = document.getElementById('sel-count');
+
+  const selected = new Set();
+  const refreshBulk = () => {
+    selCount.textContent = selected.size;
+    bulkBtn.disabled     = selected.size === 0;
+  };
+
+  if (grid) {
+    grid.addEventListener('change', e => {
+      if (!e.target.classList.contains('select-box')) return;
+      const id = e.target.closest('.media-card').dataset.id;
+      e.target.checked ? selected.add(id) : selected.delete(id);
+      refreshBulk();
+    });
+  }
+
+  bulkBtn.addEventListener('click', async () => {
+    if (!selected.size) return;
+    if (!confirm(`Delete ${selected.size} item(s)?`)) return;
+    const fd = new FormData();
+    selected.forEach(id => fd.append('ids[]', id));
+    await post(BASE + '/bulk-delete', fd);
+    window.location.reload();
+  });
+
+  const modal = document.getElementById('edit-modal');
+  const form  = document.getElementById('edit-form');
+  modal.addEventListener('click', e => {
+    if (e.target.dataset.close !== undefined || e.target === modal) modal.close();
+  });
+
+  document.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', () => {
+    const row = JSON.parse(b.dataset.row);
+    const alt = (() => { try { return JSON.parse(row.alt || '{}'); } catch { return {}; } })();
+    form.id.value          = row.id;
+    form.title.value       = row.title       || '';
+    form.alt_en.value      = alt.en          || '';
+    form.description.value = row.description || '';
+    modal.showModal();
+  }));
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData();
+    fd.append('title',       form.title.value);
+    fd.append('description', form.description.value);
+    fd.append('alt[en]',     form.alt_en.value);
+    await post(`${BASE}/update/${form.id.value}`, fd);
+    modal.close();
+    window.location.reload();
+  });
+
+  document.getElementById('folder-add').addEventListener('click', async () => {
+    const name = prompt('Folder name?');
+    if (!name) return;
+    const fd = new FormData();
+    fd.append('name', name);
+    const r = await post(BASE + '/folder/create', fd);
+    if (r.ok) window.location.reload();
+    else      alert(r.message || 'Failed');
+  });
+
+  document.querySelectorAll('.folder-del').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('Delete this folder? It must be empty.')) return;
+    const r = await fetch(`${BASE}/folder/delete/${b.dataset.id}`, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    }).then(r => r.json());
+    if (r.ok) window.location.reload();
+    else      alert(r.message || 'Failed');
+  }));
+})();
+</script>

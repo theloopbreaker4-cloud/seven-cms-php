@@ -1,0 +1,9 @@
+{
+  "name": "Violet",
+  "author": "Seven CMS",
+  "desc": "Purple & violet palette with pink accents",
+  "preview": {
+    "light": { "primary": "#7c3aed", "bg": "#faf8ff", "text": "#1a0e2e" },
+    "dark":  { "primary": "#a78bfa", "bg": "#0d0918", "text": "#ede8ff" }
+  }
+}

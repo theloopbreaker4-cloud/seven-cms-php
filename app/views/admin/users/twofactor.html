@@ -1,0 +1,68 @@
+<?php
+/** @var bool   $enabled */
+/** @var string $secret  */
+/** @var string $qr      */
+/** @var array  $codes   recovery codes shown ONCE on first issue */
+$lang = Seven::app()->router->getLanguage();
+$base = "/{$lang}/admin/2fa";
+?>
+
+<div class="max-w-2xl">
+  <h2 class="text-xl font-semibold mb-2">Two-Factor Authentication</h2>
+  <p class="text-sm text-[var(--text-secondary)] mb-6">
+    Adds a one-time-password step (Google Authenticator, 1Password, Authy…) to your sign-in.
+  </p>
+
+  <?php if ($enabled): ?>
+    <div class="p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-sm mb-4">
+      <p class="font-medium text-emerald-500">2FA is enabled.</p>
+      <p class="text-[var(--text-secondary)]">You'll be asked for a code on next sign-in.</p>
+    </div>
+
+    <form method="POST" action="<?= $base ?>/disable" class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+      <p class="text-sm mb-3">Enter your current 6-digit code to disable 2FA:</p>
+      <div class="flex gap-2">
+        <input name="code" autocomplete="off" inputmode="numeric" pattern="\d{6}" maxlength="6"
+               class="flex-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-center text-lg" />
+        <button class="px-3 py-2 rounded bg-red-500 text-white text-sm">Disable</button>
+      </div>
+    </form>
+  <?php else: ?>
+    <ol class="space-y-5">
+      <li class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+        <p class="font-medium mb-3">1. Scan the QR code with your authenticator app</p>
+        <img src="<?= htmlspecialchars($qr) ?>" alt="QR" class="w-44 h-44 rounded bg-white p-2" />
+        <p class="text-xs text-[var(--text-tertiary)] mt-3">
+          Or enter this secret manually:
+          <code class="ml-1 px-2 py-0.5 rounded bg-[var(--bg-tertiary)] font-mono"><?= htmlspecialchars($secret) ?></code>
+        </p>
+      </li>
+
+      <li class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+        <p class="font-medium mb-3">2. Verify the code from your app</p>
+        <form method="POST" action="<?= $base ?>/enable" class="flex gap-2" novalidate>
+          <input name="code" autocomplete="off" inputmode="numeric" pattern="\d{6}" maxlength="6" required
+                 data-msg-required="Enter the 6-digit code."
+                 data-msg-pattern="Enter exactly 6 digits."
+                 class="flex-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-center text-lg"
+                 placeholder="123 456" />
+          <button class="px-4 py-2 rounded bg-[var(--primary)] text-white text-sm">Enable 2FA</button>
+        </form>
+      </li>
+
+      <?php if (!empty($codes)): ?>
+        <li class="p-5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+          <p class="font-medium text-amber-500 mb-2">3. Save these recovery codes</p>
+          <p class="text-xs text-[var(--text-secondary)] mb-3">
+            Each can be used once if you lose access to your authenticator. They are shown only now.
+          </p>
+          <ul class="grid grid-cols-2 gap-2 font-mono text-sm">
+            <?php foreach ($codes as $c): ?>
+              <li class="px-2 py-1 rounded bg-[var(--bg-primary)]"><?= htmlspecialchars($c) ?></li>
+            <?php endforeach ?>
+          </ul>
+        </li>
+      <?php endif ?>
+    </ol>
+  <?php endif ?>
+</div>

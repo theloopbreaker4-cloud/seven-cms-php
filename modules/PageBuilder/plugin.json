@@ -1,0 +1,15 @@
+{
+  "name": "PageBuilder",
+  "version": "1.0.0",
+  "description": "Drag-and-drop block editor over CCT — heroes, columns, products, custom blocks.",
+  "author": "SevenCMS Core",
+  "requires": {
+    "core":    ">=1.0.0",
+    "Content": ">=1.0.0"
+  },
+  "permissions": [
+    "pagebuilder.view",
+    "pagebuilder.edit",
+    "pagebuilder.publish"
+  ]
+}

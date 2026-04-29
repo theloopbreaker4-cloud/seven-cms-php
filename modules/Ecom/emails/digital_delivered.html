@@ -1,0 +1,15 @@
+<?php
+/** @var Order $order */
+/** @var Product $product */
+/** @var array $tokens */
+$lang = 'en';
+?>
+<h2>Your download is ready</h2>
+<p>Thanks for purchasing <strong><?= htmlspecialchars($product->pickI18n('name', $lang)) ?></strong>.</p>
+<p>Use the secure link(s) below to download your file(s):</p>
+<ul>
+  <?php foreach ($tokens as $t): ?>
+    <li><a href="<?= htmlspecialchars(DigitalDelivery::downloadUrl($t, $lang)) ?>">Download #<?= htmlspecialchars(substr($t, 0, 8)) ?></a></li>
+  <?php endforeach ?>
+</ul>
+<p>Order: <strong><?= htmlspecialchars($order->number) ?></strong></p>

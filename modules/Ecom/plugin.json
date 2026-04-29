@@ -1,0 +1,36 @@
+{
+  "name": "Ecom",
+  "version": "1.0.0",
+  "description": "Full e-commerce — physical, digital, and subscription products with Stripe checkout.",
+  "author": "SevenCMS Core",
+  "requires": {
+    "core": ">=1.0.0"
+  },
+  "permissions": [
+    "ecom.products.view",
+    "ecom.products.create",
+    "ecom.products.update",
+    "ecom.products.delete",
+    "ecom.orders.view",
+    "ecom.orders.manage",
+    "ecom.orders.refund",
+    "ecom.customers.view",
+    "ecom.customers.manage",
+    "ecom.discounts.manage",
+    "ecom.subscriptions.view",
+    "ecom.subscriptions.manage",
+    "ecom.settings.update",
+    "ecom.reports.view"
+  ],
+  "settings": {
+    "currency":            "USD",
+    "tax_rate":            0,
+    "tax_inclusive":       false,
+    "stripe_public_key":   "",
+    "stripe_secret_key":   "",
+    "stripe_webhook_secret": "",
+    "paypal_client_id":    "",
+    "paypal_secret":       "",
+    "paypal_mode":         "sandbox"
+  }
+}
