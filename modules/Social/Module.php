@@ -1,4 +1,5 @@
 <?php
+/** SevenCMS — github.com/theloopbreaker4-cloud/seven-cms-php */
 
 defined('_SEVEN') or die('No direct script access allowed');
 

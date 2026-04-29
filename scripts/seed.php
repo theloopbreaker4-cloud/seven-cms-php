@@ -1,4 +1,5 @@
 <?php
+/** SevenCMS — github.com/theloopbreaker4-cloud/seven-cms-php */
 /**
  * Seed root admin user.
  * Usage: wsl.exe -d Ubuntu bash -c 'php /mnt/d/Works/SevenCMSProjects/sevenPHP/scripts/seed.php'

@@ -1,4 +1,5 @@
 <?php
+/** SevenCMS — github.com/theloopbreaker4-cloud/seven-cms-php */
 /**
  * Migrate existing page.slug and post.slug columns into the slug table.
  * Run once after deploying the localized-slug feature.

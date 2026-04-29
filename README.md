@@ -10,6 +10,16 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/theloopbreaker4-cloud/seven-cms-php"><img src="https://img.shields.io/badge/maintainer-%40theloopbreaker4--cloud-0891b2?style=flat-square&logo=github" alt="Maintainer" /></a>
+  <img src="https://img.shields.io/badge/AI--assisted-Claude-D97757?style=flat-square&logo=anthropic&logoColor=white" alt="AI-assisted: Claude" />
+  <img src="https://img.shields.io/badge/PHP-8.4-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP 8.4" />
+  <img src="https://img.shields.io/badge/Vue-3-42B883?style=flat-square&logo=vue.js&logoColor=white" alt="Vue 3" />
+  <img src="https://img.shields.io/badge/Tailwind-3-38BDF8?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind 3" />
+  <img src="https://img.shields.io/badge/license-ISC-success?style=flat-square" alt="ISC License" />
+  <img src="https://img.shields.io/badge/status-active-brightgreen?style=flat-square" alt="Active development" />
+</p>
+
+<p align="center">
   <a href="docs/getting-started.md">Getting started</a> ·
   <a href="docs/architecture.md">Architecture</a> ·
   <a href="docs/plugins.md">Plugins</a> ·
