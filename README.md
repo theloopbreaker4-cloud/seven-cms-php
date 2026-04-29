@@ -142,6 +142,48 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Quick rules:
 - Each new feature ships a doc file under `docs/{feature}.md` **and** an admin help
   page under `app/views/admin/help/{feature}.html`.
 
+---
+
+## Project status & credits
+
+SevenCMS is an **active, open-source project under continuous development**. I want to
+be upfront about how it's built so you can decide whether it fits your use case.
+
+### Who works on this
+
+- **Maintainer & author:** [@theloopbreaker4-cloud](https://github.com/theloopbreaker4-cloud)
+  — wrote the original codebase, owns architectural decisions, reviews and tests every
+  change before it ships.
+- **AI-assisted development:** large portions of the recent codebase (refactors, new
+  modules, security hardening, UI components, validation engine, custom select, CSRF
+  guard, SVG sanitizer, error pages, form validation, etc.) were written together with
+  [Claude](https://www.anthropic.com/claude) acting as a pair-programmer. I direct the
+  work, review the diffs, and take responsibility for what lands on `master`.
+
+### What this means for you
+
+- **Read the code before you trust it in production.** Every line is reviewed by a
+  human, but a CMS is a large surface area. If you're shipping SevenCMS publicly,
+  audit at least: authentication (`lib/auth.class.php`, `app/apiControllers/AuthV1ApiController.php`),
+  CSRF (`lib/csrf.class.php` + `lib/general.class.php`), file upload sanitization
+  (`lib/svgsanitizer.class.php`, `modules/Media/`), and the global request guard.
+- **Security testing is ongoing.** I run manual checks against the OWASP Top 10
+  (CSRF, XSS, SQL injection, open redirects, file upload, broken auth, rate limiting)
+  on every release. There is no formal third-party audit yet — if you find a real
+  issue, please open a security advisory on GitHub instead of a public issue.
+- **Tests cover pure logic only.** `tests/Unit/` validates Container, Event, JWT,
+  Money, TOTP. The integration suite (DB-touching) is on the roadmap but not built
+  yet, so end-to-end behavior is verified by hand on every change.
+- **Expect breaking changes** until 1.0. The schema is additive (we don't drop
+  columns), but APIs and plugin contracts may shift.
+
+### Why I'm telling you this
+
+You should know who actually wrote the thing you're running. Not disclosing AI
+involvement is becoming common — I'd rather be honest. If that means you choose a
+more battle-tested CMS, that's a fair call. If you want to help test, audit, or
+contribute fixes — pull requests are very welcome.
+
 ## License
 
 ISC — see [LICENSE](LICENSE).
