@@ -7,8 +7,8 @@
   <meta name="description" content="<?= htmlspecialchars(Lang::t('description', 'meta')) ?>" />
   <title><?= htmlspecialchars(Seven::app()->getTitle()) ?> — <?= htmlspecialchars(Setting::get('site_name', 'Seven CMS')) ?></title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light');})();</script>
-  <script>
+  <script nonce="<?= Csp::nonce() ?>">(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light');})();</script>
+  <script nonce="<?= Csp::nonce() ?>">
     // CSRF token for legacy POST forms on the public site.
     window.__CSRF_TOKEN__ = <?= json_encode(Csrf::token()) ?>;
     document.addEventListener('DOMContentLoaded', function(){
@@ -46,7 +46,7 @@
   </svg>
 </div>
 
-<script>
+<script nonce="<?= Csp::nonce() ?>">
 window.__DATA__ = <?= json_encode($viewData ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?>;
 window.__LANG__ = "<?= Seven::app()->router->getLanguage() ?>";
 window.__ROUTE__ = "<?= Seven::app()->router->getController() ?>/<?= Seven::app()->router->getAction() ?>";
@@ -112,7 +112,7 @@ window.__ROUTE__ = "<?= Seven::app()->router->getController() ?>/<?= Seven::app(
           <?php endforeach ?>
         </div>
       </div>
-      <script>
+      <script nonce="<?= Csp::nonce() ?>">
         document.addEventListener('click', function(e) {
           var d = document.getElementById('langDrop');
           if (d && !d.contains(e.target)) document.getElementById('langMenu')?.classList.add('hidden');
@@ -223,7 +223,7 @@ window.__ROUTE__ = "<?= Seven::app()->router->getController() ?>/<?= Seven::app(
   </div>
 </footer>
 
-<script>
+<script nonce="<?= Csp::nonce() ?>">
 (function(){
   var h=document.documentElement,
       t=localStorage.getItem('theme')||'light',

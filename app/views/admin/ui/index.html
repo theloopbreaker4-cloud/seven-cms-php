@@ -40,7 +40,7 @@
       <p class="text-sm text-[var(--text-secondary)] mt-1">Все компоненты используют только <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">var(--token)</code> — автоматически следуют теме и тёмному режиму</p>
     </div>
     <div class="flex flex-wrap gap-1.5">
-      <?php foreach (['buttons','badges','forms','pickers','validation','checkbox','toast','spinner','progress','skeleton','avatar','dropdown','alert','steps','widgets'] as $s): ?>
+      <?php foreach (['buttons','badges','forms','pickers','validation','select','counter','checkbox','toast','spinner','progress','skeleton','avatar','dropdown','alert','steps','widgets'] as $s): ?>
         <a href="#<?= $s ?>" class="px-2.5 py-1 rounded-full text-xs bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors">#<?= $s ?></a>
       <?php endforeach ?>
     </div>
@@ -277,6 +277,127 @@
 
 &lt;!-- Opt out for an entire form --&gt;
 &lt;form data-no-validate&gt;…&lt;/form&gt;</div>
+  </div>
+
+  <!-- ─── CUSTOM SELECT ──────────────────────────────────────────────────── -->
+  <div class="card" id="select">
+    <p class="settings-card-title">Custom Select</p>
+    <p class="text-xs text-[var(--text-secondary)] mb-3">
+      Native <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">&lt;select&gt;</code> wrapped automatically:
+      keyboard nav (↑↓ Enter Esc), theme-aware menu, search-friendly DOM (the real
+      <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">&lt;select&gt;</code> stays in the form for submit + validation).
+      Opt out with <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">data-native-select</code> on the element or any ancestor.
+    </p>
+
+    <div class="ui-preview">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+        <div class="form-group">
+          <label>Default</label>
+          <select>
+            <option value="">— pick one —</option>
+            <option value="alpha">Alpha</option>
+            <option value="beta" selected>Beta (selected)</option>
+            <option value="gamma" disabled>Gamma (disabled)</option>
+            <option value="delta">Delta</option>
+            <option value="epsilon">Epsilon</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Required (with validation)</label>
+          <select required data-msg-required="Pick one to continue.">
+            <option value="">— required —</option>
+            <option value="a">Option A</option>
+            <option value="b">Option B</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Disabled</label>
+          <select disabled>
+            <option>Locked</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Native (opt-out)</label>
+          <select data-native-select>
+            <option>Untouched browser select</option>
+            <option>Renders default OS chrome</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="ui-code">&lt;!-- Auto-enhanced --&gt;
+&lt;select required data-msg-required="Pick one."&gt;
+  &lt;option value=""&gt;— choose —&lt;/option&gt;
+  &lt;option value="a"&gt;Option A&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;!-- Opt out (keeps native chrome) --&gt;
+&lt;select data-native-select&gt;…&lt;/select&gt;</div>
+  </div>
+
+  <!-- ─── CHARACTER COUNTER ──────────────────────────────────────────────── -->
+  <div class="card" id="counter">
+    <p class="settings-card-title">Character Counter</p>
+    <p class="text-xs text-[var(--text-secondary)] mb-3">
+      Any <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">&lt;textarea&gt;</code> or
+      <code class="bg-[var(--bg-tertiary)] px-1 rounded text-xs">&lt;input maxlength&gt;</code>
+      gets a live counter. It turns amber at 90% and red when full.
+    </p>
+
+    <div class="ui-preview">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+        <div class="form-group">
+          <label>Tweet-style (max 50)</label>
+          <input type="text" maxlength="50" placeholder="Type to see the counter…" />
+        </div>
+        <div class="form-group">
+          <label>Short bio (max 200)</label>
+          <textarea rows="3" maxlength="200" placeholder="Type to see the counter…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="ui-code">&lt;input type="text" maxlength="50" /&gt;
+&lt;textarea maxlength="200" rows="3"&gt;&lt;/textarea&gt;
+&lt;!-- Counter is injected automatically. Hide it with `data-no-validate` --&gt;</div>
+  </div>
+
+  <!-- ─── SHAKE ON SUBMIT ────────────────────────────────────────────────── -->
+  <div class="card" id="shake">
+    <p class="settings-card-title">Shake + Toast on Invalid Submit</p>
+    <p class="text-xs text-[var(--text-secondary)] mb-3">
+      Submitting an invalid form shakes the form, scrolls to the first bad field,
+      focuses it, and shows a toast with the error count. Try clicking <em>Submit</em>
+      below with empty fields.
+    </p>
+
+    <div class="ui-preview">
+      <form class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+        <div class="form-group">
+          <label>Name (required)</label>
+          <input type="text" required data-msg-required="Name is required." />
+        </div>
+        <div class="form-group">
+          <label>Email (required)</label>
+          <input type="email" required />
+        </div>
+        <div class="form-group md:col-span-2">
+          <label>City (required)</label>
+          <input type="text" required />
+        </div>
+        <div class="md:col-span-2 flex gap-2">
+          <button type="submit" class="btn btn-primary">Submit (try empty)</button>
+          <button type="reset" class="btn btn-secondary">Reset (clears errors)</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="ui-code">&lt;!-- All automatic — just write standard HTML constraints. --&gt;
+&lt;form&gt;
+  &lt;input required /&gt;
+  &lt;button type="submit"&gt;Submit&lt;/button&gt;
+&lt;/form&gt;</div>
   </div>
 
   <!-- ─── CHECKBOX / RADIO / TOGGLE ────────────────────────────────────────── -->

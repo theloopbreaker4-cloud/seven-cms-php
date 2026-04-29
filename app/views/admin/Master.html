@@ -15,7 +15,7 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?= htmlspecialchars(Seven::app()->getTitle()) ?> — <?= htmlspecialchars(Setting::get('site_name', 'Seven CMS')) ?> Admin</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <script>
+  <script nonce="<?= Csp::nonce() ?>">
     (function(){
       var h=document.documentElement;
       h.setAttribute('data-theme', localStorage.getItem('theme')||'light');
@@ -40,7 +40,7 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
     });
   </script>
   <?= Vite::tags('src/admin/main.js') ?>
-  <style>
+  <style nonce="<?= Csp::nonce() ?>">
     .nav-group-btn { width:100%; display:flex; align-items:center; gap:.5rem; padding:.45rem 1rem; font-size:.8rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--text-tertiary); cursor:pointer; background:none; border:none; transition:color 150ms; }
     .nav-group-btn:hover { color:var(--primary); }
     .nav-group-btn svg.chevron { margin-left:auto; width:12px; height:12px; transition:transform 200ms; }
@@ -286,7 +286,7 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
     </main>
   </div>
 
-  <script>
+  <script nonce="<?= Csp::nonce() ?>">
     (function(){
       // Theme toggle
       var h=document.documentElement,b=document.getElementById('themeToggle'),

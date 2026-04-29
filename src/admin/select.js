@@ -8,7 +8,8 @@ let openInstance = null
 
 function init(select) {
   if (select.dataset.selectBound) return
-  if (select.hasAttribute('data-native-select')) return
+  // Opt out: <select data-native-select> or any ancestor with [data-native-select]
+  if (select.closest('[data-native-select]')) return
   if (select.multiple) return // not handling multi-select for now
   if (select.size && select.size > 1) return
   select.dataset.selectBound = '1'

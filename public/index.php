@@ -17,13 +17,20 @@ define('PROTOCOL', stripos($_SERVER['SERVER_PROTOCOL'] ?? '', 'https') !== false
 
 if (!defined('STDIN')) define('STDIN', 'php://input');
 
+// Generate a per-request CSP nonce — used by inline <script>/<style> in views.
+// Modern browsers ignore 'unsafe-inline' when a nonce is also present, so this
+// upgrades security for browsers that support CSP Level 3 without breaking
+// older ones (or feature views still relying on 'unsafe-inline').
+require_once(ROOT_DIR . DS . 'lib' . DS . 'csp.class.php');
+$_nonce = Csp::nonce();
+
 // Security headers — sent before any output
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
 $_viteSrc = ENVIRONMENT === 'dev' ? ' http://localhost:5173 ws://localhost:5173' : '';
-header("Content-Security-Policy: default-src 'self'{$_viteSrc}; script-src 'self' 'unsafe-inline'{$_viteSrc}; style-src 'self' 'unsafe-inline'{$_viteSrc}; img-src 'self' data: https://flagcdn.com; font-src 'self'{$_viteSrc}; connect-src 'self'{$_viteSrc}; frame-ancestors 'none';");
+header("Content-Security-Policy: default-src 'self'{$_viteSrc}; script-src 'self' 'nonce-{$_nonce}' 'unsafe-inline'{$_viteSrc}; style-src 'self' 'nonce-{$_nonce}' 'unsafe-inline'{$_viteSrc}; img-src 'self' data: https://flagcdn.com; font-src 'self'{$_viteSrc}; connect-src 'self'{$_viteSrc}; frame-ancestors 'none';");
 if (PROTOCOL === 'https://') {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 }

@@ -74,6 +74,10 @@ the admin panel under **Help**, so you can read the docs while you work.
 ## ⚙ CLI tool
 - [`bin/sev` reference](cli.md)
 
+## 🛡 Security & Forms
+- [Security: CSRF, rate limiting, file uploads, headers](security.md)
+- [Form helpers: validation, custom select, counter, pickers](forms.md)
+
 ## ⏱ Operations
 - [Cron & scheduler](cron.md)
 - [Mail queue](mail.md)

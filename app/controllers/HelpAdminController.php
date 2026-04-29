@@ -150,6 +150,23 @@ class HelpAdminController extends Controller
             ['label' => 'Page builder',  'icon' => '🧱', 'topics' => [
                 ['slug' => 'pagebuilder', 'title' => 'Page builder', 'file' => 'pagebuilder.md'],
             ]],
+            ['label' => 'Security & Forms', 'icon' => '🛡', 'topics' => [
+                ['slug' => 'security', 'title' => 'Security', 'file' => 'security.md', 'anchors' => [
+                    ['label' => 'CSRF',             'hash' => '#csrf'],
+                    ['label' => 'Rate limiting',    'hash' => '#rate-limiting'],
+                    ['label' => 'File uploads',     'hash' => '#file-uploads'],
+                    ['label' => 'Authentication',   'hash' => '#authentication'],
+                    ['label' => 'Open redirects',   'hash' => '#open-redirects'],
+                    ['label' => 'Headers / CSP',    'hash' => '#headers--csp'],
+                ]],
+                ['slug' => 'forms', 'title' => 'Form helpers', 'file' => 'forms.md', 'anchors' => [
+                    ['label' => 'Validation engine',   'hash' => '#validation-engine'],
+                    ['label' => 'Custom select',       'hash' => '#custom-select'],
+                    ['label' => 'Character counter',   'hash' => '#character-counter'],
+                    ['label' => 'Dark-theme pickers',  'hash' => '#dark-theme-pickers'],
+                    ['label' => 'Adding a new form',   'hash' => '#adding-a-new-form'],
+                ]],
+            ]],
             ['label' => 'Operations', 'icon' => '⚙', 'topics' => [
                 ['slug' => 'cron',          'title' => 'Cron & scheduler',  'file' => 'cron.md', 'anchors' => [
                     ['label' => 'Schedule grammar', 'hash' => '#schedule-grammar'],
