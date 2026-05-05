@@ -7,6 +7,18 @@ Current backlog. Items are not committed deadlines, just an honest list of what'
 ### UX testing
 - [ ] Manual pass through Blog/Pages/Media/Ecom forms in browser — verify nothing regressed after the form-validation overhaul (CSRF auto-inject, novalidate, custom select wrapping, dark-theme pickers)
 
+### Themes
+- [ ] Custom theme creation in admin — UI to build a new palette (light + dark variants required for both modes), save as a new `src/themes/{slug}/` with `theme.json` + `_light.scss` + `_dark.scss`, picked up by `ThemeAdminController::scanThemes()` automatically. Both light and dark variants are mandatory.
+
+### Modules → rename to Plugins (or Extensions)
+- [ ] **Decide naming**: `Plugins` or `Extensions`. User wants to move away from `Modules` — too generic, conflicts with framework "module" concept. **Plugins** is shorter and matches the existing `plugins` DB table + `plugin.json` manifest already used. **Extensions** is more enterprise-sounding but longer.
+- [ ] Once decided, rename across:
+  - Sidebar entry `Master.html` (`Modules` → new label) and `AdminLang::t()` keys
+  - `ModuleAdminController` → `PluginAdminController` (controller, view path `app/views/admin/module/` → `plugin/`, route)
+  - `lib/module.class.php` (`Module::loadAll()` etc) — keep internal class name `Module` for now (huge blast radius), only rename UI-facing strings + URLs
+  - All `AdminLang` translations in `lang/*/admin.php` for the `modules` group
+- [ ] **Bug:** Modules page currently shows empty list — installed plugins not rendering. Investigate `ModuleAdminController::index()` + `plugins` table contents + `storage/modules.json`. Could be: empty seed, query filter wrong, view loop broken, or scan path mismatch.
+
 ### Hardening (when CMS goes public)
 - [ ] Third-party security audit before 1.0
 - [ ] Fix the 6 dependabot moderate vulnerabilities flagged on push
