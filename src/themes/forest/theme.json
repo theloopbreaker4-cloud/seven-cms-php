@@ -2,5 +2,8 @@
   "name": "Forest",
   "author": "Seven CMS",
   "desc": "Calming sage and pine with autumn highlights.",
-  "preview": ["#166534", "#4ade80", "#b45309"]
+  "preview": {
+    "light": { "primary": "#166534", "bg": "#f4faf5", "text": "#0c1f12" },
+    "dark":  { "primary": "#4ade80", "bg": "#08130b", "text": "#e6f4ea" }
+  }
 }

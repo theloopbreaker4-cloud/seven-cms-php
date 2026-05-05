@@ -15,25 +15,25 @@ $lang = Seven::app()->router->getLanguage();
   $light = $theme['preview']['light'] ?? [];
   $dark  = $theme['preview']['dark']  ?? [];
 ?>
-  <div class="rounded-xl border <?= $isActive ? 'border-[var(--primary)] ring-2 ring-[var(--primary)]/20' : 'border-[var(--border-color)]' ?> bg-[var(--bg-secondary)] overflow-hidden">
+  <div data-palette="<?= htmlspecialchars($slug) ?>" data-theme="dark" class="rounded-xl border <?= $isActive ? 'border-[var(--primary)] ring-2 ring-[var(--primary)]/20' : 'border-[var(--border-color)]' ?> bg-[var(--bg-secondary)] overflow-hidden">
 
     <!-- Preview swatches -->
     <div class="flex h-24">
       <!-- Light preview -->
-      <div class="flex-1 flex flex-col gap-1.5 items-start justify-end p-3"
-           style="background:<?= htmlspecialchars($light['bg'] ?? '#f5f5f5') ?>">
-        <div class="w-full h-2 rounded-full" style="background:<?= htmlspecialchars($light['primary'] ?? '#888') ?>"></div>
-        <div class="w-3/4 h-1.5 rounded-full opacity-40" style="background:<?= htmlspecialchars($light['text'] ?? '#333') ?>"></div>
-        <div class="w-1/2 h-1.5 rounded-full opacity-25" style="background:<?= htmlspecialchars($light['text'] ?? '#333') ?>"></div>
-        <span class="text-[9px] font-semibold mt-1 px-1.5 py-0.5 rounded" style="background:<?= htmlspecialchars($light['primary'] ?? '#888') ?>;color:#fff">Light</span>
+      <div data-palette="<?= htmlspecialchars($slug) ?>" data-theme="light"
+           class="flex-1 flex flex-col gap-1.5 items-start justify-end p-3 bg-[var(--bg-primary)]">
+        <div class="w-full h-2 rounded-full bg-[var(--primary)]"></div>
+        <div class="w-3/4 h-1.5 rounded-full opacity-40 bg-[var(--text-primary)]"></div>
+        <div class="w-1/2 h-1.5 rounded-full opacity-25 bg-[var(--text-primary)]"></div>
+        <span class="text-[9px] font-semibold mt-1 px-1.5 py-0.5 rounded bg-[var(--primary)] text-white">Light</span>
       </div>
       <!-- Dark preview -->
-      <div class="flex-1 flex flex-col gap-1.5 items-start justify-end p-3"
-           style="background:<?= htmlspecialchars($dark['bg'] ?? '#111') ?>">
-        <div class="w-full h-2 rounded-full" style="background:<?= htmlspecialchars($dark['primary'] ?? '#aaa') ?>"></div>
-        <div class="w-3/4 h-1.5 rounded-full opacity-40" style="background:<?= htmlspecialchars($dark['text'] ?? '#eee') ?>"></div>
-        <div class="w-1/2 h-1.5 rounded-full opacity-25" style="background:<?= htmlspecialchars($dark['text'] ?? '#eee') ?>"></div>
-        <span class="text-[9px] font-semibold mt-1 px-1.5 py-0.5 rounded" style="background:<?= htmlspecialchars($dark['primary'] ?? '#aaa') ?>;color:#fff">Dark</span>
+      <div data-palette="<?= htmlspecialchars($slug) ?>" data-theme="dark"
+           class="flex-1 flex flex-col gap-1.5 items-start justify-end p-3 bg-[var(--bg-primary)]">
+        <div class="w-full h-2 rounded-full bg-[var(--primary)]"></div>
+        <div class="w-3/4 h-1.5 rounded-full opacity-40 bg-[var(--text-primary)]"></div>
+        <div class="w-1/2 h-1.5 rounded-full opacity-25 bg-[var(--text-primary)]"></div>
+        <span class="text-[9px] font-semibold mt-1 px-1.5 py-0.5 rounded bg-[var(--primary)] text-white">Dark</span>
       </div>
     </div>
 

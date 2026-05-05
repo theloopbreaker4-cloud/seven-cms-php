@@ -2,5 +2,8 @@
   "name": "Midnight",
   "author": "Seven CMS",
   "desc": "Cool slate with royal blue + indigo accents.",
-  "preview": ["#1e40af", "#6366f1", "#0d1326"]
+  "preview": {
+    "light": { "primary": "#1e40af", "bg": "#f5f7ff", "text": "#0d1326" },
+    "dark":  { "primary": "#6366f1", "bg": "#0d1326", "text": "#e0e7ff" }
+  }
 }
