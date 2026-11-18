@@ -24,6 +24,20 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
     // every admin form. Both run before the Vite bundle so they apply even
     // if JS modules fail to load.
     window.__CSRF_TOKEN__ = <?= json_encode(Csrf::token()) ?>;
+    // Same-origin state-changing fetch() calls carry the token as a header.
+    (function(nativeFetch){
+      window.fetch = function(input, init){
+        init = init || {};
+        var method = (init.method || (input && input.method) || 'GET').toUpperCase();
+        var url = new URL(typeof input === 'string' ? input : input.url, location.href);
+        if (method !== 'GET' && method !== 'HEAD' && url.origin === location.origin) {
+          var headers = new Headers(init.headers || {});
+          if (!headers.has('X-CSRF-Token')) headers.set('X-CSRF-Token', window.__CSRF_TOKEN__);
+          init.headers = headers;
+        }
+        return nativeFetch(input, init);
+      };
+    })(window.fetch.bind(window));
     document.addEventListener('DOMContentLoaded', function(){
       document.querySelectorAll('form').forEach(function(f){
         if (!f.hasAttribute('data-no-validate')) f.setAttribute('novalidate','');
@@ -337,7 +351,7 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
             list.innerHTML = data.items.map(function(n){
               var dot = n.read_at ? '' : '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);margin-left:auto"></span>';
               var icon = n.icon || '•';
-              return '<a href="/<?= $lang ?>/admin/notifications/read/'+n.id+'" class="flex items-start gap-2 px-3 py-2 hover:bg-[var(--bg-tertiary)] border-b border-[var(--border-color)] text-sm" style="text-decoration:none;color:var(--text-primary)">'
+              return '<a data-method="post" href="/<?= $lang ?>/admin/notifications/read/'+n.id+'" class="flex items-start gap-2 px-3 py-2 hover:bg-[var(--bg-tertiary)] border-b border-[var(--border-color)] text-sm" style="text-decoration:none;color:var(--text-primary)">'
                 + '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:'+severity(n.severity)+'22;color:'+severity(n.severity)+';font-size:12px">'+icon+'</span>'
                 + '<span style="flex:1;min-width:0">'
                 +   '<span style="display:flex;align-items:center;gap:6px"><span style="font-weight:500;font-size:13px">'+escape(n.title)+'</span>'+dot+'</span>'
@@ -361,7 +375,7 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
         });
         if (markAll) markAll.addEventListener('click', function(e){
           e.preventDefault();
-          fetch('/<?= $lang ?>/admin/notifications/read-all', {method:'POST',credentials:'same-origin'}).then(load);
+          fetch('/<?= $lang ?>/admin/notifications/readAll', {method:'POST',credentials:'same-origin'}).then(load);
         });
         // Initial load + 60s poll
         load();

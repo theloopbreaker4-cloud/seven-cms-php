@@ -43,7 +43,7 @@ $lang = Seven::app()->router->getLanguage();
           <td class="text-right">
             <a href="/<?= $lang ?>/admin/page/edit/<?= $row['id'] ?>"
                class="btn btn-secondary btn-sm mr-1"><?= AdminLang::t('edit', 'common') ?></a>
-            <a href="/<?= $lang ?>/admin/page/delete/<?= $row['id'] ?>"
+            <a data-method="post" href="/<?= $lang ?>/admin/page/delete/<?= $row['id'] ?>"
                class="btn btn-danger btn-sm"
                data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
                data-confirm-type="danger"

@@ -46,7 +46,7 @@
             <td class="px-4 py-3 text-right space-x-3">
               <a href="/<?= $lang ?>/admin/slider/edit/<?= $row['id'] ?>"
                  class="text-[var(--primary)] hover:underline text-sm"><?= AdminLang::t('edit', 'common') ?></a>
-              <a href="/<?= $lang ?>/admin/slider/delete/<?= $row['id'] ?>"
+              <a data-method="post" href="/<?= $lang ?>/admin/slider/delete/<?= $row['id'] ?>"
                  class="text-red-500 hover:underline text-sm"
                  data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
                  data-confirm-type="danger"

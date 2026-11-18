@@ -4,8 +4,8 @@
 $lang   = Seven::app()->router->getLanguage();
 $isNew  = empty($role);
 $action = $isNew
-    ? "/{$lang}/admin/roles/store"
-    : "/{$lang}/admin/roles/update/" . (int)$role['id'];
+    ? "/{$lang}/admin/role/store"
+    : "/{$lang}/admin/role/update/" . (int)$role['id'];
 $perms  = DB::getAll('SELECT * FROM permissions ORDER BY module, action') ?: [];
 $grouped = [];
 foreach ($perms as $p) $grouped[$p['module']][] = $p;
@@ -44,7 +44,7 @@ $assignedSet = array_flip($assigned);
     </button>
 
     <?php if (!$isNew && !(int)$role['is_system']): ?>
-      <a href="/<?= $lang ?>/admin/roles/delete/<?= (int)$role['id'] ?>"
+      <a data-method="post" href="/<?= $lang ?>/admin/role/delete/<?= (int)$role['id'] ?>"
          class="block text-center text-xs text-red-500 hover:underline"
          data-confirm="Delete this role?">Delete this role</a>
     <?php endif ?>

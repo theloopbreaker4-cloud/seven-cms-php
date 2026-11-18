@@ -51,7 +51,7 @@
             </td>
             <td class="px-3 py-2 text-[var(--text-secondary)]"><?= isset($j['last_duration_ms']) && $j['last_duration_ms'] !== null ? (int)$j['last_duration_ms'].' ms' : '—' ?></td>
             <td class="px-3 py-2 text-right whitespace-nowrap">
-              <a href="/admin/cron/run/<?= urlencode($j['name']) ?>"
+              <a data-method="post" href="/admin/cron/run/<?= urlencode($j['name']) ?>"
                  class="inline-block px-2 py-1 text-xs rounded bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white">Run now</a>
               <form action="/admin/cron/toggle/<?= urlencode($j['name']) ?>" method="post" class="inline">
                 <input type="hidden" name="enabled" value="<?= (int)$j['is_enabled'] ? '0' : '1' ?>" />

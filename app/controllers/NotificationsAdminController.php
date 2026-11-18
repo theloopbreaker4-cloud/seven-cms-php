@@ -13,7 +13,7 @@ class NotificationsAdminController extends Controller
         $this->requireAdmin($res);
         $this->app->setTitle('Notifications');
 
-        $userId = (int)Session::get('user_id');
+        $userId = $this->currentUserId();
         $items  = Notify::recent($userId, 100);
         $unread = Notify::unreadCount($userId);
         return $this->app->view->render('index', compact('items', 'unread'));
@@ -23,7 +23,7 @@ class NotificationsAdminController extends Controller
     public function feed($req, $res, $params)
     {
         $this->requireAdmin($res);
-        $userId = (int)Session::get('user_id');
+        $userId = $this->currentUserId();
 
         header('Content-Type: application/json');
         echo json_encode([
@@ -36,25 +36,26 @@ class NotificationsAdminController extends Controller
     public function read($req, $res, $params)
     {
         $this->requireAdmin($res);
-        $userId = (int)Session::get('user_id');
-        $id = (int)($params['id'] ?? 0);
+        $userId = $this->currentUserId();
+        $id = (int)($params[0] ?? 0);
         if ($id) Notify::markRead($userId, $id);
 
-        // If the entry has a url, redirect there; otherwise back to inbox.
-        $row = DB::findOne('notifications', ' id = :id ', [':id' => $id]);
-        $target = $row && !empty($row['url']) ? $row['url'] : '/admin/notifications';
-        $res->redirect($target);
+        // Follow the entry's own link if it has one (same-origin only); else the inbox.
+        $row    = $id ? DB::findOne('notifications', ' id = :id AND (user_id = :u OR user_id IS NULL) ', [':id' => $id, ':u' => $userId]) : null;
+        $lang   = $this->app->router->getLanguage();
+        $target = $row && !empty($row['url']) ? (string)$row['url'] : "/{$lang}/admin/notifications";
+        $res->redirectUrl($target);
     }
 
     public function readAll($req, $res, $params)
     {
         $this->requireAdmin($res);
-        Notify::markAllRead((int)Session::get('user_id'));
+        Notify::markAllRead($this->currentUserId());
         if ($req->isMethod('POST')) {
             header('Content-Type: application/json');
             echo json_encode(['ok' => true]);
             exit;
         }
-        $res->redirect('/admin/notifications');
+        $res->redirectUrl('/' . $this->app->router->getLanguage() . '/admin/notifications');
     }
 }

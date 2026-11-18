@@ -21,6 +21,12 @@ class Controller
     public function getModel(): mixed { return $this->model; }
     public function getParams(): array { return $this->params; }
 
+    /** Signed-in user id (from the auth token), 0 when anonymous. */
+    protected function currentUserId(): int
+    {
+        return (int)(Auth::getCurrentUser()?->id ?? 0);
+    }
+
     // Redirect to login if not authenticated
     protected function requireLogin(mixed $res): void
     {

@@ -27,7 +27,7 @@ class Csrf
     // Validate POST token — call at start of every POST handler
     public static function verify(array $data): void
     {
-        $submitted = $data['_csrf_token'] ?? '';
+        $submitted = (string)($data['_csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
         if (!$submitted || !hash_equals(self::token(), $submitted)) {
             http_response_code(419);
             exit('CSRF token mismatch.');

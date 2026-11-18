@@ -74,7 +74,7 @@ function socialIcon(string $platform, array $icons): string {
             <td class="px-4 py-3 text-right whitespace-nowrap">
               <a href="/<?= $lang ?>/admin/social/edit/<?= $row['id'] ?>"
                  class="text-[var(--primary)] hover:underline mr-3 text-xs">Edit</a>
-              <a href="/<?= $lang ?>/admin/social/delete/<?= $row['id'] ?>"
+              <a data-method="post" href="/<?= $lang ?>/admin/social/delete/<?= $row['id'] ?>"
                  class="text-rose-500 hover:underline text-xs"
                  data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
                  data-confirm-type="danger"

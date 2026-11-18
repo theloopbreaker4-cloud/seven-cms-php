@@ -110,18 +110,40 @@ function iconFor(type) {
 //   data-confirm-type="warning|danger|info"  — dialog style
 //   data-confirm-ok="Archive"                — ok button label
 //   data-confirm-title="..."                 — dialog title
+// State-changing links (data-method="post") are sent as a POST form carrying the
+// CSRF token — the server rejects GET for those actions.
+function followLink(link) {
+  if ((link.dataset.method || '').toLowerCase() !== 'post') {
+    window.location.href = link.href
+    return
+  }
+  const form = document.createElement('form')
+  form.method = 'POST'
+  form.action = link.href
+  const token = document.createElement('input')
+  token.type  = 'hidden'
+  token.name  = '_csrf_token'
+  token.value = window.__CSRF_TOKEN__ || ''
+  form.appendChild(token)
+  document.body.appendChild(form)
+  form.submit()
+}
+
 export function initConfirmLinks() {
   document.addEventListener('click', async e => {
-    // <a data-confirm>
-    const link = e.target.closest('a[data-confirm]')
+    // <a data-confirm> (optionally data-method="post")
+    const link = e.target.closest('a[data-confirm], a[data-method]')
     if (link) {
       e.preventDefault()
-      const ok = await sevenConfirm(link.dataset.confirm || 'Are you sure?', {
-        title:   link.dataset.confirmTitle,
-        type:    link.dataset.confirmType  || 'danger',
-        okLabel: link.dataset.confirmOk,
-      })
-      if (ok) window.location.href = link.href
+      if (link.hasAttribute('data-confirm')) {
+        const ok = await sevenConfirm(link.dataset.confirm || 'Are you sure?', {
+          title:   link.dataset.confirmTitle,
+          type:    link.dataset.confirmType  || 'danger',
+          okLabel: link.dataset.confirmOk,
+        })
+        if (!ok) return
+      }
+      followLink(link)
       return
     }
 

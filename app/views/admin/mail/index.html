@@ -8,7 +8,7 @@
   </div>
   <div class="flex gap-2">
     <a href="/admin/help/topic/mail" class="text-sm text-[var(--primary)] hover:underline self-center">Setup →</a>
-    <a href="/admin/mail/flush" class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary-hover)]">Flush now</a>
+    <a data-method="post" href="/admin/mail/flush" class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary-hover)]">Flush now</a>
   </div>
 </div>
 
@@ -63,7 +63,7 @@
           <td class="px-3 py-2 text-[var(--text-secondary)]"><?= htmlspecialchars($r['created_at']) ?></td>
           <td class="px-3 py-2 text-right">
             <?php if ($r['status'] === 'failed'): ?>
-              <a href="/admin/mail/retry/<?= (int)$r['id'] ?>" class="px-2 py-1 text-xs rounded bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white">Retry</a>
+              <a data-method="post" href="/admin/mail/retry/<?= (int)$r['id'] ?>" class="px-2 py-1 text-xs rounded bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white">Retry</a>
             <?php endif ?>
           </td>
         </tr>

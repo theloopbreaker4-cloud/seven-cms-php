@@ -124,7 +124,7 @@ $base = '/' . $lang . '/admin/media';
                       data-row='<?= htmlspecialchars(json_encode($row, JSON_UNESCAPED_UNICODE), ENT_QUOTES) ?>'>
                 Edit
               </button>
-              <a href="<?= $base ?>/delete/<?= (int)$row['id'] ?>"
+              <a data-method="post" href="<?= $base ?>/delete/<?= (int)$row['id'] ?>"
                  class="text-xs text-white py-1 px-2 rounded bg-red-500/70 hover:bg-red-500"
                  data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
                  data-confirm-type="danger">×</a>
@@ -284,6 +284,7 @@ $base = '/' . $lang . '/admin/media';
   document.querySelectorAll('.folder-del').forEach(b => b.addEventListener('click', async () => {
     if (!confirm('Delete this folder? It must be empty.')) return;
     const r = await fetch(`${BASE}/folder/delete/${b.dataset.id}`, {
+      method: 'POST',
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
     }).then(r => r.json());
     if (r.ok) window.location.reload();

@@ -12,7 +12,7 @@ class HomeAdminController extends Controller
         $this->requireAdmin($res);
         $this->app->setTitle('Dashboard');
 
-        $userId = (int)Session::get('user_id');
+        $userId = $this->currentUserId();
         $lang   = $this->app->router->getLanguage();
 
         // Counts

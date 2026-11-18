@@ -12,7 +12,7 @@ class CalendarAdminController extends Controller
         $this->requireAdmin($res);
         $this->app->setTitle('Calendar');
 
-        $userId = (int)Session::get('user_id');
+        $userId = $this->currentUserId();
         $month  = (string)($_GET['month'] ?? date('Y-m'));
 
         if (!preg_match('/^\d{4}-\d{2}$/', $month)) $month = date('Y-m');
@@ -33,7 +33,7 @@ class CalendarAdminController extends Controller
     public function feed($req, $res, $params)
     {
         $this->requireAdmin($res);
-        $userId = (int)Session::get('user_id');
+        $userId = $this->currentUserId();
         $from = (string)($_GET['from'] ?? date('Y-m-01 00:00:00'));
         $to   = (string)($_GET['to']   ?? date('Y-m-d 00:00:00', strtotime('+1 month')));
 
@@ -61,7 +61,7 @@ class CalendarAdminController extends Controller
         }
 
         CalendarEvent::add([
-            'user_id'     => (int)Session::get('user_id'),
+            'user_id'     => $this->currentUserId(),
             'title'       => $title,
             'description' => trim((string)($_POST['description'] ?? '')) ?: null,
             'starts_at'   => $startsAt,
@@ -79,7 +79,7 @@ class CalendarAdminController extends Controller
     {
         $this->requireAdmin($res);
         $id = (int)($params['id'] ?? 0);
-        if ($id) CalendarEvent::delete($id, (int)Session::get('user_id'));
+        if ($id) CalendarEvent::delete($id, $this->currentUserId());
         $res->redirectUrl('/' . $this->app->router->getLanguage() . '/admin/calendar');
     }
 

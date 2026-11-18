@@ -64,11 +64,11 @@
             </td>
             <td class="px-3 py-2 text-right whitespace-nowrap">
               <?php if (!(int)$c['is_base']): ?>
-                <a href="/admin/ecom/currencies/toggle/<?= htmlspecialchars($c['code']) ?>"
+                <a data-method="post" href="/admin/ecom/currencies/toggle/<?= htmlspecialchars($c['code']) ?>"
                    class="px-2 py-1 text-xs rounded bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white">
                   <?= (int)$c['is_enabled'] ? 'Disable' : 'Enable' ?>
                 </a>
-                <a href="/admin/ecom/currencies/base/<?= htmlspecialchars($c['code']) ?>"
+                <a data-method="post" href="/admin/ecom/currencies/base/<?= htmlspecialchars($c['code']) ?>"
                    class="px-2 py-1 text-xs rounded bg-[var(--bg-tertiary)] hover:bg-[var(--primary)] hover:text-white">
                   Make base
                 </a>
@@ -83,7 +83,7 @@
   <div class="rounded-lg border border-[var(--border-color)]">
     <div class="px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between">
       <h3 class="font-semibold">FX rates</h3>
-      <a href="/admin/ecom/currencies/refresh" class="px-3 py-1.5 rounded bg-[var(--bg-tertiary)] text-sm hover:bg-[var(--primary)] hover:text-white">Refresh now</a>
+      <a data-method="post" href="/admin/ecom/currencies/refresh" class="px-3 py-1.5 rounded bg-[var(--bg-tertiary)] text-sm hover:bg-[var(--primary)] hover:text-white">Refresh now</a>
     </div>
 
     <?php if (!$rates): ?>

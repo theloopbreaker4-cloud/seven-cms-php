@@ -30,10 +30,10 @@
             <td class="px-4 py-3 text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars(substr($row['created_at'] ?? '', 0, 10)) ?></td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
               <?php if (!($row['is_approved'] ?? 0)): ?>
-                <a href="/<?= $lang ?>/admin/comment/approve/<?= $row['id'] ?>"
+                <a data-method="post" href="/<?= $lang ?>/admin/comment/approve/<?= $row['id'] ?>"
                    class="text-[var(--primary)] hover:underline mr-3 text-xs">Approve</a>
               <?php endif ?>
-              <a href="/<?= $lang ?>/admin/comment/delete/<?= $row['id'] ?>"
+              <a data-method="post" href="/<?= $lang ?>/admin/comment/delete/<?= $row['id'] ?>"
                  class="text-red-500 hover:underline text-xs"
                  data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
                  data-confirm-type="danger"

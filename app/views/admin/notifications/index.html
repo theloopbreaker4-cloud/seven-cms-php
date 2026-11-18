@@ -17,7 +17,7 @@
   <ul class="rounded-lg border border-[var(--border-color)] divide-y divide-[var(--border-color)]">
     <?php foreach ($items as $n): ?>
       <li class="<?= empty($n['read_at']) ? 'bg-[var(--bg-tertiary)]/50' : '' ?>">
-        <a href="/admin/notifications/read/<?= (int)$n['id'] ?>" class="flex items-start gap-3 px-4 py-3 hover:bg-[var(--bg-tertiary)]">
+        <a data-method="post" href="/admin/notifications/read/<?= (int)$n['id'] ?>" class="flex items-start gap-3 px-4 py-3 hover:bg-[var(--bg-tertiary)]">
           <div class="mt-0.5">
             <?php
               $sv = $n['severity'] ?? 'info';

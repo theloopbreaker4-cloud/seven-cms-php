@@ -111,6 +111,12 @@ class Route
         }
 
         if ($best === null) return null;
+
+        // A controller-level index route ("admin.blog") must not swallow
+        // /admin/blog/edit/5 — leave those to /{controller}/{action}/{params}.
+        $leftover = count($segments) - $bestLen;
+        if ($leftover > 0 && (self::$routes[$best]['action'] ?? 'index') === 'index') return null;
+
         return [
             'name'   => $best,
             'def'    => self::$routes[$best],

@@ -76,6 +76,12 @@ class General
         ]);
     }
 
+    private const MUTATING_ACTIONS = [
+        'delete', 'destroy', 'remove', 'restore', 'retry', 'flush', 'toggle', 'refresh',
+        'base', 'run', 'approve', 'read', 'readall', 'install', 'uninstall', 'enable',
+        'disable', 'activate', 'store', 'update', 'folderdelete', 'foldercreate',
+    ];
+
     /** @var array<string,string>|null lowercase class name → file */
     private ?array $classIndex = null;
 
@@ -165,6 +171,14 @@ class General
             if ($this->router->getMethodPrefix() === 'admin'
                 && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
                 Csrf::verify($_POST + $_GET);
+            }
+
+            // Mutating admin actions must not be reachable by a plain link/GET
+            // (prefetchers, crawlers and cross-site navigations send GETs).
+            if ($this->router->getMethodPrefix() === 'admin'
+                && strtoupper($method) === 'GET'
+                && in_array(strtolower((string)$this->router->getAction()), self::MUTATING_ACTIONS, true)) {
+                $response->errorCode(405);
             }
 
             if ($this->router->getMethodPrefix() === 'api') {
