@@ -88,6 +88,45 @@ class Route
     }
 
     /**
+     * Match URL segments (language already stripped) against route names, where
+     * a name's dots are its path: "admin.ecom.products.create" ↔ admin/ecom/products/create.
+     * The longest matching name wins; leftover segments become params.
+     *
+     * @return array{name:string, def:array, params:array}|null
+     */
+    public static function match(array $segments): ?array
+    {
+        $lowered = array_map('strtolower', $segments);
+        $best    = null;
+        $bestLen = 0;
+
+        foreach (self::$routes as $name => $def) {
+            $parts = explode('.', strtolower($name));
+            $len   = count($parts);
+            if ($len <= $bestLen || $len > count($lowered)) continue;
+            if (array_slice($lowered, 0, $len) !== $parts) continue;
+            if (!self::nameMatchesPrefix($parts, (string)($def['prefix'] ?? ''))) continue;
+            $best    = $name;
+            $bestLen = $len;
+        }
+
+        if ($best === null) return null;
+        return [
+            'name'   => $best,
+            'def'    => self::$routes[$best],
+            'params' => array_slice($segments, $bestLen),
+        ];
+    }
+
+    /** A name like "api.v1.auth.login" only counts as a path when it starts with its own prefix. */
+    private static function nameMatchesPrefix(array $parts, string $prefix): bool
+    {
+        if ($prefix === '') return !in_array($parts[0], ['admin', 'api'], true);
+        $prefixParts = explode('/', strtolower($prefix));
+        return array_slice($parts, 0, count($prefixParts)) === $prefixParts;
+    }
+
+    /**
      * Attach middleware class names to a route.
      * @param string[] $classNames
      */

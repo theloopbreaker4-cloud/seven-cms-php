@@ -97,6 +97,37 @@ class Router
 
     public function setLanguage(string $lang): void { $this->language = $lang; }
 
+    /** URL segments after the optional language prefix. */
+    public function getPathSegments(): array
+    {
+        $parts = array_values(array_filter(explode('/', explode('?', $this->uri)[0]), 'strlen'));
+        if ($parts && in_array(strtolower($parts[0]), $this->config['languages'], true)) {
+            array_shift($parts);
+        }
+        return $parts;
+    }
+
+    /** Override convention-based parsing with a named route from Route::match(). */
+    public function applyRoute(array $def, array $params): void
+    {
+        $prefix     = explode('/', (string)($def['prefix'] ?? ''))[0];
+        $controller = (string)($def['controller'] ?? $this->controller);
+        $action     = (string)($def['action'] ?? 'index');
+
+        $this->methodPrefix = $prefix;
+        $this->routerName   = $prefix !== '' ? $prefix : $this->config['defaultRouter'];
+        $this->params       = $params;
+
+        if ($prefix === 'api') {
+            $this->apiController = $controller;
+            $this->apiAction     = $action;
+        } else {
+            $this->controller = $controller;
+            $this->action     = $action;
+            $this->slug       = null;
+        }
+    }
+
     public function getUri()           { return $this->uri; }
     public function getController()    { return $this->controller; }
     public function getAction()        { return $this->action; }

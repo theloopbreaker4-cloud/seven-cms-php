@@ -64,6 +64,9 @@ class General
         // Auto-load modules — modules may add their own routes
         Module::loadAll();
 
+        $matched = Route::match($this->router->getPathSegments());
+        if ($matched) $this->router->applyRoute($matched['def'], $matched['params']);
+
         $this->logger->debug('Bootstrap complete', [
             'controller' => $this->router->getController(),
             'action'     => $this->router->getAction(),
@@ -73,45 +76,59 @@ class General
         ]);
     }
 
+    /** @var array<string,string>|null lowercase class name → file */
+    private ?array $classIndex = null;
+
+    /**
+     * Class lookup is case-insensitive: the router lower-cases URL segments, so
+     * "ecomproducts" must find EcomProductsAdminController.php on case-sensitive
+     * filesystems too. Lib wins, then active plugins (they override app/), then app/.
+     */
     private function autoload(string $class): void
     {
         $lower = strtolower($class);
 
-        // Lib classes first
-        $libPaths = [
-            ROOT_DIR . DS . 'lib' . DS . $lower . '.class.php',
-            ROOT_DIR . DS . 'lib' . DS . $lower . '.interface.php',
-        ];
-        foreach ($libPaths as $path) {
-            if (file_exists($path)) { require_once $path; return; }
+        foreach (['.class.php', '.interface.php'] as $suffix) {
+            $path = ROOT_DIR . DS . 'lib' . DS . $lower . $suffix;
+            if (is_file($path)) { require_once $path; return; }
         }
 
-        // Module classes take priority over app/ (modules override app defaults)
-        foreach (glob(ROOT_DIR . DS . 'modules' . DS . '*', GLOB_ONLYDIR) as $mod) {
-            $modPaths = [
-                $mod . DS . 'controllers'    . DS . $class . '.php',
-                $mod . DS . 'apiControllers' . DS . $class . '.php',
-                $mod . DS . 'models'         . DS . $lower . '.php',
-                $mod . DS . 'models'         . DS . $class . '.php',
-            ];
-            foreach ($modPaths as $path) {
-                if (file_exists($path)) { require_once $path; return; }
+        if ($this->classIndex === null) {
+            // Plugin activity needs the DB; skip the index until it is connected.
+            if (!class_exists('Module', false)) {
+                $this->logger->warn('Class not found in autoload', ['class' => $class]);
+                return;
             }
+            $this->classIndex = $this->buildClassIndex();
         }
 
-        // Fallback: app/ directories and module entry points
-        $appPaths = [
-            ROOT_DIR . DS . 'app' . DS . 'controllers'    . DS . $class . '.php',
-            ROOT_DIR . DS . 'app' . DS . 'apiControllers' . DS . $class . '.php',
-            ROOT_DIR . DS . 'app' . DS . 'models'         . DS . $lower . '.php',
-            ROOT_DIR . DS . 'app' . DS . 'middleware'     . DS . $class . '.php',
-            ROOT_DIR . DS . 'modules'                     . DS . $class . DS . 'Module.php',
-        ];
-        foreach ($appPaths as $path) {
-            if (file_exists($path)) { require_once $path; return; }
+        if (isset($this->classIndex[$lower])) {
+            require_once $this->classIndex[$lower];
+            return;
         }
 
         $this->logger->warn('Class not found in autoload', ['class' => $class]);
+    }
+
+    private function buildClassIndex(): array
+    {
+        $dirs = [];
+        foreach (glob(ROOT_DIR . DS . 'modules' . DS . '*', GLOB_ONLYDIR) ?: [] as $mod) {
+            if (!Module::isActive(basename($mod))) continue;
+            foreach (['controllers', 'apiControllers', 'models'] as $sub) $dirs[] = $mod . DS . $sub;
+        }
+        foreach (['controllers', 'apiControllers', 'models', 'middleware'] as $sub) {
+            $dirs[] = ROOT_DIR . DS . 'app' . DS . $sub;
+        }
+
+        $index = [];
+        foreach ($dirs as $dir) {
+            foreach (glob($dir . DS . '*.php') ?: [] as $file) {
+                $key = strtolower(basename($file, '.php'));
+                $index[$key] ??= $file;
+            }
+        }
+        return $index;
     }
 
     public function process(): void

@@ -79,10 +79,12 @@ class View
         $prefix = $this->router->getMethodPrefix();
         $sub    = $prefix ?: 'site';
 
-        $this->path = Seven::app()->config['viewPath']
-                    . $sub . DS
-                    . $this->router->getController() . DS
-                    . $templateName . '.html';
+        // "folder/template" is rooted at the prefix's view dir; a bare name is
+        // relative to the current controller's folder.
+        $relative = str_contains($templateName, '/')
+            ? str_replace('/', DS, $templateName)
+            : $this->router->getController() . DS . $templateName;
+        $this->path = Seven::app()->config['viewPath'] . $sub . DS . $relative . '.html';
 
         ob_start();
         if (file_exists($this->path)) {
