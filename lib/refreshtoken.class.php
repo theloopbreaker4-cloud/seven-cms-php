@@ -28,7 +28,7 @@ class RefreshToken
                 ':u'  => $userId,
                 ':h'  => $hash,
                 ':d'  => $device,
-                ':ip' => self::ip(),
+                ':ip' => RateLimit::clientIp(),
                 ':e'  => $exp,
             ]
         );
@@ -60,7 +60,7 @@ class RefreshToken
                 ':h'  => $newHash,
                 ':p'  => (int)$row['id'],
                 ':d'  => $row['device'],
-                ':ip' => self::ip(),
+                ':ip' => RateLimit::clientIp(),
                 ':e'  => $exp,
             ]
         );
@@ -92,11 +92,4 @@ class RefreshToken
         );
     }
 
-    private static function ip(): ?string
-    {
-        foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'] as $h) {
-            if (!empty($_SERVER[$h])) return trim(explode(',', (string)$_SERVER[$h])[0]);
-        }
-        return null;
-    }
 }

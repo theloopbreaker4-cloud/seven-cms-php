@@ -27,6 +27,16 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class GraphQLSchema
 {
+    /** JWT user of the current request (id, email, role), set by the controller. */
+    public static ?array $viewer = null;
+
+    private static function canSeeUser(int $userId): bool
+    {
+        $viewer = self::$viewer;
+        if (!$viewer) return false;
+        return (int)$viewer['id'] === $userId || Permission::can('users.view', (int)$viewer['id']);
+    }
+
     public static function build(): array
     {
         $schema = [
@@ -37,14 +47,14 @@ class GraphQLSchema
                 'me' => [
                     'type'    => 'User',
                     'resolve' => function ($_, $args) {
-                        if (!class_exists('Auth')) return null;
-                        $u = Auth::getCurrentUser();
-                        return $u && isset($u->id) ? self::userToArray((int)$u->id) : null;
+                        return self::$viewer ? self::userToArray((int)self::$viewer['id']) : null;
                     },
                 ],
                 'user' => [
                     'type'    => 'User',
-                    'resolve' => fn($_, $args) => self::userToArray((int)($args['id'] ?? 0)),
+                    'resolve' => fn($_, $args) => self::canSeeUser((int)($args['id'] ?? 0))
+                        ? self::userToArray((int)$args['id'])
+                        : null,
                 ],
 
                 // Pages
@@ -221,7 +231,7 @@ class GraphQLSchema
 
     private static function userToArray(int $userId): ?array
     {
-        $row = DB::findOne('users', ' id = :id ', [':id' => $userId]);
+        $row = DB::findOne('user', ' id = :id ', [':id' => $userId])?->export();
         if (!$row) return null;
         return [
             'id'        => (int)$row['id'],

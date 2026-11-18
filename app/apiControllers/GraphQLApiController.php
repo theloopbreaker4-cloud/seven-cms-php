@@ -12,10 +12,11 @@ defined('_SEVEN') or die('No direct script access allowed');
  * Built on the bundled `GraphQL` executor — no Composer dependency. Plugins
  * can listen on `graphql.schema` to add their own types.
  */
-class GraphQLApiController extends ApiController
+class GraphQLApiController extends ApiV1Controller
 {
     public function endpoint($req, $res, $params)
     {
+        GraphQLSchema::$viewer = $this->authUser(true);
         $payload   = $this->payload();
         $query     = (string)($payload['query']     ?? '');
         $variables = (array) ($payload['variables'] ?? []);
@@ -28,7 +29,7 @@ class GraphQLApiController extends ApiController
         $result = GraphQL::execute($schema, $query, $variables);
 
         http_response_code(isset($result['errors']) && !isset($result['data']) ? 400 : 200);
-        return print $this->json($result);
+        return $this->json($result);
     }
 
     /**

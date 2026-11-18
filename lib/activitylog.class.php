@@ -36,19 +36,10 @@ class ActivityLog
                 ':ei' => $entityId,
                 ':d'  => $description,
                 ':m'  => json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                ':ip' => self::clientIp(),
+                ':ip' => RateLimit::clientIp(),
                 ':ua' => substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255),
             ]
         );
     }
 
-    private static function clientIp(): ?string
-    {
-        foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'] as $h) {
-            if (!empty($_SERVER[$h])) {
-                return trim(explode(',', (string)$_SERVER[$h])[0]);
-            }
-        }
-        return null;
-    }
 }

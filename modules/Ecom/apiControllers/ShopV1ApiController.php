@@ -40,7 +40,7 @@ class ShopV1ApiController extends ApiV1Controller
         $locale = (string)($_GET['locale'] ?? 'en');
         $total  = (int)(DB::getCell('SELECT COUNT(*) FROM ecom_products WHERE is_active = 1') ?? 0);
         $out    = array_map(fn($r) => (new Product($r))->toArray($locale), $items);
-        return print $this->paginate($out, $total, ['limit' => $_GET['limit'] ?? 50, 'offset' => $_GET['offset'] ?? 0]);
+        return $this->paginate($out, $total, ['limit' => $_GET['limit'] ?? 50, 'offset' => $_GET['offset'] ?? 0]);
     }
 
     public function product($req, $res, $params)
@@ -50,7 +50,7 @@ class ShopV1ApiController extends ApiV1Controller
         if (!$product || !$product->isActive) $this->jsonError(404, 'Not found');
         $locale = (string)($_GET['locale'] ?? 'en');
 
-        return print $this->json(array_merge(
+        return $this->json(array_merge(
             $product->toArray($locale),
             ['variants' => array_map(fn($v) => (new ProductVariant($v))->toArray(), $product->variants())]
         ));
@@ -59,21 +59,21 @@ class ShopV1ApiController extends ApiV1Controller
     public function categories($req, $res, $params)
     {
         $rows = DB::getAll('SELECT * FROM ecom_categories WHERE is_active = 1 ORDER BY sort_order, name') ?: [];
-        return print $this->json(['items' => $rows]);
+        return $this->json(['items' => $rows]);
     }
 
     /** GET /api/v1/shop/currencies — list enabled currencies + the request's active one. */
     public function currencies($req, $res, $params)
     {
         if (!class_exists('CurrencyService')) {
-            return print $this->json([
+            return $this->json([
                 'enabled' => false,
                 'base'    => (string)Setting::get('ecom.currency', 'USD'),
                 'active'  => (string)Setting::get('ecom.currency', 'USD'),
                 'items'   => [],
             ]);
         }
-        return print $this->json([
+        return $this->json([
             'enabled' => CurrencyService::isEnabled(),
             'base'    => CurrencyService::base(),
             'active'  => CurrencyService::active(),
@@ -87,7 +87,7 @@ class ShopV1ApiController extends ApiV1Controller
     {
         $cart   = CartService::current();
         $totals = CartService::totals($cart);
-        return print $this->json([
+        return $this->json([
             'token'    => $cart['token'],
             'currency' => $cart['currency'],
             'items'    => $totals['items'],
@@ -156,7 +156,7 @@ class ShopV1ApiController extends ApiV1Controller
             $this->jsonError(500, 'Checkout failed');
         }
 
-        return print $this->json([
+        return $this->json([
             'order'   => $result['order']->toArray(),
             'payment' => $result['payment'],
             'subscription' => $result['subscription']?->toArray(),
@@ -176,15 +176,15 @@ class ShopV1ApiController extends ApiV1Controller
         $email = strtolower(trim((string)($_GET['email'] ?? ($u['email'] ?? ''))));
         if (strtolower($order->email) !== $email) $this->jsonError(403, 'Forbidden');
 
-        return print $this->json(array_merge($order->toArray(), ['items' => $order->items()]));
+        return $this->json(array_merge($order->toArray(), ['items' => $order->items()]));
     }
 
     public function subscriptions($req, $res, $params)
     {
         $u = $this->requireAuth();
         $cust = EcomCustomer::findByUserId((int)$u['id']);
-        if (!$cust) return print $this->json(['items' => []]);
-        return print $this->json(['items' => Subscription::listForCustomer((int)$cust->id)]);
+        if (!$cust) return $this->json(['items' => []]);
+        return $this->json(['items' => Subscription::listForCustomer((int)$cust->id)]);
     }
 
     public function cancelSubscription($req, $res, $params)
@@ -197,7 +197,7 @@ class ShopV1ApiController extends ApiV1Controller
         if (!$cust || $sub->customerId !== (int)$cust->id) $this->jsonError(403, 'Forbidden');
 
         $sub->cancelAtPeriodEnd();
-        return print $this->json(['ok' => true]);
+        return $this->json(['ok' => true]);
     }
 
     // ─── helpers ─────────────────────────────────────────────────────

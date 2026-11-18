@@ -29,13 +29,13 @@ class AuthV1ApiController extends ApiV1Controller
             $this->jsonError(400, 'email and password required');
         }
 
-        $row = DB::findOne('users', ' email = :e ', [':e' => $email]);
+        $row = DB::findOne('user', ' email = :e ', [':e' => $email])?->export();
         if (!$row)                    { RateLimit::hit('api_login'); $this->jsonError(401, 'Invalid credentials'); }
         if (!password_verify($password, (string)$row['password'])) { RateLimit::hit('api_login'); $this->jsonError(401, 'Invalid credentials'); }
         if (!(int)$row['is_active'])  $this->jsonError(403, 'Account inactive');
 
         RateLimit::clear('api_login');
-        return print $this->json($this->buildAuthResponse($row));
+        return $this->json($this->buildAuthResponse($row));
     }
 
     public function refresh($req, $res, $params)
@@ -49,11 +49,11 @@ class AuthV1ApiController extends ApiV1Controller
         $rotated = RefreshToken::rotate($plain);
         if (!$rotated) { RateLimit::hit('api_refresh'); $this->jsonError(401, 'Invalid refresh token'); }
 
-        $row = DB::findOne('users', ' id = :id ', [':id' => $rotated['user_id']]);
+        $row = DB::findOne('user', ' id = :id ', [':id' => $rotated['user_id']])?->export();
         if (!$row || !((int)$row['is_active'])) $this->jsonError(403, 'Account inactive');
 
         $access = Jwt::sign($this->claimsFor($row), self::ACCESS_TTL);
-        return print $this->json([
+        return $this->json([
             'access_token'  => $access,
             'refresh_token' => $rotated['token'],
             'expires_in'    => self::ACCESS_TTL,
@@ -73,19 +73,19 @@ class AuthV1ApiController extends ApiV1Controller
         }
 
         if (class_exists('ActivityLog')) ActivityLog::log('auth.logout');
-        return print $this->json(['ok' => true]);
+        return $this->json(['ok' => true]);
     }
 
     public function me($req, $res, $params)
     {
         $u = $this->requireAuth();
-        $row = DB::findOne('users', ' id = :id ', [':id' => $u['id']]);
+        $row = DB::findOne('user', ' id = :id ', [':id' => $u['id']])?->export();
         if (!$row) $this->jsonError(404, 'Not found');
 
         $perms = class_exists('Permission') ? Permission::userPermissions((int)$u['id']) : [];
         $roles = class_exists('Permission') ? Permission::userRoles((int)$u['id'])       : [];
 
-        return print $this->json([
+        return $this->json([
             'user' => [
                 'id'        => (int)$row['id'],
                 'email'     => $row['email'],

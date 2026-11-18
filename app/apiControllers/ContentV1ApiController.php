@@ -18,7 +18,7 @@ class ContentV1ApiController extends ApiV1Controller
     public function types($req, $res, $params)
     {
         $rows = ContentType::all(true);
-        return print $this->json(['items' => array_map(fn($r) => (new ContentType($r))->toArray(), $rows)]);
+        return $this->json(['items' => array_map(fn($r) => (new ContentType($r))->toArray(), $rows)]);
     }
 
     public function listEntries($req, $res, $params)
@@ -41,7 +41,7 @@ class ContentV1ApiController extends ApiV1Controller
             [':t' => $type->id]
         ) ?? 0);
 
-        return print $this->paginate(
+        return $this->paginate(
             array_map(fn($r) => (new ContentEntry($r))->toArray(), $items),
             $total,
             ['limit' => $limit, 'offset' => $offset]
@@ -62,7 +62,7 @@ class ContentV1ApiController extends ApiV1Controller
                 $this->jsonError(404, 'Entry not found');
             }
         }
-        return print $this->json($entry->toArray());
+        return $this->json($entry->toArray());
     }
 
     public function createEntry($req, $res, $params)
@@ -73,7 +73,7 @@ class ContentV1ApiController extends ApiV1Controller
 
         $body  = $this->jsonBody();
         $entry = ContentEntry::persist($type, $body);
-        return print $this->json($entry->toArray(), 201);
+        return $this->json($entry->toArray(), 201);
     }
 
     public function updateEntry($req, $res, $params)
@@ -85,7 +85,7 @@ class ContentV1ApiController extends ApiV1Controller
         $id    = (int)($params[1] ?? 0);
         $body  = $this->jsonBody();
         $entry = ContentEntry::persist($type, $body, $id);
-        return print $this->json($entry->toArray());
+        return $this->json($entry->toArray());
     }
 
     public function deleteEntry($req, $res, $params)
@@ -93,7 +93,7 @@ class ContentV1ApiController extends ApiV1Controller
         $this->requirePermission('content.delete');
         $id = (int)($params[1] ?? 0);
         ContentEntry::deleteById($id);
-        return print $this->json(['ok' => true]);
+        return $this->json(['ok' => true]);
     }
 
     private function jsonBody(): array

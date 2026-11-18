@@ -71,21 +71,33 @@ class RateLimit
         return 'rl:' . $action . ':' . hash('sha256', self::clientIp());
     }
 
-    // Resolve the real client IP. Only trust X-Forwarded-For when REMOTE_ADDR
-    // is in the configured trusted-proxy whitelist; otherwise an attacker
-    // hitting us directly could spoof the header to bypass rate limits.
-    private static function clientIp(): string
+    /**
+     * Fixed-window counter for generic throttling (e.g. API requests per minute).
+     * Returns false once $max requests have been made in the current window.
+     */
+    public static function allow(string $key, int $max, int $windowSec): bool
     {
-        $remote = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-        $cfg = Seven::app()?->config ?? [];
-        $trusted = $cfg['trustedProxies'] ?? [];
+        $bucket = 'rl:allow:' . hash('sha256', $key) . ':' . intdiv(time(), $windowSec);
+        $count  = (int)(Cache::get($bucket) ?? 0) + 1;
+        Cache::set($bucket, $count, $windowSec);
+        return $count <= $max;
+    }
 
-        if ($trusted && in_array($remote, $trusted, true)) {
-            $fwd = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
-            if ($fwd !== '') {
-                $first = trim(explode(',', $fwd)[0]);
-                if (filter_var($first, FILTER_VALIDATE_IP)) return $first;
-            }
+    /**
+     * Real client IP. X-Forwarded-For is only read when REMOTE_ADDR is a trusted
+     * proxy, and then walked right-to-left: the left side is client-controlled,
+     * so the first non-proxy hop from the right is the one our proxy actually saw.
+     */
+    public static function clientIp(): string
+    {
+        $remote  = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $trusted = Seven::app()?->config['trustedProxies'] ?? [];
+        if (!$trusted || !in_array($remote, $trusted, true)) return $remote;
+
+        $hops = array_reverse(array_map('trim', explode(',', (string)($_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''))));
+        foreach ($hops as $hop) {
+            if (!filter_var($hop, FILTER_VALIDATE_IP)) break;
+            if (!in_array($hop, $trusted, true)) return $hop;
         }
         return $remote;
     }

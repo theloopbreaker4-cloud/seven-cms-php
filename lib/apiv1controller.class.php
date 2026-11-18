@@ -45,7 +45,7 @@ abstract class ApiV1Controller extends ApiController
         $user = ['id' => (int)$claims['sub'], 'email' => (string)($claims['email'] ?? ''), 'role' => (string)($claims['role'] ?? 'user')];
 
         if ($loadUser) {
-            $row = DB::findOne('users', ' id = :id ', [':id' => $user['id']]);
+            $row = DB::findOne('user', ' id = :id ', [':id' => $user['id']])?->export();
             if (!$row || !((int)$row['is_active'])) return null;
             $user = ['id' => (int)$row['id'], 'email' => (string)$row['email'], 'role' => (string)$row['role']];
         }
@@ -92,18 +92,11 @@ abstract class ApiV1Controller extends ApiController
     private function applyRateLimit(): void
     {
         if (!class_exists('RateLimit')) return;
-        $key = 'api:' . ($this->clientIp() ?? 'anon') . ':' . static::class;
+        $key = 'api:' . RateLimit::clientIp() . ':' . static::class;
         if (!RateLimit::allow($key, $this->rateLimitPerMinute, 60)) {
             header('Retry-After: 60');
             $this->jsonError(429, 'Too Many Requests');
         }
     }
 
-    private function clientIp(): ?string
-    {
-        foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'] as $h) {
-            if (!empty($_SERVER[$h])) return trim(explode(',', (string)$_SERVER[$h])[0]);
-        }
-        return null;
-    }
 }
