@@ -22,30 +22,48 @@
 
 define('_SEVEN',   1);
 define('ROOT_DIR', dirname(__DIR__));
+define('DS', DIRECTORY_SEPARATOR);
 chdir(ROOT_DIR);
 
 // Composer autoloader (optional). When present, third-party packages and
 // plugins shipping PSR-4 namespaces become available to the CLI as well.
 if (is_file(ROOT_DIR . '/vendor/autoload.php')) require_once ROOT_DIR . '/vendor/autoload.php';
 
-// Autoload core classes (matches public/index.php convention).
-foreach (glob(ROOT_DIR . '/lib/*.class.php') ?: [] as $f) require_once $f;
+require_once ROOT_DIR . '/lib/env.class.php';
+Env::load(ROOT_DIR . '/.env');
+define('ENVIRONMENT', Env::get('SEVEN_ENV', 'prod'));
+define('PROTOCOL', 'https://');
+define('ROOT_URL', parse_url((string)Env::get('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost');
+
+// Same lookup order as General::autoload(), resolved lazily.
 foreach (glob(ROOT_DIR . '/lib/*.interface.php') ?: [] as $f) require_once $f;
+spl_autoload_register(static function (string $class): void {
+    $lower = strtolower($class);
+    $paths = [
+        ROOT_DIR . "/lib/{$lower}.class.php",
+        ROOT_DIR . "/app/models/{$lower}.php",
+        ROOT_DIR . "/app/models/{$class}.php",
+    ];
+    foreach (glob(ROOT_DIR . '/modules/*', GLOB_ONLYDIR) ?: [] as $mod) {
+        $paths[] = "{$mod}/models/{$lower}.php";
+        $paths[] = "{$mod}/models/{$class}.php";
+        $paths[] = "{$mod}/services/{$class}.php";
+    }
+    $paths[] = ROOT_DIR . "/modules/{$class}/Module.php";
+    foreach ($paths as $path) {
+        if (is_file($path)) { require_once $path; return; }
+    }
+});
 
-// Module/Model base classes from app/.
-foreach (glob(ROOT_DIR . '/app/models/*.php') ?: [] as $f) {
-    if (basename($f) === 'index.html') continue;
-    require_once $f;
-}
+foreach (glob(ROOT_DIR . '/config/*.config.php') ?: [] as $f) require_once $f;
+Logger::$PATH = ROOT_DIR . '/logs';
 
-// Plugin module classes — needed for plugin:* commands.
-foreach (glob(ROOT_DIR . '/modules/*/Module.php') ?: [] as $f) require_once $f;
-foreach (glob(ROOT_DIR . '/modules/*/models/*.php') ?: [] as $f) require_once $f;
-
-// Env + DB
-if (class_exists('Env'))    Env::load(ROOT_DIR . '/.env');
-if (class_exists('Config')) Config::load(ROOT_DIR . '/config/db.config.php');
-if (class_exists('DB'))     DB::connect();
+require_once ROOT_DIR . '/lib/extension/rb/rb.php';
+Db::setup(
+    'mysql:host=' . $dbConfig['dbHost'] . ';dbname=' . $dbConfig['dbname'] . ';charset=utf8mb4',
+    $dbConfig['user'],
+    $dbConfig['password']
+);
 
 // ─── Dispatch ──────────────────────────────────────────────────────────────
 $cmd  = (string)($argv[1] ?? '');
