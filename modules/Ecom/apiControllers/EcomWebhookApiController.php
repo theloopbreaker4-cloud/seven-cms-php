@@ -87,6 +87,10 @@ class EcomWebhookApiController extends ApiController
                 if (!$orderId) return;
                 $order = Order::findById($orderId);
                 if (!$order) return;
+                // Never fulfil an underpaid order, whatever the event claims.
+                if (($event['amount'] ?? null) !== null && (int)$event['amount'] < $order->total) {
+                    throw new RuntimeException("Paid amount {$event['amount']} below order total {$order->total}");
+                }
                 DB::execute(
                     'UPDATE ecom_payments SET status = "paid", paid_at = NOW() WHERE order_id = :o AND gateway_id = :g',
                     [':o' => $orderId, ':g' => (string)$event['gateway_id']]

@@ -39,7 +39,7 @@ class ManualGateway implements PaymentGateway
         return 'manual_refund_' . bin2hex(random_bytes(4));
     }
 
-    public function verifyWebhookSignature(string $rawBody, array $headers): bool { return true; }
+    public function verifyWebhookSignature(string $rawBody, array $headers): bool { return false; } // no inbound webhooks
 
     public function handleWebhook(string $rawBody, array $headers): array
     {
