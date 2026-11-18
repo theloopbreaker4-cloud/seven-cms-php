@@ -26,7 +26,7 @@ class ActivityAdminController extends Controller
         if (!empty($_GET['entity'])) { $where[] = 'entity_type = :e'; $args[':e'] = (string)$_GET['entity']; }
 
         $sql = 'SELECT a.*, u.email, u.user_name FROM activity_log a
-                LEFT JOIN users u ON u.id = a.user_id';
+                LEFT JOIN user u ON u.id = a.user_id';
         if ($where) $sql .= ' WHERE ' . implode(' AND ', $where);
         $sql .= ' ORDER BY a.id DESC LIMIT 200';
 

@@ -41,7 +41,7 @@ class Permission
         if (!$userId) return false;
 
         // Legacy users.role column.
-        $role = DB::getCell('SELECT role FROM users WHERE id = :id', [':id' => $userId]);
+        $role = DB::getCell('SELECT role FROM user WHERE id = :id', [':id' => $userId]);
         if ($role === 'admin') return true;
 
         // New: membership in role 'admin'.

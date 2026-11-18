@@ -18,7 +18,7 @@ class HomeAdminController extends Controller
         // Counts
         $pageCount = (int)(DB::getCell('SELECT COUNT(*) FROM page WHERE is_published = 1') ?? 0);
         $postCount = (int)(DB::getCell('SELECT COUNT(*) FROM post WHERE is_published = 1') ?? 0);
-        $userCount = (int)(DB::getCell('SELECT COUNT(*) FROM users WHERE is_active = 1') ?? 0);
+        $userCount = (int)(DB::getCell('SELECT COUNT(*) FROM user WHERE is_active = 1') ?? 0);
         $mediaCount = (int)(DB::getCell("SELECT COUNT(*) FROM media WHERE 1=1") ?? 0);
 
         // E-commerce snapshot (only if module installed)
@@ -45,7 +45,7 @@ class HomeAdminController extends Controller
             $activity = DB::getAll(
                 'SELECT a.action, a.entity_type, a.entity_id, a.description, a.created_at, u.email
                    FROM activity_log a
-                   LEFT JOIN users u ON u.id = a.user_id
+                   LEFT JOIN user u ON u.id = a.user_id
                   ORDER BY a.id DESC LIMIT 10'
             ) ?: [];
         }

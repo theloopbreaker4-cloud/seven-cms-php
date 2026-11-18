@@ -43,6 +43,7 @@ class AuthAdminController extends Controller
             $res->redirect('auth', 'index', ['userNotFound']);
         }
 
+        Auth::setToken($tokenValue);
         $user = Auth::getCurrentUser();
         if (!$user || $user->role !== 'admin') {
             RateLimit::hit('admin_login');
