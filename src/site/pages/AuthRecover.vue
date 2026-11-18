@@ -111,7 +111,7 @@ async function submit() {
   loading.value = true
   error.value   = ''
   try {
-    await api.auth.reset({ token: route.query.token, password: form.value.password })
+    await api.auth.reset({ token: route.params.token, password: form.value.password, confirmPassword: form.value.confirmPassword })
     router.push(`/${lang}/auth`)
   } catch (e) {
     error.value = e.message || t('auth.resetPassword', 'Reset failed. Try again.')

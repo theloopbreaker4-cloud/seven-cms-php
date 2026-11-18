@@ -26,7 +26,7 @@ export const api = {
     logout:   ()      => apiFetch('/auth/logout',   { method: 'POST' }),
     me:       ()      => apiFetch('/auth/me'),
     register: (data)  => apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
-    forgot:   (email) => apiFetch('/auth/forgot',   { method: 'POST', body: JSON.stringify({ email }) }),
+    forgot:   (email, lang) => apiFetch('/auth/forgot', { method: 'POST', body: JSON.stringify({ email, lang }) }),
     reset:    (data)  => apiFetch('/auth/reset',    { method: 'POST', body: JSON.stringify(data) }),
   },
   blog: {

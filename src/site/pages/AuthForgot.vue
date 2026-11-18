@@ -66,7 +66,7 @@ async function submit() {
   loading.value = true
   error.value   = ''
   try {
-    await api.auth.forgot(email.value)
+    await api.auth.forgot(email.value, lang)
     success.value = true
   } catch (e) {
     error.value = e.message || t('auth.sendResetLink', 'Failed to send. Try again.')

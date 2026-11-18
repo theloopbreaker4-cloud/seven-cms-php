@@ -65,6 +65,7 @@ Db::setup(
     $dbConfig['user'],
     $dbConfig['password']
 );
+Db::syncTimezone();
 
 // ─── Dispatch ──────────────────────────────────────────────────────────────
 $cmd  = (string)($argv[1] ?? '');

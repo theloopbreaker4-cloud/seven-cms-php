@@ -16,6 +16,16 @@ class Db extends \RedBeanPHP\Facade
         return parent::exec($sql, $bindings);
     }
 
+    /**
+     * Align the MySQL session time zone with PHP's. Code mixes date() with NOW()
+     * (cron next_run_at, mail available_at, reset expiry); a server/DB zone
+     * mismatch would otherwise shift every comparison by hours.
+     */
+    public static function syncTimezone(): void
+    {
+        parent::exec('SET time_zone = ?', [date('P')]);
+    }
+
     public static function isSetDatabase(array $dbConfig, Logger $logger): void
     {
         $host     = $dbConfig['dbHost']    ?? '127.0.0.1';

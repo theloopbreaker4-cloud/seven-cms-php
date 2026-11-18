@@ -54,6 +54,7 @@ class General
         // ecom.multi_currency_enabled to decide cron registration).
         $constr = 'mysql:host=' . $this->dbConfig['dbHost'] . ';dbname=' . $this->dbConfig['dbname'] . ';charset=utf8mb4';
         Db::setup($constr, $this->dbConfig['user'], $this->dbConfig['password']);
+        Db::syncTimezone();
 
         // Router
         $this->router = new Router($config, $this->getURI());

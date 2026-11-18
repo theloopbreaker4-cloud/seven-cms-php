@@ -121,7 +121,7 @@ class AuthApiController extends ApiController
         RateLimit::hit('api_forgot');
 
         $log->info('API forgot: reset requested', ['email' => $email, 'ip' => $ip]);
-        // TODO: generate token and send email
+        PasswordReset::request($email, (string)($body['lang'] ?? 'en'));
         return json_encode(['message' => 'If that email exists, a reset link has been sent.']);
     }
 
@@ -133,7 +133,7 @@ class AuthApiController extends ApiController
         $body    = $this->body();
         $token   = preg_replace('/[^a-f0-9]/', '', $body['token'] ?? '');
         $pass    = $body['password'] ?? '';
-        $confirm = $body['confirmPassword'] ?? '';
+        $confirm = $body['confirmPassword'] ?? $pass;
         $ip      = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $log     = Logger::channel('auth');
 
@@ -147,8 +147,13 @@ class AuthApiController extends ApiController
             $res->jsonError(422, 'Password must be at least 8 characters');
         }
 
-        $log->info('API reset: password reset submitted', ['ip' => $ip]);
-        // TODO: validate token and update password
+        if (!PasswordReset::complete($token, $pass)) {
+            RateLimit::hit('api_reset');
+            $log->warn('API reset: invalid or expired token', ['ip' => $ip]);
+            $res->jsonError(400, 'This reset link is invalid or has expired.');
+        }
+        RateLimit::clear('api_reset');
+        $log->info('API reset: password changed', ['ip' => $ip]);
         return json_encode(['message' => 'Password updated successfully.']);
     }
 }
