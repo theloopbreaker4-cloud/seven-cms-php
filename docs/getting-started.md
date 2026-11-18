@@ -76,7 +76,7 @@ DB credentials) **must** live there in production — never commit them.
 ## Five-minute tour
 
 1. **Sign in.** First visit redirects to `/setup` if no admin exists. Create one.
-2. **Plugins** (`/admin/module`). Install `Content` and `Ecom`.
+2. **Plugins** (`/admin/plugin`). Install `Content` and `Ecom`.
 3. **Roles** (`/admin/roles`). Tune which permissions Editor / Author / Viewer
    roles have. Admins always pass every check.
 4. **Content Types** (`/admin/content/types`). Click *New type*, name it,

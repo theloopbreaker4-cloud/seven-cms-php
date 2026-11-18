@@ -87,4 +87,4 @@ calendar_events
 
 ---
 
-[← Back to docs](#mdlink#index.md#)
+[← Back to docs](index.md)

@@ -72,8 +72,8 @@ Event::listen('ecom.order.placed', function ($order) {
 ```
 
 Calendar events with `notify_at` automatically create notifications via the
-`calendar.sweep` cron — see [Calendar](#mdlink#calendar.md#).
+`calendar.sweep` cron — see [Calendar](calendar.md).
 
 ---
 
-[← Back to docs](#mdlink#index.md#)
+[← Back to docs](index.md)

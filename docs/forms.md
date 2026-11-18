@@ -153,6 +153,6 @@ on page load.
 
 ## See also
 
-- [Security](#mdlink#security.md#) — CSRF, rate limiting, file upload
+- [Security](security.md) — CSRF, rate limiting, file upload
   sanitization
 - UI Kit at `/admin/ui` — interactive demos of every form widget

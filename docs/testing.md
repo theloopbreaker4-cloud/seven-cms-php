@@ -84,4 +84,4 @@ empty `tests/Integration/` slot. Suggested approach:
 
 ---
 
-[← Back to docs](#mdlink#index.md#)
+[← Back to docs](index.md)

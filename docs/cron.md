@@ -93,4 +93,4 @@ named class method (`'Class::method'`).
 
 ---
 
-[← Back to docs](#mdlink#index.md#)
+[← Back to docs](index.md)

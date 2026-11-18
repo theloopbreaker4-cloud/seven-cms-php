@@ -210,7 +210,7 @@ sevenPHP/
 │   └── …
 ├── app/
 │   ├── controllers/
-│   │   ├── ModuleAdminController.php  # rewritten on top of PluginManager
+│   │   ├── PluginAdminController.php  # plugin lifecycle UI (PluginManager)
 │   │   ├── RoleAdminController.php    # NEW
 │   │   ├── ActivityAdminController.php# NEW
 │   │   └── TwoFactorAdminController.php # NEW

@@ -60,8 +60,8 @@ Route::add('shop.product', ['controller' => 'shop', 'action' => 'product']);
 | POST   | `/api/v1/shop/cart/discount`              | Apply discount code   |
 | POST   | `/api/v1/shop/checkout`                   | Begin checkout        |
 
-See [REST API](#mdlink#api.md#) for full payload shapes.
+See [REST API](api.md) for full payload shapes.
 
 ---
 
-[← Back to docs](#mdlink#index.md#)
+[← Back to docs](index.md)
