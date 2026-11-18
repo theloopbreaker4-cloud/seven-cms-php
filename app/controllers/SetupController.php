@@ -62,6 +62,10 @@ class SetupController extends Controller
 
         // ── Seed DB ───────────────────────────────────────────────────────
         try {
+            Migrator::migrate();
+            foreach (array_keys(PluginManager::discover()) as $plugin) {
+                if (!PluginManager::find($plugin)) PluginManager::install($plugin);
+            }
             $this->seedLanguages();
             $this->seedAdmin($email, $username, $password);
             $this->seedSettings($siteName, $email);

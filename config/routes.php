@@ -57,9 +57,9 @@ Route::add('admin.cache.flush', ['controller' => 'cache', 'action' => 'flush', '
 Route::add('admin.cache.save',  ['controller' => 'cache', 'action' => 'save',  'prefix' => 'admin']);
 
 // Modules / Themes / Help / UI
-Route::add('admin.modules',        ['controller' => 'module', 'action' => 'index',   'prefix' => 'admin']);
-Route::add('admin.module.enable',  ['controller' => 'module', 'action' => 'enable',  'prefix' => 'admin']);
-Route::add('admin.module.disable', ['controller' => 'module', 'action' => 'disable', 'prefix' => 'admin']);
+Route::add('admin.plugins',          ['controller' => 'plugin', 'action' => 'index',     'prefix' => 'admin']);
+Route::add('admin.plugin.enable',    ['controller' => 'plugin', 'action' => 'enable',    'prefix' => 'admin']);
+Route::add('admin.plugin.disable',   ['controller' => 'plugin', 'action' => 'disable',   'prefix' => 'admin']);
 Route::add('admin.themes',         ['controller' => 'theme',  'action' => 'index',    'prefix' => 'admin']);
 Route::add('admin.theme.activate', ['controller' => 'theme',  'action' => 'activate', 'prefix' => 'admin']);
 Route::add('admin.help',           ['controller' => 'help',   'action' => 'index',    'prefix' => 'admin']);
@@ -103,9 +103,8 @@ Route::add('api.language.known',  ['controller' => 'language', 'action' => 'know
 
 // ─── New admin: Plugins / RBAC / Activity / 2FA / Content ────────────────────
 
-// Plugins (legacy 'module' prefix kept; new actions added)
-Route::add('admin.module.install',   ['controller' => 'module', 'action' => 'install',   'prefix' => 'admin']);
-Route::add('admin.module.uninstall', ['controller' => 'module', 'action' => 'uninstall', 'prefix' => 'admin']);
+Route::add('admin.plugin.install',   ['controller' => 'plugin', 'action' => 'install',   'prefix' => 'admin']);
+Route::add('admin.plugin.uninstall', ['controller' => 'plugin', 'action' => 'uninstall', 'prefix' => 'admin']);
 
 // RBAC: roles & permissions
 Route::add('admin.roles',         ['controller' => 'role', 'action' => 'index',  'prefix' => 'admin']);

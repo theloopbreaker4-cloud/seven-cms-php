@@ -13,7 +13,7 @@ return [
         'languages'  => 'Talen',
         'settings'   => 'Instellingen',
         'social'     => 'Social media',
-        'modules'    => 'Modules',
+        'plugins'    => 'Plugins',
         'cache'         => 'Cache',
         'themes'        => 'Thema\'s',
         'themes_desc'   => 'Kleurpalet kiezen voor het beheerderspaneel',

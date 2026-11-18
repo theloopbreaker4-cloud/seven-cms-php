@@ -13,7 +13,7 @@ return [
         'languages'  => 'Langues',
         'settings'   => 'Paramètres',
         'social'     => 'Réseaux sociaux',
-        'modules'    => 'Modules',
+        'plugins'    => 'Plugins',
         'cache'         => 'Cache',
         'themes'        => 'Thèmes',
         'themes_desc'   => 'Choisir une palette de couleurs pour le panneau admin',

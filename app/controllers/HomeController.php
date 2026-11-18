@@ -12,9 +12,9 @@ class HomeController extends Controller
     public function index($req, $res, $params) {
         $this->app->setTitle(Lang::t('home', 'nav'));
         $lang     = $this->app->router->getLanguage();
-        $page     = new Page();
         $homePage = null;
-        if ($page->findBySlug('home', $lang)) {
+        $page     = Module::has('Pages') ? new Page() : null;
+        if ($page && $page->findBySlug('home', $lang)) {
             $homePage = [
                 'title'   => $page->t('title', $lang),
                 'content' => $page->t('content', $lang),

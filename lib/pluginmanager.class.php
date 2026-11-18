@@ -70,7 +70,7 @@ class PluginManager
     {
         self::ensureTable();
         $row = DB::findOne(self::TABLE, ' name = :n ', [':n' => $name]);
-        return $row ?: null;
+        return $row ? $row->export() : null;
     }
 
     /** All plugin rows in the DB. */
@@ -129,10 +129,7 @@ class PluginManager
         $classes = self::discover();
         if (isset($classes[$name])) self::callHook($classes[$name], 'onUninstall');
 
-        DB::execute(
-            'UPDATE ' . self::TABLE . ' SET status = "uninstalled" WHERE name = :n',
-            [':n' => $name]
-        );
+        self::setStatus($name, 'uninstalled');
         Event::dispatch('plugin.uninstalled', ['name' => $name]);
         return ['ok' => true];
     }
@@ -148,6 +145,7 @@ class PluginManager
             'UPDATE ' . self::TABLE . ' SET status = "enabled" WHERE name = :n',
             [':n' => $name]
         );
+        Module::enable($name);
         self::callHook($classes[$name], 'onEnable');
         Event::dispatch('plugin.enabled', ['name' => $name]);
         return ['ok' => true];
@@ -158,12 +156,19 @@ class PluginManager
         $classes = self::discover();
         if (isset($classes[$name])) self::callHook($classes[$name], 'onDisable');
 
-        DB::execute(
-            'UPDATE ' . self::TABLE . ' SET status = "disabled" WHERE name = :n',
-            [':n' => $name]
-        );
+        self::setStatus($name, 'disabled');
         Event::dispatch('plugin.disabled', ['name' => $name]);
         return ['ok' => true];
+    }
+
+    private static function setStatus(string $name, string $status): void
+    {
+        self::ensureTable();
+        DB::execute(
+            'INSERT INTO ' . self::TABLE . ' (name, version, status) VALUES (:n, :v, :s)
+             ON DUPLICATE KEY UPDATE status = VALUES(status)',
+            [':n' => $name, ':v' => self::readVersion($name), ':s' => $status]
+        );
     }
 
     private static function callHook(string $class, string $method): void
@@ -180,14 +185,31 @@ class PluginManager
         }
     }
 
-    /**
-     * Reads version from /modules/{name}/plugin.json if present; falls back to "0.0.0".
-     */
-    private static function readVersion(string $name): string
+    public static function readManifest(string $name): array
     {
-        $manifest = ROOT_DIR . "/modules/{$name}/plugin.json";
-        if (!is_file($manifest)) return '0.0.0';
-        $data = json_decode((string)file_get_contents($manifest), true);
-        return is_array($data) && !empty($data['version']) ? (string)$data['version'] : '0.0.0';
+        $file = ROOT_DIR . "/modules/{$name}/plugin.json";
+        if (!is_file($file)) return [];
+        $data = json_decode((string)file_get_contents($file), true);
+        return is_array($data) ? $data : [];
+    }
+
+    public static function readVersion(string $name): string
+    {
+        return (string)(self::readManifest($name)['version'] ?? '0.0.0');
+    }
+
+    /**
+     * Names of plugins switched off in the DB (disabled or uninstalled).
+     * Plugins with no row yet count as active so pre-existing installs keep working.
+     * Returns null when the table is missing or the DB is not connected yet.
+     */
+    public static function inactiveNames(): ?array
+    {
+        try {
+            $rows = DB::getCol('SELECT name FROM ' . self::TABLE . ' WHERE status IN ("disabled","uninstalled")');
+            return array_map('strval', $rows ?: []);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }

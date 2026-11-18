@@ -29,11 +29,9 @@ class Module
 
         $dir = ROOT_DIR . DS . 'modules';
         if (is_dir($dir)) {
-            $disabled = self::readDisabled();
-
             foreach (glob($dir . DS . '*' . DS . 'Module.php') as $file) {
                 $name = basename(dirname($file));
-                if (in_array($name, $disabled, true)) continue;
+                if (!self::isActive($name)) continue;
                 require_once $file;
                 $class = $name . 'Module';
                 if (class_exists($class)) {
@@ -69,6 +67,23 @@ class Module
             ];
         }
         return $result;
+    }
+
+    /** @var string[]|null */
+    private static ?array $inactive = null;
+
+    /**
+     * Whether a plugin may boot and have its classes autoloaded.
+     * The `plugins` table is the source of truth; storage/modules.json is a legacy fallback.
+     */
+    public static function isActive(string $name): bool
+    {
+        if (self::$inactive === null) {
+            $fromDb = PluginManager::inactiveNames();
+            if ($fromDb === null) return !in_array($name, self::readDisabled(), true);
+            self::$inactive = array_merge(self::readDisabled(), $fromDb);
+        }
+        return !in_array($name, self::$inactive, true);
     }
 
     public static function enable(string $name): void

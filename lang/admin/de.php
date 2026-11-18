@@ -13,7 +13,7 @@ return [
         'languages'  => 'Sprachen',
         'settings'   => 'Einstellungen',
         'social'     => 'Social Media',
-        'modules'    => 'Module',
+        'plugins'    => 'Plugins',
         'cache'         => 'Cache',
         'themes'        => 'Themes',
         'themes_desc'   => 'Farbpalette für das Admin-Panel auswählen',

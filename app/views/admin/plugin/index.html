@@ -1,7 +1,7 @@
 <?php
 /** @var array $modules */
 $lang = Seven::app()->router->getLanguage();
-$base = "/{$lang}/admin/module";
+$base = "/{$lang}/admin/plugin";
 ?>
 
 <div class="flex items-center justify-between mb-6">
@@ -36,21 +36,14 @@ $base = "/{$lang}/admin/module";
 
       <div class="flex flex-wrap gap-2 mt-3">
         <?php if (!$m['installed'] || $m['status'] === 'uninstalled'): ?>
-          <a href="<?= $base ?>/install/<?= urlencode($m['name']) ?>"
-             class="px-3 py-1 rounded text-xs bg-[var(--primary)] text-white">Install</a>
+          <form method="POST" action="<?= $base ?>/install/<?= urlencode($m['name']) ?>"><?= Csrf::field() ?><button class="px-3 py-1 rounded text-xs bg-[var(--primary)] text-white">Install</button></form>
         <?php else: ?>
           <?php if ($m['status'] !== 'enabled'): ?>
-            <a href="<?= $base ?>/enable/<?= urlencode($m['name']) ?>"
-               class="px-3 py-1 rounded text-xs bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/25">Enable</a>
+            <form method="POST" action="<?= $base ?>/enable/<?= urlencode($m['name']) ?>"><?= Csrf::field() ?><button class="px-3 py-1 rounded text-xs bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/25">Enable</button></form>
           <?php else: ?>
-            <a href="<?= $base ?>/disable/<?= urlencode($m['name']) ?>"
-               class="px-3 py-1 rounded text-xs bg-amber-500/15 text-amber-500 hover:bg-amber-500/25">Disable</a>
+            <form method="POST" action="<?= $base ?>/disable/<?= urlencode($m['name']) ?>"><?= Csrf::field() ?><button class="px-3 py-1 rounded text-xs bg-amber-500/15 text-amber-500 hover:bg-amber-500/25">Disable</button></form>
           <?php endif ?>
-          <a href="<?= $base ?>/uninstall/<?= urlencode($m['name']) ?>"
-             class="px-3 py-1 rounded text-xs text-red-500 hover:bg-red-500/10"
-             data-confirm="Uninstall <?= htmlspecialchars($m['name']) ?>? Tables and data are kept.">
-            Uninstall
-          </a>
+          <form method="POST" action="<?= $base ?>/uninstall/<?= urlencode($m['name']) ?>"><?= Csrf::field() ?><button type="submit" data-confirm="Uninstall <?= htmlspecialchars($m['name']) ?>? Tables and data are kept." class="px-3 py-1 rounded text-xs text-red-500 hover:bg-red-500/10">Uninstall</button></form>
         <?php endif ?>
 
         <?php if (!empty($m['meta']['permissions'])): ?>
