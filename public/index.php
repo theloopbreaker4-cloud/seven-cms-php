@@ -19,7 +19,7 @@ if (!defined('STDIN')) define('STDIN', 'php://input');
 
 // Generate a per-request CSP nonce — used by inline <script>/<style> in views.
 // Every inline block in the codebase (Master.html + feature views) is stamped
-// with `nonce="<?= Csp::nonce() ?>"`, so we can drop 'unsafe-inline' entirely.
+// with a nonce attribute via Csp::nonce(), so we can drop 'unsafe-inline'.
 require_once(ROOT_DIR . DS . 'lib' . DS . 'csp.class.php');
 $_nonce = Csp::nonce();
 
