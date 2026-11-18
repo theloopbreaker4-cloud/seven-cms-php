@@ -1,3 +1,46 @@
-location / {
-	try_files $uri $uri/ /index.php?$args;
+# Seven CMS — example nginx server block (PHP-FPM).
+# Copy, adjust server_name / root / socket, then: nginx -t && systemctl reload nginx
+
+server {
+    listen 80;
+    server_name example.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name example.com;
+
+    root /var/www/seven/public;
+    index index.php;
+
+    # ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+
+    client_max_body_size 25m;   # keep in sync with Media::MAX_SIZE
+
+    # Never serve dotfiles (.env, .git, .htaccess)
+    location ~ /\. { deny all; }
+
+    # Uploads are data, never code: no PHP, strict CSP, sandboxed.
+    location ^~ /uploads/ {
+        location ~ \.(php\d?|phtml|phar)$ { deny all; }
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Content-Security-Policy "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; sandbox" always;
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    # Only the front controller is executable.
+    location = /index.php {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param HTTPS $https if_not_empty;
+        fastcgi_param SEVEN_ENV prod;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+    }
+    location ~ \.php$ { return 404; }
 }

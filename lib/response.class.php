@@ -27,8 +27,11 @@ class Response
                 Seven::app()->logger->warn('Error view not found', ['path' => $path]);
                 print('Error ' . $code);
             }
+        } elseif (Seven::app()->router->getMethodPrefix() === 'api') {
+            header('Content-Type: application/json; charset=utf-8');
+            print(json_encode(['error' => $message], JSON_UNESCAPED_UNICODE));
         } else {
-            print($message);
+            print(htmlspecialchars((string)$message, ENT_QUOTES, 'UTF-8'));
         }
         exit;
     }
@@ -86,7 +89,12 @@ class Response
 
     public function redirectUrl(string $url): never
     {
-        // Only allow relative or same-origin URLs
+        // Only allow relative or same-origin URLs. Browsers read "/\host" and
+        // "//host" as protocol-relative, so backslashes/control chars are rejected.
+        if (preg_match('~[\\\\\s\x00-\x1f]~', $url) || str_starts_with($url, '//')) {
+            header('Location: ' . Seven::app()->config['baseUrl'] . '/');
+            exit;
+        }
         $parsed = parse_url($url);
         if (!empty($parsed['scheme']) || !empty($parsed['host'])) {
             // External URL — only allow if it starts with configured baseUrl

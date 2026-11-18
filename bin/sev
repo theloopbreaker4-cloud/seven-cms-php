@@ -15,6 +15,7 @@
  *   php bin/sev make:plugin <Name>       — scaffold a new plugin under modules/<Name>
  *   php bin/sev make:cct <Name>          — scaffold a Content Type via SQL seed
  *   php bin/sev cache:clear              — clear app cache
+ *   php bin/sev key:generate             — write a random JWT_SECRET to .env
  *   php bin/sev user:make-admin <email>  — promote a user to the "admin" role
  *
  * Bootstraps the same way as a web request: defines _SEVEN, loads core, env, db, classes.
@@ -76,7 +77,7 @@ if (!$cmd) {
     fwrite(STDOUT, "  plugin:list, plugin:install, plugin:enable, plugin:disable, plugin:uninstall\n");
     fwrite(STDOUT, "  make:plugin <Name>, make:cct <Name>\n");
     fwrite(STDOUT, "  user:make-admin <email>\n");
-    fwrite(STDOUT, "  cache:clear\n");
+    fwrite(STDOUT, "  cache:clear, key:generate\n");
     fwrite(STDOUT, "  mail:send [--limit=N], mail:status\n");
     fwrite(STDOUT, "  cron:run, cron:list\n");
     fwrite(STDOUT, "  ecom:bill-due\n");
@@ -97,6 +98,7 @@ try {
         'make:cct'          => cmdMakeCct($args[0] ?? ''),
         'user:make-admin'   => cmdMakeAdmin($args[0] ?? ''),
         'cache:clear'       => cmdCacheClear(),
+        'key:generate'      => cmdKeyGenerate(),
         'mail:send'         => cmdMailSend($args),
         'mail:status'       => cmdMailStatus(),
         'cron:run'          => cmdCronRun(),
@@ -240,10 +242,10 @@ function cmdMakeCct(string $name): void
 function cmdMakeAdmin(string $email): void
 {
     if ($email === '') fail('Email required.');
-    $row = DB::findOne('users', ' email = :e ', [':e' => $email]);
+    $row = DB::findOne('user', ' email = :e ', [':e' => $email]);
     if (!$row) fail("User not found: {$email}");
 
-    DB::execute('UPDATE users SET role = "admin" WHERE id = :id', [':id' => (int)$row['id']]);
+    DB::execute('UPDATE user SET role = "admin" WHERE id = :id', [':id' => (int)$row['id']]);
     if (Permission::class) {
         Permission::syncRoles((int)$row['id'], array_unique(array_merge(Permission::userRoles((int)$row['id']), ['admin'])));
     }
@@ -308,3 +310,17 @@ function info(string $m): void { fwrite(STDOUT, $m . "\n"); }
 function ok  (string $m): void { fwrite(STDOUT, "\033[32m{$m}\033[0m\n"); }
 function warn(string $m): void { fwrite(STDOUT, "\033[33m{$m}\033[0m\n"); }
 function fail(string $m): void { fwrite(STDERR, "\033[31m{$m}\033[0m\n"); exit(1); }
+
+function cmdKeyGenerate(): void
+{
+    $file = ROOT_DIR . '/.env';
+    $env  = is_file($file) ? (string)file_get_contents($file) : '';
+    if (preg_match('/^JWT_SECRET=\S{32,}/m', $env)) { warn('JWT_SECRET already set — leaving it (rotating logs everyone out).'); return; }
+
+    $line = 'JWT_SECRET=' . bin2hex(random_bytes(32));
+    $env  = preg_match('/^JWT_SECRET=.*$/m', $env)
+        ? preg_replace('/^JWT_SECRET=.*$/m', $line, $env)
+        : rtrim($env) . "\n" . $line . "\n";
+    file_put_contents($file, $env);
+    ok('JWT_SECRET written to .env');
+}

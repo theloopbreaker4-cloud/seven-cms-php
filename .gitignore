@@ -43,7 +43,9 @@ Thumbs.db
 *.bak[0-9]*
 
 # Uploads (runtime user content)
-public/uploads/
+public/uploads/*
+!public/uploads/.htaccess
+!public/uploads/index.html
 
 # Claude Code workspace files (kept locally, not committed)
 .claude/

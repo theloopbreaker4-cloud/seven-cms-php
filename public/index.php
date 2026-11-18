@@ -11,9 +11,20 @@ define('ROOT_DIR', dirname(__DIR__));
 require_once(ROOT_DIR . DS . 'lib' . DS . 'env.class.php');
 Env::load(ROOT_DIR . DS . '.env');
 
-define('ENVIRONMENT', Env::get('SEVEN_ENV', $_SERVER['SEVEN_ENV'] ?? 'dev'));
+// Fail safe: a missing SEVEN_ENV must not expose dev error pages in production.
+define('ENVIRONMENT', Env::get('SEVEN_ENV', $_SERVER['SEVEN_ENV'] ?? 'prod'));
 define('ROOT_URL', isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '_UNKNOWN_'));
-define('PROTOCOL', stripos($_SERVER['SERVER_PROTOCOL'] ?? '', 'https') !== false ? 'https://' : 'http://');
+
+// HTTPS: direct TLS, or X-Forwarded-Proto from a configured trusted proxy.
+$_isHttps = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
+         || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443;
+if (!$_isHttps) {
+    $_proxies = array_filter(array_map('trim', explode(',', (string)Env::get('TRUSTED_PROXIES', ''))));
+    if (in_array($_SERVER['REMOTE_ADDR'] ?? '', $_proxies, true)) {
+        $_isHttps = strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+    }
+}
+define('PROTOCOL', $_isHttps ? 'https://' : 'http://');
 
 if (!defined('STDIN')) define('STDIN', 'php://input');
 

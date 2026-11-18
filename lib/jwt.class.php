@@ -60,7 +60,11 @@ class Jwt
     private static function secret(): string
     {
         $s = (string)Env::get('JWT_SECRET', '');
-        if ($s === '') $s = (string)Env::get('APP_KEY', 'change-me');
+        if ($s === '') $s = (string)Env::get('APP_KEY', '');
+        // A guessable key lets anyone mint admin tokens — refuse instead of falling back.
+        if (strlen($s) < 32 || $s === 'change-me') {
+            throw new RuntimeException('JWT_SECRET is missing or shorter than 32 chars. Run: php bin/sev key:generate');
+        }
         return $s;
     }
 

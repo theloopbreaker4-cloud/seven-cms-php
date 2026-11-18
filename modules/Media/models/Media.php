@@ -40,6 +40,14 @@ class Media extends Model
         'audio/mpeg', 'audio/ogg', 'audio/wav',
     ];
 
+    /** Stored extension comes from the detected type, never from the client's filename. */
+    private const EXT_FOR_MIME = [
+        'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/gif' => 'gif', 'image/webp' => 'webp',
+        'image/avif' => 'avif', 'image/svg+xml' => 'svg', 'application/pdf' => 'pdf',
+        'video/mp4' => 'mp4', 'video/webm' => 'webm',
+        'audio/mpeg' => 'mp3', 'audio/ogg' => 'ogg', 'audio/wav' => 'wav',
+    ];
+
     public function __construct($data = []) {
         parent::__construct();
         if ($data) $this->setModel($data);
@@ -54,10 +62,16 @@ class Media extends Model
         if ($file['size'] > self::MAX_SIZE)                          return null;
 
         // Detect mime from content; do not trust browser-provided $file['type'].
-        $mime = $this->detectMime($file['tmp_name']) ?: ($file['type'] ?? 'application/octet-stream');
-        if (!in_array($mime, self::ALLOWED_MIME, true)) return null;
+        $mime = $this->detectMime($file['tmp_name']);
+        if ($mime === null || !isset(self::EXT_FOR_MIME[$mime])) return null;
 
-        $ext  = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if ($mime === 'image/svg+xml') {
+            $clean = SvgSanitizer::clean((string)file_get_contents($file['tmp_name']));
+            if ($clean === null) return null;
+            file_put_contents($file['tmp_name'], $clean);
+        }
+
+        $ext  = self::EXT_FOR_MIME[$mime];
         $uuid = bin2hex(random_bytes(16));
 
         $subdir = $folderId ? $this->resolveFolderPath($folderId) : date('Y/m');

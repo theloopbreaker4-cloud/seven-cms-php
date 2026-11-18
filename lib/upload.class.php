@@ -50,6 +50,12 @@ class Upload
             throw new RuntimeException('File type not allowed: ' . $realMime);
         }
 
+        if ($realMime === 'image/svg+xml') {
+            $clean = SvgSanitizer::clean((string)file_get_contents($file['tmp_name']));
+            if ($clean === null) throw new RuntimeException('Invalid or unsafe SVG file.');
+            file_put_contents($file['tmp_name'], $clean);
+        }
+
         // Generate safe filename — no user input in filename
         $ext      = self::ALLOWED[$realMime];
         $filename = bin2hex(random_bytes(16)) . '.' . $ext;

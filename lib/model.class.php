@@ -44,6 +44,11 @@ class Model extends RedBean_SimpleModel
         $tableName = $this->tableName;
         $table     = $editId ? DB::load($tableName, $editId) : DB::dispense($tableName);
 
+        // Explicit NULLs would override NOT NULL DEFAULT CURRENT_TIMESTAMP columns.
+        $now = date('Y-m-d H:i:s');
+        if (property_exists($this, 'createdAt') && empty($this->createdAt)) $this->createdAt = $now;
+        if (property_exists($this, 'updatedAt')) $this->updatedAt = $now;
+
         foreach (get_object_vars($this) as $key => $value) {
             if ($key !== 'id' && $key !== 'tableName' && $key !== 'bean') {
                 $table->$key = $value;
