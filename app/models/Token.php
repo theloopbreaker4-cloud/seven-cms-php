@@ -34,7 +34,7 @@ class Token extends Model
 
         $table = DB::findOne(
             $this->tableName,
-            ' value = :value AND auth = 1 ',
+            ' value = :value AND auth = 1 AND created_at > NOW() - INTERVAL 30 DAY ',
             [':value' => $value]
         );
 
