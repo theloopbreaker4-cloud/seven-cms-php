@@ -13,6 +13,8 @@ class General
     public $db       = null;
     public $languageData;
     public $title;
+    /** Name of the route matched by Route::match(), if any — selects its middleware. */
+    public ?string $routeName = null;
 
     public function __toString() { return 'General'; }
 
@@ -67,7 +69,10 @@ class General
         Module::loadAll();
 
         $matched = Route::match($this->router->getPathSegments());
-        if ($matched) $this->router->applyRoute($matched['def'], $matched['params']);
+        if ($matched) {
+            $this->router->applyRoute($matched['def'], $matched['params']);
+            $this->routeName = $matched['name'];
+        }
 
         $this->logger->debug('Bootstrap complete', [
             'controller' => $this->router->getController(),
@@ -95,6 +100,8 @@ class General
     private function autoload(string $class): void
     {
         $lower = strtolower($class);
+        // RedBean probes optional FUSE models (Model_Setting…) on every bean — not an error.
+        if (str_starts_with($lower, 'model_')) return;
 
         foreach (['.class.php', '.interface.php'] as $suffix) {
             $path = ROOT_DIR . DS . 'lib' . DS . $lower . $suffix;
@@ -206,6 +213,20 @@ class General
         }
     }
 
+    /** Call the controller action through the matched route's middleware chain. */
+    private function runAction(object $controller, string $method, mixed $request, mixed $response): mixed
+    {
+        $core = fn($req) => $controller->$method($req, $response, $this->router->getParams());
+        if ($this->routeName === null) return $core($request);
+
+        $next = $core;
+        foreach (array_reverse(Route::middlewareFor($this->routeName)) as $mw) {
+            $inner = $next;
+            $next  = fn($req) => $mw->handle($req, $inner);
+        }
+        return $next($request);
+    }
+
     /** Exact names plus suffixes such as variantDelete / assetUpload / hostRemove. */
     private function isMutatingAction(string $action): bool
     {
@@ -241,7 +262,7 @@ class General
             $response->errorCode(404, '"' . $method . '" action not found');
         }
         Logger::channel('app')->debug('API dispatch', ['controller' => $controllerClass, 'action' => $method]);
-        print($obj->$method($request, $response, $this->router->getParams()));
+        print($this->runAction($obj, $method, $request, $response));
     }
 
     private function dispatchWeb(mixed $request, mixed $response): void
@@ -273,7 +294,7 @@ class General
 
         Logger::channel('app')->debug('Web dispatch', ['controller' => $controllerClass, 'action' => $method]);
 
-        $result = $obj->$method($request, $response, $this->router->getParams());
+        $result = $this->runAction($obj, $method, $request, $response);
 
         // Controllers may return an array of view data (Vue hybrid) or a string (legacy PHP render)
         if (is_array($result)) {

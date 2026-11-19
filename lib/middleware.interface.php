@@ -10,5 +10,5 @@ interface MiddlewareInterface
      * @param  callable $next    — call $next($request) to continue the chain
      * @return mixed             — return a response string to short-circuit, or pass through
      */
-    public function handle(Request $request, callable $next): mixed;
+    public function handle(RequestData $request, callable $next): mixed;
 }

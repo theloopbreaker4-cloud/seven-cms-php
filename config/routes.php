@@ -23,6 +23,8 @@ Route::add('auth.register', ['controller' => 'auth', 'action' => 'register']);
 Route::add('auth.forgot',   ['controller' => 'auth', 'action' => 'forgot']);
 Route::add('auth.recover',  ['controller' => 'auth', 'action' => 'recover']);
 Route::add('auth.logout',   ['controller' => 'auth', 'action' => 'logout']);
+Route::middleware('auth.register', [GuestMiddleware::class]);
+Route::middleware('auth.forgot',   [GuestMiddleware::class]);
 
 // ─── Admin core ───────────────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@ defined('_SEVEN') or die('No direct script access allowed');
 
 class AuthMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, callable $next): mixed
+    public function handle(RequestData $request, callable $next): mixed
     {
         if (!Auth::isLogin()) {
             $lang = Seven::app()->router->getLanguage();
