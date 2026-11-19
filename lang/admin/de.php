@@ -47,6 +47,7 @@ return [
         'draft'       => 'Entwurf',
         'confirm_del' => 'Möchten Sie diesen Eintrag wirklich löschen?',
         'activate'    => 'Aktivieren',
+        'upload'      => 'Hochladen',
     ],
     'auth' => [
         'email'    => 'E-Mail oder Benutzername',
@@ -79,6 +80,8 @@ return [
         'restore'         => 'Wiederherstellen',
         'archived'        => 'Archiviert',
         'confirm_archive' => 'Diese Sprache archivieren? Sie bleibt erhalten und kann wiederhergestellt werden.',
+        'branding'         => 'Branding',
+        'branding_desc'    => 'Eigene SVG-Icons hochladen oder auf die Icons des aktiven Themes zurücksetzen.',
     ],
     'posts' => [
         'title'       => 'Blog-Beiträge',

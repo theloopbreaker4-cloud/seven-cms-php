@@ -47,6 +47,7 @@ return [
         'draft'       => 'Brouillon',
         'confirm_del' => 'Êtes-vous sûr de vouloir supprimer ceci ?',
         'activate'    => 'Activer',
+        'upload'      => 'Téléverser',
     ],
     'auth' => [
         'email'    => 'E-mail ou nom d\'utilisateur',
@@ -79,6 +80,8 @@ return [
         'restore'         => 'Restaurer',
         'archived'        => 'Archivé',
         'confirm_archive' => 'Archiver cette langue ? Elle restera disponible et pourra être restaurée.',
+        'branding'         => 'Image de marque',
+        'branding_desc'    => 'Téléversez vos propres icônes SVG ou revenez à celles du thème actif.',
     ],
     'posts' => [
         'title'       => 'Articles de blog',

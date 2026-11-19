@@ -47,6 +47,7 @@ return [
         'draft'       => 'Concept',
         'confirm_del' => 'Weet u zeker dat u dit wilt verwijderen?',
         'activate'    => 'Activeren',
+        'upload'      => 'Uploaden',
     ],
     'auth' => [
         'email'    => 'E-mail of gebruikersnaam',
@@ -79,6 +80,8 @@ return [
         'restore'         => 'Herstellen',
         'archived'        => 'Gearchiveerd',
         'confirm_archive' => 'Deze taal archiveren? Ze blijft bewaard en kan worden hersteld.',
+        'branding'         => 'Huisstijl',
+        'branding_desc'    => 'Upload eigen SVG-iconen of zet ze terug naar die van het actieve thema.',
     ],
     'posts' => [
         'title'       => 'Blogberichten',

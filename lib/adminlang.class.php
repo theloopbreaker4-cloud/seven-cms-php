@@ -14,7 +14,7 @@ class AdminLang
     private static string  $current = 'en';
 
     // Built-in supported codes (more can be added via settings)
-    public const BUILTIN = ['en', 'de', 'fr', 'nl'];
+    public const BUILTIN = ['en', 'ru', 'uk', 'ka', 'de', 'fr', 'nl'];
 
     public static function load(): void
     {
@@ -75,6 +75,9 @@ class AdminLang
         // Fallback to built-in
         return [
             ['code' => 'en', 'name' => 'English',    'isDefault' => true,  'isActive' => true],
+            ['code' => 'ru', 'name' => 'Русский',    'isDefault' => false, 'isActive' => true],
+            ['code' => 'uk', 'name' => 'Українська', 'isDefault' => false, 'isActive' => true],
+            ['code' => 'ka', 'name' => 'ქართული',    'isDefault' => false, 'isActive' => true],
             ['code' => 'de', 'name' => 'Deutsch',    'isDefault' => false, 'isActive' => true],
             ['code' => 'fr', 'name' => 'Français',   'isDefault' => false, 'isActive' => true],
             ['code' => 'nl', 'name' => 'Nederlands', 'isDefault' => false, 'isActive' => true],

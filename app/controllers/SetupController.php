@@ -166,6 +166,9 @@ class SetupController extends Controller
     {
         $langs = [
             ['code'=>'en','name'=>'English',    'is_default'=>1],
+            ['code'=>'ru','name'=>'Русский',    'is_default'=>0],
+            ['code'=>'uk','name'=>'Українська', 'is_default'=>0],
+            ['code'=>'ka','name'=>'ქართული',    'is_default'=>0],
             ['code'=>'de','name'=>'Deutsch',    'is_default'=>0],
             ['code'=>'fr','name'=>'Français',   'is_default'=>0],
             ['code'=>'nl','name'=>'Nederlands', 'is_default'=>0],
