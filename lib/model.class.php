@@ -49,9 +49,11 @@ class Model extends RedBean_SimpleModel
         if (property_exists($this, 'createdAt') && empty($this->createdAt)) $this->createdAt = $now;
         if (property_exists($this, 'updatedAt')) $this->updatedAt = $now;
 
+        // Write columns directly: the magic setter treats "coverImage" as a link
+        // to cover_image_id whenever both exist and throws "Cannot cast to bean".
         foreach (get_object_vars($this) as $key => $value) {
             if ($key !== 'id' && $key !== 'tableName' && $key !== 'bean') {
-                $table->$key = $value;
+                $table->setProperty($table->beau($key), $value, false, true);
             }
         }
 

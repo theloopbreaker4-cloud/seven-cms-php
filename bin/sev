@@ -17,6 +17,7 @@
  *   php bin/sev cache:clear              — clear app cache
  *   php bin/sev key:generate             — write a random JWT_SECRET to .env
  *   php bin/sev demo:init                — create/refresh the shared demo admin (DEMO_LOGIN/DEMO_PASSWORD)
+ *   php bin/sev demo:seed                — add sample pages/posts for the demo
  *   php bin/sev demo:snapshot            — save DB + uploads as the demo baseline (storage/demo/)
  *   php bin/sev demo:reset               — restore the baseline (run hourly from cron)
  *   php bin/sev user:make-admin <email>  — promote a user to the "admin" role
@@ -105,6 +106,7 @@ try {
         'cache:clear'       => cmdCacheClear(),
         'key:generate'      => cmdKeyGenerate(),
         'demo:init'         => cmdDemoInit(),
+        'demo:seed'         => cmdDemoSeed(),
         'demo:snapshot'     => cmdDemoSnapshot(),
         'demo:reset'        => cmdDemoReset(),
         'mail:send'         => cmdMailSend($args),
@@ -116,6 +118,7 @@ try {
     };
 } catch (\Throwable $e) {
     fwrite(STDERR, "ERROR: " . $e->getMessage() . "\n");
+    if (getenv('SEV_DEBUG')) fwrite(STDERR, $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() . "\n");
     exit(1);
 }
 
@@ -444,4 +447,69 @@ function cmdDemoReset(): void
     bootCliCache();
     Cache::flush();
     ok('Demo reset to baseline at ' . date('Y-m-d H:i'));
+}
+
+/** Sample content so the demo isn't empty. Idempotent: skips entities whose slug exists. */
+function cmdDemoSeed(): void
+{
+    if (!Demo::enabled()) fail('Set DEMO_MODE=true in .env first.');
+    $j = fn(array $a) => json_encode($a, JSON_UNESCAPED_UNICODE);
+    $admin = (int)DB::getCell('SELECT id FROM user WHERE email = :e', [':e' => strtolower(Demo::login())]);
+
+    $pages = [
+        'home' => [
+            'title'   => ['en' => 'Welcome to Seven CMS', 'ru' => 'Добро пожаловать в Seven CMS', 'ka' => 'მოგესალმებით Seven CMS-ში'],
+            'content' => [
+                'en' => '<p>This is a live demo. Open the <a href="/en/admin">admin panel</a>, edit this page, write a post, upload an image or build a product — everything resets every hour.</p>',
+                'ru' => '<p>Это живое демо. Откройте <a href="/ru/admin">админку</a>, измените эту страницу, напишите пост, загрузите картинку или создайте товар — всё сбрасывается каждый час.</p>',
+                'ka' => '<p>ეს არის ცოცხალი დემო. გახსენით <a href="/ka/admin">ადმინ პანელი</a> — ყველაფერი ყოველ საათში განახლდება.</p>',
+            ],
+        ],
+        'about' => [
+            'title'   => ['en' => 'About', 'ru' => 'О проекте', 'ka' => 'ჩვენს შესახებ'],
+            'content' => [
+                'en' => '<p>Seven CMS is a modular PHP 8 CMS: plugins, custom content types, RBAC, multi-site, e-commerce, REST + GraphQL API, six languages.</p>',
+                'ru' => '<p>Seven CMS — модульная CMS на PHP 8: плагины, свои типы контента, роли и права, мультисайт, магазин, REST и GraphQL API, шесть языков.</p>',
+                'ka' => '<p>Seven CMS — მოდულური PHP 8 CMS.</p>',
+            ],
+        ],
+    ];
+    foreach ($pages as $slug => $p) {
+        if (DB::getCell('SELECT COUNT(*) FROM slug WHERE entity_type = "page" AND slug = :s', [':s' => $slug])) continue;
+        $page = new Page();
+        $page->userId = $admin ?: null;
+        $page->title = $j($p['title']);
+        $page->content = $j($p['content']);
+        $page->isPublished = 1;
+        $id = $page->save();
+        Slug::saveForEntity('page', (int)$id, ['en' => $slug, 'ru' => $slug, 'ka' => $slug]);
+    }
+
+    $catId = (int)DB::getCell('SELECT id FROM category WHERE slug = "news"');
+    if (!$catId) {
+        $cat = new Category();
+        $cat->slug = 'news';
+        $cat->name = $j(['en' => 'News', 'ru' => 'Новости', 'ka' => 'სიახლეები']);
+        $catId = (int)$cat->save();
+    }
+
+    $posts = [
+        'hello-seven' => ['Hello, Seven CMS', 'Привет, Seven CMS', 'A first post you are free to edit or delete.', 'Первая запись — можно редактировать или удалить.'],
+        'plugins'     => ['Everything is a plugin', 'Всё — плагины', 'Blog, Pages, Media, Shop… switch them on and off under System → Plugins.', 'Блог, страницы, медиа, магазин — включаются и выключаются в Система → Плагины.'],
+        'api'         => ['REST and GraphQL out of the box', 'REST и GraphQL из коробки', 'JWT-secured API v1 plus a GraphQL endpoint with a playground.', 'API v1 с JWT и GraphQL с песочницей.'],
+    ];
+    foreach ($posts as $slug => [$en, $ru, $exEn, $exRu]) {
+        if (DB::getCell('SELECT COUNT(*) FROM slug WHERE entity_type = "post" AND slug = :s', [':s' => $slug])) continue;
+        $post = new Post();
+        $post->userId = $admin ?: null;
+        $post->categoryId = $catId;
+        $post->title = $j(['en' => $en, 'ru' => $ru]);
+        $post->excerpt = $j(['en' => $exEn, 'ru' => $exRu]);
+        $post->content = $j(['en' => "<p>{$exEn}</p>", 'ru' => "<p>{$exRu}</p>"]);
+        $post->isPublished = 1;
+        $post->publishedAt = date('Y-m-d H:i:s');
+        $id = $post->save();
+        Slug::saveForEntity('post', (int)$id, ['en' => $slug, 'ru' => $slug]);
+    }
+    ok('Demo content seeded.');
 }
