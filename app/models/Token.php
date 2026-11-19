@@ -12,20 +12,24 @@ class Token extends Model
     public int     $auth      = 1;
     public ?string $createdAt = null;
 
+    /** Plain token for the cookie; only known right after creation. The DB keeps its SHA-256. */
+    private ?string $plain = null;
+
     public function __construct(?int $userId = null)
     {
         parent::__construct();
         if ($userId) {
             $this->userId    = $userId;
             $this->auth      = 1;
-            $this->value     = Crypt::randomToken(32);
+            $this->plain     = Crypt::randomToken(32);
+            $this->value     = hash('sha256', $this->plain);
             $this->createdAt = date('Y-m-d H:i:s');
         }
     }
 
     public function getValue(): string
     {
-        return $this->value;
+        return $this->plain ?? '';
     }
 
     public function setToken(string $value): void
@@ -35,7 +39,7 @@ class Token extends Model
         $table = DB::findOne(
             $this->tableName,
             ' value = :value AND auth = 1 AND created_at > NOW() - INTERVAL 30 DAY ',
-            [':value' => $value]
+            [':value' => hash('sha256', $value)]
         );
 
         if ($table) {
