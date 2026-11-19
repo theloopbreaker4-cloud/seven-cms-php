@@ -73,7 +73,12 @@ configured whitelist:
 TRUSTED_PROXIES=10.0.0.1,10.0.0.2
 ```
 
-Default is empty — `REMOTE_ADDR` is used as-is.
+Default is empty — `REMOTE_ADDR` is used as-is. When it is set,
+`X-Forwarded-For` is read right-to-left (the left part is client-supplied)
+and `X-Forwarded-Proto: https` from those proxies marks the request as HTTPS
+(Secure cookies, HSTS). Always use `RateLimit::clientIp()` instead of reading
+these headers yourself. Behind Cloudflare, prefer nginx `real_ip_header
+CF-Connecting-IP` with Cloudflare's ranges so `REMOTE_ADDR` is already right.
 
 ## File uploads
 
@@ -94,9 +99,22 @@ you accept SVG anywhere else, run uploads through it.
 
 ### Other uploads
 
-`MediaModel` and theme icon upload validate MIME type and extension; the
-final filename is replaced with a UUID, so directory traversal via crafted
-filenames is impossible.
+Media and `Upload` detect the MIME type from the file content and take the
+stored **extension from that type** (`Media::EXT_FOR_MIME`), never from the
+client's filename — a JPEG/PHP polyglot named `x.php` is stored as `.jpg`.
+The filename is a random UUID. `public/uploads/.htaccess` and the nginx
+example deny script execution and send a sandboxing CSP for uploads.
+
+Paid digital files are not media at all: they live in
+`storage/private/digital/` (outside the web root) and are only streamed by
+`/{lang}/shop/download/{token}` with an atomic download-limit check.
+
+### Rich text
+
+Editor-authored HTML (page/post content, product descriptions) goes through
+`HtmlSanitizer::clean()` — an allowlist of formatting tags, `http(s)`/
+`mailto`/relative URLs only, scripts and event handlers removed. Every other
+text field is tag-stripped. Comments are plain text.
 
 ## Authentication
 
@@ -107,6 +125,22 @@ filenames is impossible.
 - TOTP 2FA (RFC 6238). Recovery codes are bcrypt-hashed in
   `user_totp.recovery_codes`.
 - Passwords: `password_hash($pw, PASSWORD_BCRYPT, ['cost' => 10])`.
+- Session tokens are stored as SHA-256 in the `token` table and expire
+  server-side after 30 days, whatever the cookie says.
+- Password reset: one-time token (stored hashed, 1 hour), sent through the
+  mail queue; a successful reset revokes every session and refresh token.
+- `JWT_SECRET` must be at least 32 characters — the API refuses to sign
+  tokens otherwise. Generate it with `php bin/sev key:generate`.
+- A missing `SEVEN_ENV` means `prod` (no stack traces in error pages).
+
+## No state changes over GET
+
+Admin actions that change data (`delete`, `*Delete`, `*Store`, `*Update`,
+`*Upload`, `toggle`, `run`, `approve`, `read`, …) answer `405` to GET. In
+views use a POST form, or a link with `data-method="post"` (optionally with
+`data-confirm`) — `src/admin/dialog.js` submits it as a form with the CSRF
+token. Same-origin `fetch()` calls in the admin automatically send an
+`X-CSRF-Token` header, which `Csrf::verify()` accepts.
 
 `Session::regenerate()` is called on login to mitigate fixation. `Csrf::rotate()`
 is called after a successful POST to prevent token replay.

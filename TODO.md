@@ -4,39 +4,30 @@ Current backlog. Items are not committed deadlines, just an honest list of what'
 
 ## Open
 
-### UX testing
-- [ ] Manual pass through Blog/Pages/Media/Ecom forms in browser — verify nothing regressed after the form-validation overhaul (CSRF auto-inject, novalidate, custom select wrapping, dark-theme pickers)
-
-### Demo instance (public showcase)
-- [ ] Deploy a demo on the VPS with the latest stable PHP (8.4/8.5), php-fpm + nginx (see `nginx.conf.example`)
-- [ ] `DEMO_MODE=true`: shared demo login shown on the sign-in page; block users/roles/settings/SMTP/payment keys/plugin install/theme files/key rotation; uploads images-only and small
-- [ ] Hourly reset of DB + uploads from a seed snapshot (cron), banner "Demo — data resets every hour"
-
-### Themes
-- [ ] Custom theme creation in admin — UI to build a new palette (light + dark variants required for both modes), save as a new `src/themes/{slug}/` with `theme.json` + `_light.scss` + `_dark.scss`, picked up by `ThemeAdminController::scanThemes()` automatically. Both light and dark variants are mandatory.
-
-### Hardening (when CMS goes public)
+### Before going live
+- [ ] Manual click-through of every admin form in a real browser (all flows are covered by HTTP smoke tests, not by a browser)
 - [ ] Third-party security audit before 1.0
 - [ ] picomatch (build-time only) has no patched release yet — re-run `npm audit fix` when one ships
-- [ ] Hash session tokens at rest (`token.value` is stored in plain text; a DB leak = session hijack)
-- [ ] Serve paid digital downloads from outside `public/` (today a leaked `/uploads/...` URL bypasses the grant token)
-- [ ] Stored HTML from editors (page/post/product content) is rendered raw — sanitise rich text or rely on CSP being strict in prod
 
 ### Tests
-- [ ] Integration test suite — currently only `tests/Unit/` (Container, Event, JWT, Money, TOTP). DB-touching code is verified by hand. PHPUnit DB fixtures + a separate test database would close this gap.
-
-### Docs polish
-- [ ] Walk every `docs/*.md` once — ensure every code sample is current after the recent CSRF/RateLimit/Csp changes
+- [ ] Port the HTTP smoke suite (login, plugins, CSRF, API/GraphQL, uploads, content, digital downloads, comments, themes, admin languages, middleware) into PHPUnit integration tests with a throw-away database. Today `tests/Unit/` covers only Container, Event, JWT, Money, TOTP, and PHPUnit isn't installed in the dev box.
 
 ### Architecture debt
-- [ ] Two auth APIs side by side: legacy `/api/auth/*` (opaque token) and `/api/v1/*` (JWT). Pick v1, deprecate legacy.
-- [ ] Route middleware (`Route::middleware()`, `app/middleware/*`) is never executed by the dispatcher — wire it in or delete it.
-- [ ] Public comment submission does not exist (only admin moderation of comments).
-- [ ] Admin UI languages (en/de/fr/nl) differ from site languages (en/ru/ka/uk/az/hy).
+- [ ] Move the Vue site from legacy `/api/auth/*` + `/api/{post,page,comment}` to `/api/v1`, then drop the legacy auth API.
+- [ ] RedBean `findOne()` returns beans; ~90 call sites still treat them as arrays (works via ArrayAccess, breaks when passed to array-typed code). Add a static-analysis pass (PHPStan) to find the rest.
+- [ ] Admin UI is translated to en/ru/uk/ka/de/fr/nl; az and hy (site languages) are still missing.
 
 
 ## Done (recent)
 
+- ✅ Public demo: DEMO_MODE (read-only sensitive sections, demo login, banners, 2 MB image uploads), `demo:init/seed/snapshot/reset`, hourly cron reset; deployed with PHP 8.5 + MariaDB 11.4
+- ✅ Custom themes built in the admin (light + dark, WCAG contrast check, no build step)
+- ✅ Public comments with moderation (API, honeypot, rate limit, admin queue)
+- ✅ Digital files stored outside the web root with an admin UI; paid downloads (were always 500) fixed; atomic download limits
+- ✅ HtmlSanitizer for rich text; stored XSS in product descriptions closed
+- ✅ Session tokens hashed at rest; route middleware actually runs
+- ✅ Admin UI in ru/uk/ka
+- ✅ Broken flows fixed: post create/edit, product create/edit, roles/sites/discounts/blocks create (lastInsertId), shop settings + currency (wrong table), cron run / mail retry / calendar delete / currency toggle (lost params), flash messages, public blog + pages (always empty)
 - ✅ Modules renamed to **Plugins** (`/admin/plugin`); empty-list bug fixed (wrong view path); enable/disable now really unloads a plugin (DB is source of truth, also for autoload); actions POST-only
 - ✅ Admin login was broken for everyone (token never handed to `Auth`)
 - ✅ `bin/sev` CLI booted with fatal errors — fixed; new `key:generate`

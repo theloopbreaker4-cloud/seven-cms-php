@@ -7,6 +7,20 @@
 All new endpoints live under `/api/v1`. The legacy `/api/*` endpoints are
 preserved for backwards compatibility but new clients should target v1.
 
+**Deprecated:** legacy `/api/auth/*` (opaque cookie token) duplicates
+`/api/v1/auth/*` (JWT). The bundled Vue site still uses the legacy auth and
+the public read endpoints below; they will move to v1 before 1.0.
+
+### Public read endpoints (no auth)
+
+| Endpoint | Returns |
+|---|---|
+| `GET /api/post/published?limit=&offset=` | published posts, newest first |
+| `GET /api/post/slug/{slug}?lang=xx` | one published post by its localized slug |
+| `GET /api/page/slug/{slug}?lang=xx` | one published page |
+| `GET /api/comment/post/{postId}` | approved comments (no emails) |
+| `POST /api/comment/store` | `{postId, name, email, content, website}` → `201 {status:"pending"}`; `website` is a honeypot, rate-limited per IP |
+
 ## Authentication
 
 ### Login

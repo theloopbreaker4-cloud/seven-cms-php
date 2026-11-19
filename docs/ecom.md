@@ -42,7 +42,10 @@ Each product has a **kind**: `physical`, `digital`, or `service`.
 
 ### Digital
 - Stock is unlimited
-- Add files in `ecom_digital_assets` (Media library or external URL)
+- Attach files on the product's edit page (**Digital files** block). They are
+  stored in `storage/private/digital/`, outside the web root, so a leaked URL
+  can't bypass the download token. Up to 200 MB (2 MB in demo mode); common
+  archive/document/media/font types.
 - After payment, buyer receives a secure download link valid for `expires_days`
   with at most `max_downloads` hits
 - License keys can be auto-generated via the asset's `license_template`
@@ -125,8 +128,11 @@ When an order is paid:
    `/{lang}/shop/download/{token}`.
 
 Each token tracks its own counter and expiry. Hitting the URL streams the
-file (or 302-redirects to the asset's external URL) and increments the
-counter. Expired or maxed-out tokens return 410 Gone.
+file as an attachment (or 302-redirects to the asset's external URL). The
+counter is checked and incremented in one statement, so parallel requests
+can't exceed `max_downloads`. Expired or maxed-out tokens return 410 Gone.
+Payment webhooks refuse to fulfil an order when the paid amount is below the
+order total.
 
 ## Discounts
 
