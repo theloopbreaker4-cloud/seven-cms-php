@@ -64,7 +64,7 @@ Logger::$PATH = ROOT_DIR . '/logs';
 
 require_once ROOT_DIR . '/lib/extension/rb/rb.php';
 Db::setup(
-    'mysql:host=' . $dbConfig['dbHost'] . ';dbname=' . $dbConfig['dbname'] . ';charset=utf8mb4',
+    'mysql:host=' . $dbConfig['dbHost'] . ';port=' . (int)($dbConfig['dbPort'] ?? 3306) . ';dbname=' . $dbConfig['dbname'] . ';charset=utf8mb4',
     $dbConfig['user'],
     $dbConfig['password']
 );
@@ -346,7 +346,11 @@ function demoDir(): string
 function runMysqlTool(string $tool, array $args, ?string $stdinFile = null, ?string $stdoutFile = null): void
 {
     global $dbConfig;
-    $cmd = array_merge([$tool, '-h', (string)$dbConfig['dbHost'], '-u', (string)$dbConfig['user']], $args, [(string)$dbConfig['dbname']]);
+    $cmd = array_merge(
+        [$tool, '-h', (string)$dbConfig['dbHost'], '-P', (string)($dbConfig['dbPort'] ?? 3306), '-u', (string)$dbConfig['user']],
+        $args,
+        [(string)$dbConfig['dbname']]
+    );
     $spec = [
         0 => $stdinFile  ? ['file', $stdinFile, 'r']  : ['pipe', 'r'],
         1 => $stdoutFile ? ['file', $stdoutFile, 'w'] : ['pipe', 'w'],

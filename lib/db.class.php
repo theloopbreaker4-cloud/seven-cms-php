@@ -35,7 +35,7 @@ class Db extends \RedBeanPHP\Facade
         $dbLog    = Logger::channel('db');
 
         try {
-            $link = mysqli_connect($host, $user, $password);
+            $link = mysqli_connect($host, $user, $password, null, (int)($dbConfig['dbPort'] ?? 3306));
             if (!$link) {
                 throw new RuntimeException('Could not connect to MySQL: ' . mysqli_connect_error());
             }
