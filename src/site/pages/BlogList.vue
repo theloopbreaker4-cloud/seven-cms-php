@@ -55,7 +55,7 @@ function localise(json) {
 
 onMounted(async () => {
   try {
-    posts.value = await apiFetch('/api/post/index')
+    posts.value = await apiFetch('/post/published')
   } catch (e) {
     console.error('Failed to load posts', e)
   } finally {

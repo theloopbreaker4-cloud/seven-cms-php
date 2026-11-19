@@ -35,8 +35,7 @@ const content = computed(() => localise(page.value?.content))
 async function load(slug) {
   loading.value = true
   try {
-    const list = await apiFetch('/api/page/index')
-    page.value = list.find(p => (p.slugs?.[lang] || p.slug) === slug) || null
+    page.value = await apiFetch(`/page/slug/${encodeURIComponent(slug)}?lang=${lang}`).catch(e => (e.status === 404 ? null : Promise.reject(e)))
   } catch (e) {
     console.error('Failed to load page', e)
   } finally {

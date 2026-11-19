@@ -30,6 +30,29 @@ class PostApiController extends ApiController
         ];
     }
 
+    /** GET /api/post/published?limit=&offset= — public list, published posts only. */
+    public function published($req, $res, $params)
+    {
+        $limit  = max(1, min(50, (int)($_GET['limit']  ?? 20)));
+        $offset = max(0, (int)($_GET['offset'] ?? 0));
+        $rows   = DB::getAll(
+            'SELECT * FROM post WHERE is_published = 1
+              ORDER BY COALESCE(published_at, created_at) DESC LIMIT ' . $limit . ' OFFSET ' . $offset
+        );
+        return json_encode(array_map(fn($row) => $this->toArray(new Post($row)), $rows ?: []));
+    }
+
+    /** GET /api/post/slug/{slug}?lang=xx — one published post by its localized slug. */
+    public function slug($req, $res, $params)
+    {
+        $lang = preg_match('/^[a-z]{2}$/', (string)($_GET['lang'] ?? '')) ? $_GET['lang'] : 'en';
+        $p    = new Post();
+        if (!$p->findBySlug((string)($params[0] ?? ''), $lang) || !$p->isPublished) {
+            $res->jsonError(404, 'Not found');
+        }
+        return json_encode($this->toArray($p));
+    }
+
     public function index($req, $res, $params)
     {
         $admin  = $this->requireAdminToken();

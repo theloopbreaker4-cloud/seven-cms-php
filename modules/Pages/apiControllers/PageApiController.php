@@ -29,6 +29,17 @@ class PageApiController extends ApiController
         ];
     }
 
+    /** GET /api/page/slug/{slug}?lang=xx — one published page, public. */
+    public function slug($req, $res, $params)
+    {
+        $lang = preg_match('/^[a-z]{2}$/', (string)($_GET['lang'] ?? '')) ? $_GET['lang'] : 'en';
+        $p    = new Page();
+        if (!$p->findBySlug((string)($params[0] ?? ''), $lang) || !$p->isPublished) {
+            $res->jsonError(404, 'Not found');
+        }
+        return json_encode($this->toArray($p));
+    }
+
     public function index($req, $res, $params)
     {
         $admin = $this->requireAdminToken();

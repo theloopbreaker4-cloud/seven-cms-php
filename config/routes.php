@@ -77,6 +77,8 @@ Route::add('api.auth.forgot',   ['controller' => 'auth', 'action' => 'forgot',  
 Route::add('api.auth.reset',    ['controller' => 'auth', 'action' => 'reset',    'prefix' => 'api']);
 
 // Posts API
+Route::add('api.post.published', ['controller' => 'post', 'action' => 'published', 'prefix' => 'api']);
+Route::add('api.post.slug',      ['controller' => 'post', 'action' => 'slug',      'prefix' => 'api']);
 Route::add('api.post.index',  ['controller' => 'post', 'action' => 'index',  'prefix' => 'api']);
 Route::add('api.post.show',   ['controller' => 'post', 'action' => 'show',   'prefix' => 'api']);
 Route::add('api.post.store',  ['controller' => 'post', 'action' => 'store',  'prefix' => 'api']);
@@ -84,6 +86,7 @@ Route::add('api.post.update', ['controller' => 'post', 'action' => 'update', 'pr
 Route::add('api.post.delete', ['controller' => 'post', 'action' => 'delete', 'prefix' => 'api']);
 
 // Pages API
+Route::add('api.page.slug',  ['controller' => 'page', 'action' => 'slug',   'prefix' => 'api']);
 Route::add('api.page.index',  ['controller' => 'page', 'action' => 'index',  'prefix' => 'api']);
 Route::add('api.page.show',   ['controller' => 'page', 'action' => 'show',   'prefix' => 'api']);
 Route::add('api.page.store',  ['controller' => 'page', 'action' => 'store',  'prefix' => 'api']);
