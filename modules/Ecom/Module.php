@@ -129,22 +129,23 @@ class EcomModule implements ModuleInterface
             'shop.download' => ['controller' => 'ecomDownload', 'action' => 'serve'],
 
             // ── Storefront REST API
-            'api.v1.shop.products'             => ['controller' => 'shopV1', 'action' => 'products',           'prefix' => 'api/v1'],
-            'api.v1.shop.currencies'           => ['controller' => 'shopV1', 'action' => 'currencies',         'prefix' => 'api/v1'],
-            'api.v1.shop.product'              => ['controller' => 'shopV1', 'action' => 'product',            'prefix' => 'api/v1'],
-            'api.v1.shop.categories'           => ['controller' => 'shopV1', 'action' => 'categories',         'prefix' => 'api/v1'],
-            'api.v1.shop.cart'                 => ['controller' => 'shopV1', 'action' => 'cart',               'prefix' => 'api/v1'],
-            'api.v1.shop.cart.add'             => ['controller' => 'shopV1', 'action' => 'cartAdd',            'prefix' => 'api/v1'],
-            'api.v1.shop.cart.update'          => ['controller' => 'shopV1', 'action' => 'cartUpdate',         'prefix' => 'api/v1'],
-            'api.v1.shop.cart.remove'          => ['controller' => 'shopV1', 'action' => 'cartRemove',         'prefix' => 'api/v1'],
-            'api.v1.shop.cart.discount'        => ['controller' => 'shopV1', 'action' => 'cartDiscount',       'prefix' => 'api/v1'],
-            'api.v1.shop.checkout'             => ['controller' => 'shopV1', 'action' => 'checkout',           'prefix' => 'api/v1'],
-            'api.v1.shop.order'                => ['controller' => 'shopV1', 'action' => 'order',              'prefix' => 'api/v1'],
-            'api.v1.shop.subscriptions'        => ['controller' => 'shopV1', 'action' => 'subscriptions',      'prefix' => 'api/v1'],
-            'api.v1.shop.subscription.cancel'  => ['controller' => 'shopV1', 'action' => 'cancelSubscription', 'prefix' => 'api/v1'],
+            // REST paths as documented in docs/api.md; the dotted names keep working too.
+            'api.v1.shop.products'             => ['controller' => 'shopV1', 'action' => 'products',           'prefix' => 'api/v1', 'path' => 'api/v1/shop/products',                   'method' => 'GET'],
+            'api.v1.shop.currencies'           => ['controller' => 'shopV1', 'action' => 'currencies',         'prefix' => 'api/v1', 'path' => 'api/v1/shop/currencies',                 'method' => 'GET'],
+            'api.v1.shop.product'              => ['controller' => 'shopV1', 'action' => 'product',            'prefix' => 'api/v1', 'path' => 'api/v1/shop/products/{slug}',            'method' => 'GET'],
+            'api.v1.shop.categories'           => ['controller' => 'shopV1', 'action' => 'categories',         'prefix' => 'api/v1', 'path' => 'api/v1/shop/categories',                 'method' => 'GET'],
+            'api.v1.shop.cart'                 => ['controller' => 'shopV1', 'action' => 'cart',               'prefix' => 'api/v1', 'path' => 'api/v1/shop/cart',                       'method' => 'GET'],
+            'api.v1.shop.cart.add'             => ['controller' => 'shopV1', 'action' => 'cartAdd',            'prefix' => 'api/v1', 'path' => 'api/v1/shop/cart/items',                 'method' => 'POST'],
+            'api.v1.shop.cart.update'          => ['controller' => 'shopV1', 'action' => 'cartUpdate',         'prefix' => 'api/v1', 'path' => 'api/v1/shop/cart/items/{id}',            'method' => ['PUT', 'PATCH']],
+            'api.v1.shop.cart.remove'          => ['controller' => 'shopV1', 'action' => 'cartRemove',         'prefix' => 'api/v1', 'path' => 'api/v1/shop/cart/items/{id}',            'method' => 'DELETE'],
+            'api.v1.shop.cart.discount'        => ['controller' => 'shopV1', 'action' => 'cartDiscount',       'prefix' => 'api/v1', 'path' => 'api/v1/shop/cart/discount',              'method' => 'POST'],
+            'api.v1.shop.checkout'             => ['controller' => 'shopV1', 'action' => 'checkout',           'prefix' => 'api/v1', 'path' => 'api/v1/shop/checkout',                   'method' => 'POST'],
+            'api.v1.shop.order'                => ['controller' => 'shopV1', 'action' => 'order',              'prefix' => 'api/v1', 'path' => 'api/v1/shop/orders/{number}',            'method' => 'GET'],
+            'api.v1.shop.subscriptions'        => ['controller' => 'shopV1', 'action' => 'subscriptions',      'prefix' => 'api/v1', 'path' => 'api/v1/shop/subscriptions',              'method' => 'GET'],
+            'api.v1.shop.subscription.cancel'  => ['controller' => 'shopV1', 'action' => 'cancelSubscription', 'prefix' => 'api/v1', 'path' => 'api/v1/shop/subscriptions/{id}/cancel',  'method' => 'POST'],
 
             // ── Webhooks (one endpoint, gateway in URL)
-            'api.v1.shop.webhook' => ['controller' => 'ecomWebhook', 'action' => 'handle', 'prefix' => 'api/v1'],
+            'api.v1.shop.webhook' => ['controller' => 'ecomWebhook', 'action' => 'handle', 'prefix' => 'api/v1', 'path' => 'api/v1/shop/webhook/{gateway}', 'method' => 'POST'],
         ];
     }
 }

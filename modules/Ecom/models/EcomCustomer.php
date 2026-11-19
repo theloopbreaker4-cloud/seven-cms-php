@@ -12,6 +12,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class EcomCustomer extends Model
 {
+    protected string $tableName = 'ecom_customers';
+
     public ?int    $id                = null;
     public ?int    $userId            = null;
     public string  $email             = '';

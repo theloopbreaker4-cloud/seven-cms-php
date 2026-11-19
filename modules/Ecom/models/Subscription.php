@@ -16,6 +16,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class Subscription extends Model
 {
+    protected string $tableName = 'ecom_subscriptions';
+
     public const STATUS_TRIALING = 'trialing';
     public const STATUS_ACTIVE   = 'active';
     public const STATUS_PASTDUE  = 'past_due';

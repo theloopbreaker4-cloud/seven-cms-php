@@ -77,6 +77,41 @@ class ReviewsModule implements ModuleInterface
 }
 ```
 
+### How a route name becomes a URL
+
+Without a `path`, the dotted name **is** the path: `admin.reviews.moderate` answers
+`/{lang}/admin/reviews/moderate/{params…}`; the longest matching name wins and the
+leftover segments arrive as `$params[0]`, `$params[1]`, ….
+
+For REST endpoints give an explicit `path` with `{placeholders}` and a `method`:
+
+```php
+'api.v1.reviews.update' => [
+    'controller' => 'reviewsV1', 'action' => 'update', 'prefix' => 'api/v1',
+    'path' => 'api/v1/reviews/{id}', 'method' => ['PUT', 'PATCH'],
+],
+```
+
+Path routes are tried first and only for their methods; placeholders fill
+`$params` in order. When two paths fit, the one with more literal segments wins
+(`reviews/featured` beats `reviews/{id}`).
+
+### Models
+
+A model's table defaults to its lowercased class name. If yours differs, say so —
+otherwise RedBean's fluid mode quietly creates a look-alike table and your rows
+end up there:
+
+```php
+class Review extends Model
+{
+    protected string $tableName = 'reviews_items';
+}
+```
+
+Tables with underscores are saved with plain SQL (RedBean can't dispense such
+bean types); only properties that have a matching snake_case column are written.
+
 Drop your migrations into `modules/Reviews/migrations/*.sql` and install:
 
 ```bash

@@ -142,12 +142,13 @@ Route::add('api.v1.auth.refresh', ['controller' => 'authv1', 'action' => 'refres
 Route::add('api.v1.auth.logout',  ['controller' => 'authv1', 'action' => 'logout',  'prefix' => 'api/v1']);
 Route::add('api.v1.auth.me',      ['controller' => 'authv1', 'action' => 'me',      'prefix' => 'api/v1']);
 
-Route::add('api.v1.content.types',         ['controller' => 'contentv1', 'action' => 'types',        'prefix' => 'api/v1']);
-Route::add('api.v1.content.list',          ['controller' => 'contentv1', 'action' => 'listEntries',  'prefix' => 'api/v1']);
-Route::add('api.v1.content.show',          ['controller' => 'contentv1', 'action' => 'showEntry',    'prefix' => 'api/v1']);
-Route::add('api.v1.content.create',        ['controller' => 'contentv1', 'action' => 'createEntry',  'prefix' => 'api/v1']);
-Route::add('api.v1.content.update',        ['controller' => 'contentv1', 'action' => 'updateEntry',  'prefix' => 'api/v1']);
-Route::add('api.v1.content.delete',        ['controller' => 'contentv1', 'action' => 'deleteEntry',  'prefix' => 'api/v1']);
+// REST paths (docs/api.md); the dotted /content/list|show|create|update|delete/… forms keep working.
+Route::add('api.v1.content.types',         ['controller' => 'contentv1', 'action' => 'types',        'prefix' => 'api/v1', 'path' => 'api/v1/content/types',              'method' => 'GET']);
+Route::add('api.v1.content.list',          ['controller' => 'contentv1', 'action' => 'listEntries',  'prefix' => 'api/v1', 'path' => 'api/v1/content/{type}',             'method' => 'GET']);
+Route::add('api.v1.content.show',          ['controller' => 'contentv1', 'action' => 'showEntry',    'prefix' => 'api/v1', 'path' => 'api/v1/content/{type}/{slug}',      'method' => 'GET']);
+Route::add('api.v1.content.create',        ['controller' => 'contentv1', 'action' => 'createEntry',  'prefix' => 'api/v1', 'path' => 'api/v1/content/{type}',             'method' => 'POST']);
+Route::add('api.v1.content.update',        ['controller' => 'contentv1', 'action' => 'updateEntry',  'prefix' => 'api/v1', 'path' => 'api/v1/content/{type}/{id}',        'method' => ['PUT', 'PATCH']]);
+Route::add('api.v1.content.delete',        ['controller' => 'contentv1', 'action' => 'deleteEntry',  'prefix' => 'api/v1', 'path' => 'api/v1/content/{type}/{id}',        'method' => 'DELETE']);
 
 // ─── Multi-site admin ────────────────────────────────────────────────────────
 

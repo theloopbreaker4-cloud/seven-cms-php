@@ -15,6 +15,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class Order extends Model
 {
+    protected string $tableName = 'ecom_orders';
+
     public ?int    $id                  = null;
     public string  $number              = '';
     public ?int    $customerId          = null;

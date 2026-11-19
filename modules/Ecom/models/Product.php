@@ -15,6 +15,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class Product extends Model
 {
+    protected string $tableName = 'ecom_products';
+
     public const KIND_PHYSICAL = 'physical';
     public const KIND_DIGITAL  = 'digital';
     public const KIND_SERVICE  = 'service';

@@ -13,7 +13,11 @@ defined('_SEVEN') or die('No direct script access allowed');
  *     'prefix'     => '',          // '' = site, 'admin', 'api'
  *     'params'     => [':slug'],   // optional param placeholders
  *     'middleware' => [],          // MiddlewareInterface class names to run
+ *     'path'       => 'api/v1/shop/cart/items/{id}', // optional explicit REST path
+ *     'method'     => 'PUT',       // optional, with 'path': GET/POST/PUT/DELETE or a list
  *   ]
+ *
+ * Without 'path' the route name is the path ("admin.ecom.products" ↔ /admin/ecom/products).
  *
  * Usage:
  *   Route::add('blog.show', ['controller' => 'blog', 'action' => 'show', 'params' => [':slug']]);
@@ -62,6 +66,16 @@ class Route
         $action     = $def['action'] ?? 'index';
         $base       = Seven::app()->config['baseUrl'];
 
+        if (!empty($def['path'])) {
+            $path = preg_replace_callback('/\{(\w+)\}/', function ($m) use (&$params) {
+                $v = $params[$m[1]] ?? '';
+                unset($params[$m[1]]);
+                return rawurlencode((string)$v);
+            }, trim((string)$def['path'], '/'));
+            if ($prefix === '') $path = Seven::app()->router->getLanguage() . '/' . $path;
+            return $base . '/' . $path . ($params ? '?' . http_build_query($params) : '');
+        }
+
         if ($prefix) {
             $path = $base . '/' . $prefix . '/' . $controller . '/' . $action;
         } else {
@@ -94,9 +108,13 @@ class Route
      *
      * @return array{name:string, def:array, params:array}|null
      */
-    public static function match(array $segments): ?array
+    public static function match(array $segments, ?string $method = null): ?array
     {
         $lowered = array_map('strtolower', $segments);
+
+        $byPath = self::matchPath($segments, strtoupper($method ?? ($_SERVER['REQUEST_METHOD'] ?? 'GET')));
+        if ($byPath) return $byPath;
+
         $best    = null;
         $bestLen = 0;
 
@@ -122,6 +140,39 @@ class Route
             'def'    => self::$routes[$best],
             'params' => array_slice($segments, $bestLen),
         ];
+    }
+
+    /**
+     * Routes with an explicit 'path' (e.g. 'api/v1/shop/cart/items/{id}') and optional
+     * 'method' ('GET', 'POST', … or a list). Literal segments compare case-insensitively,
+     * {placeholders} capture in order and become positional params ($params[0], …).
+     * When several match, the one with the most literal segments wins, so
+     * 'shop/cart/items' beats 'shop/cart/{x}'.
+     */
+    private static function matchPath(array $segments, string $method): ?array
+    {
+        if ($method === 'HEAD') $method = 'GET';
+        $best = null; $bestScore = -1;
+        foreach (self::$routes as $name => $def) {
+            if (empty($def['path'])) continue;
+            if (!empty($def['method'])) {
+                $allowed = array_map('strtoupper', (array)$def['method']);
+                if (!in_array($method, $allowed, true) && !($method === 'OPTIONS')) continue;
+            }
+            $parts = explode('/', trim((string)$def['path'], '/'));
+            if (count($parts) !== count($segments)) continue;
+            $params = []; $literal = 0; $ok = true;
+            foreach ($parts as $i => $p) {
+                if (preg_match('/^\{\w+\}$/', $p)) { $params[] = $segments[$i]; continue; }
+                if (strcasecmp($p, $segments[$i]) !== 0) { $ok = false; break; }
+                $literal++;
+            }
+            if ($ok && $literal > $bestScore) {
+                $best = ['name' => $name, 'def' => $def, 'params' => $params];
+                $bestScore = $literal;
+            }
+        }
+        return $best;
     }
 
     /** A name like "api.v1.auth.login" only counts as a path when it starts with its own prefix. */

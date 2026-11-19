@@ -8,6 +8,30 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ## [Unreleased]
 
+### Fixed — 2026-11-20 — Shop and headless content were not working
+
+- **Cart API always 500** — `CartService::current()` returned a RedBean bean from an
+  `array` function. Fixed; the Vue storefront's cart works again.
+- **REST paths never matched** — `POST /api/v1/shop/cart/items`, `PUT|DELETE
+  /cart/items/{id}`, `GET /shop/products/{slug}`, `/shop/orders/{number}`,
+  `/shop/subscriptions/{id}/cancel`, `/api/v1/content/{type}[/{slug|id}]` were
+  swallowed by shorter route names (add-to-cart silently did nothing). Routes now
+  accept an explicit `path` with `{placeholders}` and a `method`.
+- **Checkout wrote orders to the wrong table** — models whose table differs from the
+  class name (Order, EcomCustomer, Subscription, Discount, Product, ProductVariant,
+  ContentType, ContentField, ContentEntry, MediaFolder) were saved by RedBean's fluid
+  mode into auto-created `order`, `ecomcustomer`, … tables; checkout then failed on
+  the order-items foreign key. Models declare `$tableName`; underscore tables are
+  written with SQL. `php bin/sev db:orphans` lists/drops the leftover tables.
+- **Model fields silently empty** — `setModel()` only matched exact keys, so models
+  built from `DB::getAll()` rows lost every snake_case column (`basePrice` was 0 in
+  the catalog, `createdAt` empty, …). Both spellings are matched now.
+- **Content entry update inserted a copy** instead of updating.
+
+### Added — 2026-11-20
+
+- Admin UI in Azerbaijani and Armenian (all 9 languages complete).
+
 ### Added — 2026-04-29 — Operations & dashboard
 
 - **Email queue** — `lib/mailer.class.php`, `mail_queue` table, `Mailer::queue()`,

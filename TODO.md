@@ -14,11 +14,14 @@ Current backlog. Items are not committed deadlines, just an honest list of what'
 
 ### Architecture debt
 - [ ] Move the Vue site from legacy `/api/auth/*` + `/api/{post,page,comment}` to `/api/v1`, then drop the legacy auth API.
-- [ ] RedBean `findOne()` returns beans; ~90 call sites still treat them as arrays (works via ArrayAccess, breaks when passed to array-typed code). Add a static-analysis pass (PHPStan) to find the rest.
-- [ ] Admin UI is translated to en/ru/uk/ka/de/fr/nl; az and hy (site languages) are still missing.
+- [ ] Run PHPStan once Composer is available. A token-based bean-vs-array scan (bean passed to array functions / array-typed params, returned from `array` functions, `!R::load()`) is clean; PHPStan would also cover views and generic type errors.
+- [ ] RedBean runs in fluid mode everywhere (core tables like `post`, `page`, `user` are only created that way). Write migrations for them, then freeze the schema in prod.
 
 
 ## Done (recent)
+
+- ✅ Shop + headless content actually work end-to-end: cart (was 500), add-to-cart (REST path swallowed), checkout (orders saved to a fluid look-alike table), content type create + entry update; route `path`/`method`; models match snake_case columns; `db:orphans`
+- ✅ Admin UI in az and hy — all 9 languages complete
 
 - ✅ Public demo: DEMO_MODE (read-only sensitive sections, demo login, banners, 2 MB image uploads), `demo:init/seed/snapshot/reset`, hourly cron reset; deployed with PHP 8.5 + MariaDB 11.4
 - ✅ Custom themes built in the admin (light + dark, WCAG contrast check, no build step)

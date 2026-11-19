@@ -14,6 +14,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class ContentEntry extends Model
 {
+    protected string $tableName = 'content_entries';
+
     public ?int    $id          = null;
     public ?int    $typeId      = null;
     public string  $slug        = '';
@@ -113,7 +115,7 @@ class ContentEntry extends Model
             Hooks::fire(Hooks::BEFORE_CREATE, 'content', $entry);
         }
 
-        $id = $entry->save();
+        $id = $entry->save($isUpdate ? $entryId : null); // without the id an update inserted a copy
         if (!$id) throw new RuntimeException('Failed to save content entry');
 
         // Snapshot revision if enabled.

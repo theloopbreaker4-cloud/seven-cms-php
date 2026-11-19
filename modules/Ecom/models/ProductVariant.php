@@ -10,6 +10,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class ProductVariant extends Model
 {
+    protected string $tableName = 'ecom_product_variants';
+
     public ?int    $id              = null;
     public ?int    $productId       = null;
     public ?string $sku             = null;

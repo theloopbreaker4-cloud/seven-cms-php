@@ -12,6 +12,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class Discount extends Model
 {
+    protected string $tableName = 'ecom_discounts';
+
     public ?int    $id              = null;
     public string  $code            = '';
     public string  $kind            = 'percent';

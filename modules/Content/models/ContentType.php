@@ -12,6 +12,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class ContentType extends Model
 {
+    protected string $tableName = 'content_types';
+
     public ?int    $id              = null;
     public string  $slug            = '';
     public string  $name            = '';

@@ -87,6 +87,7 @@ if (!$cmd) {
     fwrite(STDOUT, "  mail:send [--limit=N], mail:status\n");
     fwrite(STDOUT, "  cron:run, cron:list\n");
     fwrite(STDOUT, "  ecom:bill-due\n");
+    fwrite(STDOUT, "  db:orphans [--drop-empty]\n");
     exit(0);
 }
 
@@ -114,6 +115,7 @@ try {
         'cron:run'          => cmdCronRun(),
         'cron:list'         => cmdCronList(),
         'ecom:bill-due'     => cmdEcomBillDue(),
+        'db:orphans'        => cmdDbOrphans($args),
         default             => fail("Unknown command: {$cmd}"),
     };
 } catch (\Throwable $e) {
@@ -123,6 +125,32 @@ try {
 }
 
 // ─── Command bodies ────────────────────────────────────────────────────────
+
+/**
+ * Before 2026-11-20 models whose class name differed from their table (Order →
+ * ecom_orders, ContentType → content_types, …) were saved by RedBean's fluid mode
+ * into auto-created look-alike tables. List those; --drop-empty removes the empty ones.
+ * Non-empty ones hold rows the app never read back — inspect them by hand.
+ */
+function cmdDbOrphans(array $args): void
+{
+    $stray = ['order', 'ecomcustomer', 'subscription', 'discount', 'product', 'productvariant',
+              'contenttype', 'contentfield', 'contententry', 'mediafolder'];
+    $drop  = in_array('--drop-empty', $args, true);
+    $found = 0;
+    foreach ($stray as $t) {
+        if (!DB::getCell('SHOW TABLES LIKE ?', [$t])) continue;
+        $found++;
+        $n = (int)DB::getCell('SELECT COUNT(*) FROM `' . $t . '`');
+        if ($n === 0 && $drop) {
+            DB::execute('DROP TABLE `' . $t . '`');
+            ok("  dropped empty `{$t}`");
+        } else {
+            warn("  `{$t}`: {$n} row(s)" . ($n ? ' — written by the old bug, review before dropping' : ''));
+        }
+    }
+    if (!$found) ok('No orphan tables.');
+}
 
 function cmdMigrate(): void
 {

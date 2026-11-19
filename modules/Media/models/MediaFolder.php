@@ -10,6 +10,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class MediaFolder extends Model
 {
+    protected string $tableName = 'media_folder';
+
     public ?int    $id        = null;
     public ?int    $parentId  = null;
     public string  $name      = '';

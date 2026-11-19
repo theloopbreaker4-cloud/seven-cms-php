@@ -25,6 +25,8 @@ defined('_SEVEN') or die('No direct script access allowed');
  */
 class ContentField extends Model
 {
+    protected string $tableName = 'content_fields';
+
     public const TYPES = [
         'text', 'richtext', 'number', 'boolean',
         'image', 'media',

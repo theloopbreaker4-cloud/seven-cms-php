@@ -29,7 +29,7 @@ class Page extends Model
            ?? Slug::findEntity('page', 'en', $slug);
         if (!$id) return false;
         $row = DB::load($this->tableName, $id);
-        if (!$row || !$row->id) return false;
+        if (!$row->id) return false; // load() returns an empty bean, never null
         $this->setModel($row);
         return true;
     }

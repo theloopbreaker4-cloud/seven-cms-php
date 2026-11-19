@@ -38,7 +38,13 @@ php bin/sev make:cct    <Name>             # add a content_types row
 ```bash
 php bin/sev user:make-admin <email>        # promote to admin role
 php bin/sev cache:clear                    # flush cache (file/redis)
+php bin/sev db:orphans [--drop-empty]      # list tables created by the pre-2026-11-20 model bug
 ```
+
+`db:orphans` reports look-alike tables (`order`, `ecomcustomer`, `contenttype`, …)
+that RedBean's fluid mode created while models with a differently named table
+were saved to the wrong place. `--drop-empty` removes the empty ones; non-empty
+ones are only listed so you can inspect them first.
 
 ## Output style
 

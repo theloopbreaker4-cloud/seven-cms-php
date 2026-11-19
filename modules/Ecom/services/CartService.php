@@ -26,7 +26,7 @@ class CartService
     public static function current(?int $customerId = null, ?string $currency = null): array
     {
         $token = (string)($_COOKIE[self::COOKIE] ?? '');
-        $row   = $token ? DB::findOne('ecom_carts', ' token = :t ', [':t' => $token]) : null;
+        $row   = $token ? DB::findOne('ecom_carts', ' token = :t ', [':t' => $token])?->export() : null;
 
         if (!$row) {
             $token = bin2hex(random_bytes(20));
@@ -40,7 +40,7 @@ class CartService
                     ':e'   => date('Y-m-d H:i:s', time() + self::TTL_DAYS * 86400),
                 ]
             );
-            $row = DB::findOne('ecom_carts', ' token = :t ', [':t' => $token]);
+            $row = DB::findOne('ecom_carts', ' token = :t ', [':t' => $token])?->export();
             self::setCookie($token);
         }
         if ($customerId && empty($row['customer_id'])) {
