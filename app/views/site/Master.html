@@ -28,6 +28,11 @@
   <?= Vite::tags('src/site/main.js') ?>
 </head>
 <body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col">
+<?php if (Demo::enabled()): ?>
+<div class="relative z-50 text-center text-xs py-1.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 border-b border-amber-500/30">
+  Seven CMS demo — <a class="underline" href="/<?= Seven::app()->router->getLanguage() ?>/admin">open the admin panel</a> · data resets every hour
+</div>
+<?php endif ?>
 
 <!-- Animated background (same as Vue SPA) -->
 <div class="site-bg" aria-hidden="true">

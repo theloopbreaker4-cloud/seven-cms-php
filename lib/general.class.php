@@ -182,6 +182,10 @@ class General
                 $response->errorCode(405);
             }
 
+            if ($reason = Demo::blockReason($this->router, $method)) {
+                $this->refuseInDemo($reason, $response);
+            }
+
             if ($this->router->getMethodPrefix() === 'api') {
                 $this->dispatchApi($request, $response);
             } else {
@@ -199,6 +203,20 @@ class General
                 (new Response())->errorCode(500);
             }
         }
+    }
+
+    private function refuseInDemo(string $reason, Response $response): never
+    {
+        $wantsJson = $this->router->getMethodPrefix() === 'api'
+            || ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'XMLHttpRequest'
+            || str_contains((string)($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json');
+        if ($wantsJson) $response->jsonError(403, $reason);
+
+        Session::setFlash($reason);
+        $back = parse_url((string)($_SERVER['HTTP_REFERER'] ?? '')) ?: [];
+        $host = ($back['host'] ?? '') . (isset($back['port']) ? ':' . $back['port'] : '');
+        $path = $host !== '' && $host === ($_SERVER['HTTP_HOST'] ?? '') ? (string)($back['path'] ?? '') : '';
+        $response->redirectUrl($path !== '' ? $path : '/' . $this->router->getLanguage() . '/admin');
     }
 
     private function dispatchApi(mixed $request, mixed $response): void

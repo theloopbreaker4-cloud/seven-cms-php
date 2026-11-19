@@ -84,5 +84,6 @@ the admin panel under **Help**, so you can read the docs while you work.
 - [Notifications](notifications.md)
 - [Admin calendar](calendar.md)
 - [Multi-currency](multicurrency.md)
+- [Public demo instance](demo.md)
 - [Storefront](storefront.md)
 - [PHPUnit tests](testing.md)

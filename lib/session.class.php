@@ -5,7 +5,6 @@ defined('_SEVEN') or die('No direct script access allowed');
 
 class Session
 {
-    protected static ?string $flashMessage = null;
 
     public static function start(): void
     {
@@ -44,18 +43,18 @@ class Session
 
     public static function setFlash(string $message): void
     {
-        self::$flashMessage = $message;
+        $_SESSION['_flash'] = $message; // survives the redirect that usually follows
     }
 
     public static function hasFlash(): bool
     {
-        return self::$flashMessage !== null;
+        return isset($_SESSION['_flash']);
     }
 
     public static function flash(): void
     {
-        echo htmlspecialchars(self::$flashMessage ?? '', ENT_QUOTES, 'UTF-8');
-        self::$flashMessage = null;
+        echo htmlspecialchars((string)($_SESSION['_flash'] ?? ''), ENT_QUOTES, 'UTF-8');
+        unset($_SESSION['_flash']);
     }
 
     public static function set(string $key, mixed $value): void

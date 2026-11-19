@@ -293,6 +293,11 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
       </div>
     </header>
     <main class="flex-1 p-6">
+      <?php if (Demo::enabled()): ?>
+        <div class="mb-4 px-4 py-2 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm">
+          Demo — edit freely: all data resets every hour. Users, roles, settings, mail, plugins and cron are read-only.
+        </div>
+      <?php endif ?>
       <?php if (Session::hasFlash()): ?>
         <div class="mb-4 px-4 py-3 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-sm"><?php Session::flash() ?></div>
       <?php endif ?>

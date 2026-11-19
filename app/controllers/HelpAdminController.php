@@ -179,6 +179,7 @@ class HelpAdminController extends Controller
                 ['slug' => 'multicurrency', 'title' => 'Multi-currency',    'file' => 'multicurrency.md'],
                 ['slug' => 'testing',       'title' => 'PHPUnit tests',     'file' => 'testing.md'],
                 ['slug' => 'storefront',    'title' => 'Storefront',        'file' => 'storefront.md'],
+                ['slug' => 'demo',          'title' => 'Public demo',       'file' => 'demo.md'],
             ]],
         ];
     }

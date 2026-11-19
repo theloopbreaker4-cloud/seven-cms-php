@@ -50,3 +50,4 @@ public/uploads/*
 # Claude Code workspace files (kept locally, not committed)
 .claude/
 CLAUDE.md
+storage/demo/

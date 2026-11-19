@@ -64,6 +64,7 @@ class Media extends Model
         // Detect mime from content; do not trust browser-provided $file['type'].
         $mime = $this->detectMime($file['tmp_name']);
         if ($mime === null || !isset(self::EXT_FOR_MIME[$mime])) return null;
+        if (Demo::enabled() && (!str_starts_with($mime, 'image/') || $file['size'] > Demo::MAX_UPLOAD)) return null;
 
         if ($mime === 'image/svg+xml') {
             $clean = SvgSanitizer::clean((string)file_get_contents($file['tmp_name']));

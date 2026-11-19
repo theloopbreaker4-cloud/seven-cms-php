@@ -16,6 +16,9 @@
  *   php bin/sev make:cct <Name>          — scaffold a Content Type via SQL seed
  *   php bin/sev cache:clear              — clear app cache
  *   php bin/sev key:generate             — write a random JWT_SECRET to .env
+ *   php bin/sev demo:init                — create/refresh the shared demo admin (DEMO_LOGIN/DEMO_PASSWORD)
+ *   php bin/sev demo:snapshot            — save DB + uploads as the demo baseline (storage/demo/)
+ *   php bin/sev demo:reset               — restore the baseline (run hourly from cron)
  *   php bin/sev user:make-admin <email>  — promote a user to the "admin" role
  *
  * Bootstraps the same way as a web request: defines _SEVEN, loads core, env, db, classes.
@@ -79,6 +82,7 @@ if (!$cmd) {
     fwrite(STDOUT, "  make:plugin <Name>, make:cct <Name>\n");
     fwrite(STDOUT, "  user:make-admin <email>\n");
     fwrite(STDOUT, "  cache:clear, key:generate\n");
+    fwrite(STDOUT, "  demo:init, demo:snapshot, demo:reset\n");
     fwrite(STDOUT, "  mail:send [--limit=N], mail:status\n");
     fwrite(STDOUT, "  cron:run, cron:list\n");
     fwrite(STDOUT, "  ecom:bill-due\n");
@@ -100,6 +104,9 @@ try {
         'user:make-admin'   => cmdMakeAdmin($args[0] ?? ''),
         'cache:clear'       => cmdCacheClear(),
         'key:generate'      => cmdKeyGenerate(),
+        'demo:init'         => cmdDemoInit(),
+        'demo:snapshot'     => cmdDemoSnapshot(),
+        'demo:reset'        => cmdDemoReset(),
         'mail:send'         => cmdMailSend($args),
         'mail:status'       => cmdMailStatus(),
         'cron:run'          => cmdCronRun(),
@@ -324,4 +331,99 @@ function cmdKeyGenerate(): void
         : rtrim($env) . "\n" . $line . "\n";
     file_put_contents($file, $env);
     ok('JWT_SECRET written to .env');
+}
+
+// ─── Demo instance ─────────────────────────────────────────────────────────
+
+function demoDir(): string
+{
+    $dir = ROOT_DIR . '/storage/demo';
+    if (!is_dir($dir)) mkdir($dir, 0750, true);
+    return $dir;
+}
+
+/** Run a mysql/mysqldump command with the password passed via env, not argv. */
+function runMysqlTool(string $tool, array $args, ?string $stdinFile = null, ?string $stdoutFile = null): void
+{
+    global $dbConfig;
+    $cmd = array_merge([$tool, '-h', (string)$dbConfig['dbHost'], '-u', (string)$dbConfig['user']], $args, [(string)$dbConfig['dbname']]);
+    $spec = [
+        0 => $stdinFile  ? ['file', $stdinFile, 'r']  : ['pipe', 'r'],
+        1 => $stdoutFile ? ['file', $stdoutFile, 'w'] : ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ];
+    $env  = array_merge(getenv(), ['MYSQL_PWD' => (string)$dbConfig['password']]);
+    $proc = proc_open($cmd, $spec, $pipes, ROOT_DIR, $env);
+    if (!is_resource($proc)) fail("Cannot start {$tool}");
+    $err = isset($pipes[2]) ? stream_get_contents($pipes[2]) : '';
+    foreach ($pipes as $p) fclose($p);
+    if (proc_close($proc) !== 0) fail("{$tool} failed: " . trim((string)$err));
+}
+
+function copyTree(string $from, string $to): void
+{
+    if (!is_dir($from)) return;
+    if (!is_dir($to)) mkdir($to, 0755, true);
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($from, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
+    foreach ($it as $item) {
+        $target = $to . '/' . substr($item->getPathname(), strlen($from) + 1);
+        $item->isDir() ? (is_dir($target) || mkdir($target, 0755, true)) : copy($item->getPathname(), $target);
+    }
+}
+
+/** Empty public/uploads but keep its protective .htaccess and index.html. */
+function clearUploads(): void
+{
+    $root = ROOT_DIR . '/public/uploads';
+    if (!is_dir($root)) return;
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+    foreach ($it as $item) {
+        $rel = substr($item->getPathname(), strlen($root) + 1);
+        if (in_array($rel, ['.htaccess', 'index.html'], true)) continue;
+        $item->isDir() ? @rmdir($item->getPathname()) : unlink($item->getPathname());
+    }
+}
+
+function cmdDemoInit(): void
+{
+    if (!Demo::enabled()) fail('Set DEMO_MODE=true in .env first.');
+    $email = strtolower(Demo::login());
+    $hash  = password_hash(Demo::password(), PASSWORD_BCRYPT, ['cost' => 10]);
+    $row   = DB::findOne('user', ' email = :e ', [':e' => $email]);
+    if ($row) {
+        DB::execute('UPDATE user SET password = :p, role = "admin", is_active = 1 WHERE id = :id', [':p' => $hash, ':id' => (int)$row['id']]);
+    } else {
+        DB::execute(
+            'INSERT INTO user (first_name, last_name, user_name, email, password, role, is_active, provider, created_at, updated_at)
+             VALUES ("Demo", "Admin", "demo", :e, :p, "admin", 1, "local", NOW(), NOW())',
+            [':e' => $email, ':p' => $hash]
+        );
+    }
+    ok("Demo admin ready: {$email}");
+}
+
+function cmdDemoSnapshot(): void
+{
+    $dir = demoDir();
+    runMysqlTool('mysqldump', ['--single-transaction', '--skip-lock-tables', '--add-drop-table'], null, $dir . '/seed.sql');
+    $uploads = $dir . '/uploads';
+    if (is_dir($uploads)) {
+        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($uploads, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($it as $item) $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+    }
+    copyTree(ROOT_DIR . '/public/uploads', $uploads);
+    ok('Demo baseline saved to storage/demo/');
+}
+
+function cmdDemoReset(): void
+{
+    if (!Demo::enabled()) fail('Refusing to reset: DEMO_MODE is not enabled.');
+    $seed = demoDir() . '/seed.sql';
+    if (!is_file($seed)) fail('No baseline yet — run demo:snapshot first.');
+
+    runMysqlTool('mysql', [], $seed);
+    clearUploads();
+    copyTree(demoDir() . '/uploads', ROOT_DIR . '/public/uploads');
+    if (class_exists('Cache')) { try { Cache::clear(); } catch (\Throwable $e) {} }
+    ok('Demo reset to baseline at ' . date('Y-m-d H:i'));
 }
