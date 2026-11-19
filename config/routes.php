@@ -79,6 +79,8 @@ Route::add('api.auth.forgot',   ['controller' => 'auth', 'action' => 'forgot',  
 Route::add('api.auth.reset',    ['controller' => 'auth', 'action' => 'reset',    'prefix' => 'api']);
 
 // Posts API
+Route::add('api.comment.post',   ['controller' => 'comment', 'action' => 'post',  'prefix' => 'api']);
+Route::add('api.comment.store',  ['controller' => 'comment', 'action' => 'store', 'prefix' => 'api']);
 Route::add('api.post.published', ['controller' => 'post', 'action' => 'published', 'prefix' => 'api']);
 Route::add('api.post.slug',      ['controller' => 'post', 'action' => 'slug',      'prefix' => 'api']);
 Route::add('api.post.index',  ['controller' => 'post', 'action' => 'index',  'prefix' => 'api']);

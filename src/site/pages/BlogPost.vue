@@ -21,6 +21,7 @@
       <div class="mt-12 pt-6 border-t border-[var(--border-color)] text-xs text-[var(--text-tertiary)]">
         {{ post.createdAt }}
       </div>
+      <PostComments :post-id="post.id" />
     </template>
   </div>
 </template>
@@ -29,6 +30,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { apiFetch } from '../composables/useApi.js'
+import PostComments from '../components/PostComments.vue'
 
 const lang  = window.__LANG__ || 'en'
 const i18n  = window.__DATA__?.i18n || {}

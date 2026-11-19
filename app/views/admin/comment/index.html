@@ -12,32 +12,40 @@
         <tr>
           <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Author</th>
           <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Comment</th>
+          <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium">Post</th>
           <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium"><?= AdminLang::t('status', 'common') ?></th>
           <th class="text-left px-4 py-3 text-[var(--text-secondary)] font-medium"><?= AdminLang::t('created_at', 'common') ?></th>
           <th class="px-4 py-3"></th>
         </tr>
       </thead>
       <tbody>
-        <?php foreach ($comments as $row): ?>
-          <tr class="border-b border-[var(--border-color)] last:border-0 hover:bg-[var(--bg-tertiary)]">
-            <td class="px-4 py-3 text-[var(--text-secondary)]"><?= htmlspecialchars($row['user_name'] ?? 'Guest') ?></td>
-            <td class="px-4 py-3 max-w-xs truncate"><?= htmlspecialchars($row['body'] ?? '') ?></td>
+        <?php foreach ($comments as $row):
+          $status = (string)($row['status'] ?? 'pending');
+          $author = (string)($row['author_name'] ?: ($row['user_name'] ?? 'Guest'));
+        ?>
+          <tr class="border-b border-[var(--border-color)] last:border-0 hover:bg-[var(--bg-tertiary)] align-top">
             <td class="px-4 py-3">
-              <span class="px-2 py-0.5 rounded text-xs <?= ($row['is_approved'] ?? 0) ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' ?>">
-                <?= ($row['is_approved'] ?? 0) ? AdminLang::t('active', 'common') : 'Pending' ?>
+              <div><?= htmlspecialchars($author) ?></div>
+              <div class="text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars((string)($row['author_email'] ?? '')) ?></div>
+            </td>
+            <td class="px-4 py-3 max-w-md whitespace-pre-line break-words"><?= htmlspecialchars((string)($row['content'] ?? '')) ?></td>
+            <td class="px-4 py-3 text-xs text-[var(--text-secondary)]"><?= htmlspecialchars((string)($row['post_title'] ?? ('#' . (int)$row['post_id']))) ?></td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 rounded text-xs <?= $status === 'approved' ? 'bg-green-100 text-green-700' : ($status === 'spam' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700') ?>">
+                <?= htmlspecialchars(ucfirst($status)) ?>
               </span>
             </td>
-            <td class="px-4 py-3 text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars(substr($row['created_at'] ?? '', 0, 10)) ?></td>
+            <td class="px-4 py-3 text-xs text-[var(--text-tertiary)]"><?= htmlspecialchars(substr((string)($row['created_at'] ?? ''), 0, 16)) ?></td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
-              <?php if (!($row['is_approved'] ?? 0)): ?>
-                <a data-method="post" href="/<?= $lang ?>/admin/comment/approve/<?= $row['id'] ?>"
+              <?php if ($status !== 'approved'): ?>
+                <a data-method="post" href="/<?= $lang ?>/admin/comment/approve/<?= (int)$row['id'] ?>"
                    class="text-[var(--primary)] hover:underline mr-3 text-xs">Approve</a>
               <?php endif ?>
-              <a data-method="post" href="/<?= $lang ?>/admin/comment/delete/<?= $row['id'] ?>"
+              <a data-method="post" href="/<?= $lang ?>/admin/comment/delete/<?= (int)$row['id'] ?>"
                  class="text-red-500 hover:underline text-xs"
                  data-confirm="<?= htmlspecialchars(AdminLang::t('confirm_del', 'common')) ?>"
                  data-confirm-type="danger"
-                 data-confirm-title="Delete comment by <?= htmlspecialchars($row['user_name'] ?? 'Guest') ?>?"
+                 data-confirm-title="Delete comment by <?= htmlspecialchars($author) ?>?"
                  data-confirm-ok="<?= htmlspecialchars(AdminLang::t('delete', 'common')) ?>"><?= AdminLang::t('delete', 'common') ?></a>
             </td>
           </tr>

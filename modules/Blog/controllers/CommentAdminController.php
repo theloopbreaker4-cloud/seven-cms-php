@@ -12,9 +12,11 @@ class CommentAdminController extends Controller
         $this->requireAdmin($res);
         $this->app->setTitle(AdminLang::t('comments', 'nav'));
         $comments = DB::getAll(
-            'SELECT c.*, u.user_name FROM comment c
-             LEFT JOIN user u ON u.id = c.user_id
-             ORDER BY c.created_at DESC LIMIT 200'
+            'SELECT c.*, u.user_name, JSON_UNQUOTE(JSON_EXTRACT(p.title, "$.en")) AS post_title
+               FROM comment c
+               LEFT JOIN user u ON u.id = c.user_id
+               LEFT JOIN post p ON p.id = c.post_id
+              ORDER BY (c.status = "pending") DESC, c.created_at DESC LIMIT 200'
         ) ?: [];
         return $this->app->view->render('index', compact('comments'));
     }
@@ -24,7 +26,7 @@ class CommentAdminController extends Controller
         $this->requireAdmin($res);
         $id  = (int)($params[0] ?? 0);
         $row = DB::findOne('comment', ' id = :id ', [':id' => $id]);
-        if ($row) { $row->is_approved = 1; \R::store($row); }
+        if ($row) DB::execute('UPDATE comment SET status = "approved" WHERE id = :id', [':id' => $id]);
         $lang = $this->app->router->getLanguage();
         header('Location: /' . $lang . '/admin/comment');
         exit;
