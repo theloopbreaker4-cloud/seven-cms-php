@@ -26,6 +26,7 @@
     });
   </script>
   <?= Vite::tags('src/site/main.js') ?>
+  <?php if (str_starts_with((string)$activePalette, CustomTheme::PREFIX) && ($_customCss = CustomTheme::css([$activePalette]))): ?><style nonce="<?= Csp::nonce() ?>"><?= $_customCss ?></style><?php endif ?>
 </head>
 <body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col">
 <?php if (Demo::enabled()): ?>

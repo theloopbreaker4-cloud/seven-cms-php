@@ -70,10 +70,67 @@ $lang = Seven::app()->router->getLanguage();
           <?= AdminLang::t('current_theme', 'nav') ?>
         </div>
       <?php endif ?>
+      <?php if (!empty($theme['custom'])): ?>
+        <form method="POST" action="/<?= $lang ?>/admin/theme/delete/<?= urlencode($slug) ?>" class="mt-2">
+          <button type="submit" class="w-full text-xs text-red-500 hover:underline"
+                  data-confirm="Delete theme <?= htmlspecialchars($theme['name']) ?>?">Delete</button>
+        </form>
+      <?php endif ?>
     </div>
   </div>
 <?php endforeach ?>
 </div>
+
+<!-- ── Create a theme ───────────────────────────────────────────────── -->
+<div class="mt-10 mb-2">
+  <h2 class="text-xl font-semibold">Create a theme</h2>
+  <p class="text-sm text-[var(--text-secondary)] mt-0.5">Pick three colours for each mode — the rest of the palette is derived. Text must reach 4.5:1 contrast on its background.</p>
+</div>
+<form method="POST" action="/<?= $lang ?>/admin/theme/store" id="theme-builder"
+      class="mt-4 p-5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] max-w-3xl">
+  <label class="block mb-4">
+    <span class="text-xs text-[var(--text-secondary)]">Name</span>
+    <input name="name" required maxlength="40" placeholder="e.g. Ocean"
+           class="w-full mt-1 px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+  </label>
+  <div class="grid sm:grid-cols-2 gap-5">
+    <?php foreach (['light' => ['#2563eb', '#ffffff', '#0f172a'], 'dark' => ['#60a5fa', '#0b1120', '#e2e8f0']] as $mode => [$p, $b, $t]): ?>
+      <div>
+        <p class="text-sm font-medium mb-2"><?= ucfirst($mode) ?> mode</p>
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <?php foreach (['primary' => $p, 'bg' => $b, 'text' => $t] as $k => $default): ?>
+            <label class="text-xs text-[var(--text-secondary)]"><?= $k === 'bg' ? 'Background' : ucfirst($k) ?>
+              <input type="color" name="<?= $mode ?>_<?= $k ?>" value="<?= $default ?>" data-mode="<?= $mode ?>" data-key="<?= $k ?>"
+                     class="block w-full h-9 mt-1 rounded border border-[var(--border-color)] bg-transparent cursor-pointer" />
+            </label>
+          <?php endforeach ?>
+        </div>
+        <div data-preview="<?= $mode ?>" class="rounded-lg p-3 border" style="background:<?= $b ?>;color:<?= $t ?>;border-color:<?= $t ?>22">
+          <div class="text-sm font-semibold">Heading</div>
+          <div class="text-xs opacity-70 mb-2">Body text sample</div>
+          <span data-btn class="inline-block text-xs px-2 py-1 rounded text-white" style="background:<?= $p ?>">Button</span>
+        </div>
+      </div>
+    <?php endforeach ?>
+  </div>
+  <label class="flex items-center gap-2 text-sm mt-4">
+    <input type="checkbox" name="activate" value="1" checked /> Activate after saving
+  </label>
+  <button type="submit" class="btn btn-primary mt-4">Save theme</button>
+</form>
+<script nonce="<?= Csp::nonce() ?>">
+  // Styles set from script (CSSOM) are allowed by the CSP; inline style="" is not in prod.
+  document.querySelectorAll('#theme-builder input[type=color]').forEach(function (input) {
+    var paint = function () {
+      var box = document.querySelector('[data-preview="' + input.dataset.mode + '"]');
+      if (input.dataset.key === 'bg')      box.style.background = input.value;
+      if (input.dataset.key === 'text')    { box.style.color = input.value; box.style.borderColor = input.value + '22'; }
+      if (input.dataset.key === 'primary') box.querySelector('[data-btn]').style.background = input.value;
+    };
+    input.addEventListener('input', paint);
+    paint();
+  });
+</script>
 
 <!-- ── Branding ───────────────────────────────────────────────────────── -->
 <div class="mt-10 mb-2">
