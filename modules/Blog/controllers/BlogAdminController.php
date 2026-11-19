@@ -33,7 +33,7 @@ class BlogAdminController extends Controller
         $model = new Post();
         $model->title       = json_encode($this->extractI18n($data, 'title'),   JSON_UNESCAPED_UNICODE);
         $model->excerpt     = json_encode($this->extractI18n($data, 'excerpt'), JSON_UNESCAPED_UNICODE);
-        $model->content     = json_encode($this->extractI18n($data, 'content'), JSON_UNESCAPED_UNICODE);
+        $model->content     = json_encode($this->extractI18n($data, 'content', true), JSON_UNESCAPED_UNICODE);
         $model->coverImage  = $req->get('coverImage');
         $model->isPublished = isset($data['isPublished']) ? 1 : 0;
         $id = $model->save();
@@ -68,7 +68,7 @@ class BlogAdminController extends Controller
         $model = new Post();
         $model->title       = json_encode($this->extractI18n($data, 'title'),   JSON_UNESCAPED_UNICODE);
         $model->excerpt     = json_encode($this->extractI18n($data, 'excerpt'), JSON_UNESCAPED_UNICODE);
-        $model->content     = json_encode($this->extractI18n($data, 'content'), JSON_UNESCAPED_UNICODE);
+        $model->content     = json_encode($this->extractI18n($data, 'content', true), JSON_UNESCAPED_UNICODE);
         $model->coverImage  = $req->get('coverImage');
         $model->isPublished = isset($data['isPublished']) ? 1 : 0;
         $model->save($id);

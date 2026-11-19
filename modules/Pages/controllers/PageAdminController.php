@@ -30,7 +30,7 @@ class PageAdminController extends Controller
         Csrf::verify($data);
         $model = new Page();
         $model->title       = json_encode($this->extractI18n($data, 'title'),    JSON_UNESCAPED_UNICODE);
-        $model->content     = json_encode($this->extractI18n($data, 'content'),  JSON_UNESCAPED_UNICODE);
+        $model->content     = json_encode($this->extractI18n($data, 'content', true),  JSON_UNESCAPED_UNICODE);
         $model->metaDesc    = json_encode($this->extractI18n($data, 'metaDesc'), JSON_UNESCAPED_UNICODE);
         $model->isPublished = isset($data['isPublished']) ? 1 : 0;
         $id = $model->save();
@@ -61,7 +61,7 @@ class PageAdminController extends Controller
         $id    = (int)($params[0] ?? 0);
         $model = new Page();
         $model->title       = json_encode($this->extractI18n($data, 'title'),    JSON_UNESCAPED_UNICODE);
-        $model->content     = json_encode($this->extractI18n($data, 'content'),  JSON_UNESCAPED_UNICODE);
+        $model->content     = json_encode($this->extractI18n($data, 'content', true),  JSON_UNESCAPED_UNICODE);
         $model->metaDesc    = json_encode($this->extractI18n($data, 'metaDesc'), JSON_UNESCAPED_UNICODE);
         $model->isPublished = isset($data['isPublished']) ? 1 : 0;
         $model->save($id);

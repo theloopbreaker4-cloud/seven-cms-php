@@ -201,7 +201,9 @@ class EcomProductsAdminController extends Controller
         $out = [];
         foreach (['en','ru','ka','uk','az','hy'] as $lang) {
             $key = $field . '_' . $lang;
-            if (isset($_POST[$key])) $out[$lang] = (string)$_POST[$key];
+            if (!isset($_POST[$key])) continue;
+            $raw = trim((string)$_POST[$key]);
+            $out[$lang] = $field === 'description' ? HtmlSanitizer::clean($raw) : strip_tags($raw);
         }
         return $out;
     }

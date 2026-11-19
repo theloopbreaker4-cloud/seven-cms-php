@@ -104,13 +104,15 @@ class Controller
 
     // Extract multilingual fields from POST data
     // e.g. title_en, title_ru → ['en' => '...', 'ru' => '...']
-    protected function extractI18n(array $data, string $field): array
+    /** $html=true keeps a safe rich-text subset (HtmlSanitizer); otherwise tags are stripped. */
+    protected function extractI18n(array $data, string $field, bool $html = false): array
     {
         $langs  = $this->app->config['languages'] ?? [];
         $result = [];
         foreach ($langs as $lang) {
             $key = $field . '_' . $lang;
-            $result[$lang] = isset($data[$key]) ? strip_tags(trim($data[$key])) : '';
+            $raw = isset($data[$key]) ? trim((string)$data[$key]) : '';
+            $result[$lang] = $html ? HtmlSanitizer::clean($raw) : strip_tags($raw);
         }
         return $result;
     }
