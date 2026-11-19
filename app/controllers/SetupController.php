@@ -169,6 +169,8 @@ class SetupController extends Controller
             ['code'=>'ru','name'=>'Русский',    'is_default'=>0],
             ['code'=>'uk','name'=>'Українська', 'is_default'=>0],
             ['code'=>'ka','name'=>'ქართული',    'is_default'=>0],
+            ['code'=>'az','name'=>'Azərbaycanca', 'is_default'=>0],
+            ['code'=>'hy','name'=>'Հայերեն',    'is_default'=>0],
             ['code'=>'de','name'=>'Deutsch',    'is_default'=>0],
             ['code'=>'fr','name'=>'Français',   'is_default'=>0],
             ['code'=>'nl','name'=>'Nederlands', 'is_default'=>0],
