@@ -40,6 +40,6 @@ INSERT IGNORE INTO ecom_currencies (code, is_enabled, is_base, label, created_at
     ('CHF', 0, 0, 'Swiss Franc',      NOW());
 
 -- Settings flags read by Money + checkout.
-INSERT IGNORE INTO settings (`key`, `value`) VALUES
+INSERT IGNORE INTO setting (`key`, `value`) VALUES
     ('ecom.multi_currency_enabled', '0'),
     ('ecom.fx_provider',            'manual');

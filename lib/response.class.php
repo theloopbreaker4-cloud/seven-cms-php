@@ -81,10 +81,15 @@ class Response
         $prefix   = Seven::app()->router->getMethodPrefix();
         $lang     = Seven::app()->router->getLanguage();
 
-        // admin/api use prefix; site pages use lang prefix
+        // A path ("/admin/cron") instead of a controller name: keep the current language.
+        if (str_starts_with($controller, '/')) {
+            $this->redirectUrl('/' . $lang . $controller);
+        }
+
+        // Keep the language in admin URLs too, or every save would switch the UI to the default.
         $base = Seven::app()->config['baseUrl'];
         if ($prefix && $prefix !== '') {
-            $location = $base . '/' . $prefix . '/' . $controller . '/' . $method;
+            $location = $base . '/' . $lang . '/' . $prefix . '/' . $controller . '/' . $method;
         } else {
             $location = $base . '/' . $lang . '/' . $controller . '/' . $method;
         }

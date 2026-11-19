@@ -65,10 +65,7 @@ class EcomModule implements ModuleInterface
             'ecom.paypal_mode'   => 'sandbox',
         ];
         foreach ($defaults as $k => $v) {
-            $exists = DB::findOne('settings', ' `key` = :k ', [':k' => $k]);
-            if (!$exists) {
-                DB::execute('INSERT INTO settings (`key`, `value`) VALUES (:k, :v)', [':k' => $k, ':v' => $v]);
-            }
+            if (Setting::get($k) === null) Setting::set($k, $v);
         }
     }
 
@@ -92,6 +89,8 @@ class EcomModule implements ModuleInterface
             'admin.ecom.products.variant.store'  => ['controller' => 'ecomProducts', 'action' => 'variantStore',  'prefix' => 'admin'],
             'admin.ecom.products.variant.update' => ['controller' => 'ecomProducts', 'action' => 'variantUpdate', 'prefix' => 'admin'],
             'admin.ecom.products.variant.delete' => ['controller' => 'ecomProducts', 'action' => 'variantDelete', 'prefix' => 'admin'],
+            'admin.ecom.products.asset.upload'   => ['controller' => 'ecomProducts', 'action' => 'assetUpload',   'prefix' => 'admin'],
+            'admin.ecom.products.asset.delete'   => ['controller' => 'ecomProducts', 'action' => 'assetDelete',   'prefix' => 'admin'],
 
             // ── Admin: orders
             'admin.ecom.orders'              => ['controller' => 'ecomOrders', 'action' => 'index',         'prefix' => 'admin'],

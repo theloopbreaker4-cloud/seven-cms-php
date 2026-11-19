@@ -4,7 +4,7 @@
 /** @var string $search */
 $lang = Seven::app()->router->getLanguage();
 $base = "/{$lang}/admin/ecom/products";
-$cur  = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.currency"') ?? 'USD');
+$cur  = (string)(Setting::get('ecom.currency') ?? 'USD');
 ?>
 
 <div class="flex flex-wrap items-center gap-3 mb-6">

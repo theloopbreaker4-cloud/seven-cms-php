@@ -34,7 +34,7 @@ class EcomCurrencyAdminController extends Controller
     public function toggle($req, $res, $params)
     {
         $this->requireAdmin($res);
-        $code = strtoupper((string)($params['code'] ?? ''));
+        $code = strtoupper((string)($params[0] ?? ''));
         if ($code !== '') {
             DB::execute(
                 'UPDATE ecom_currencies SET is_enabled = 1 - is_enabled WHERE code = :c',
@@ -47,14 +47,11 @@ class EcomCurrencyAdminController extends Controller
     public function setBase($req, $res, $params)
     {
         $this->requireAdmin($res);
-        $code = strtoupper((string)($params['code'] ?? ''));
+        $code = strtoupper((string)($params[0] ?? ''));
         if ($code !== '') {
             DB::execute('UPDATE ecom_currencies SET is_base = 0');
             DB::execute('UPDATE ecom_currencies SET is_base = 1, is_enabled = 1 WHERE code = :c', [':c' => $code]);
-            DB::execute(
-                'UPDATE settings SET `value` = :v WHERE `key` = "ecom.currency"',
-                [':v' => $code]
-            );
+            Setting::set('ecom.currency', $code);
         }
         $res->redirect('/admin/ecom/currencies');
     }
@@ -63,14 +60,8 @@ class EcomCurrencyAdminController extends Controller
     {
         $this->requireAdmin($res);
 
-        DB::execute(
-            'UPDATE settings SET `value` = :v WHERE `key` = "ecom.multi_currency_enabled"',
-            [':v' => isset($_POST['multi_currency_enabled']) ? '1' : '0']
-        );
-        DB::execute(
-            'UPDATE settings SET `value` = :v WHERE `key` = "ecom.fx_provider"',
-            [':v' => (string)($_POST['fx_provider'] ?? 'manual')]
-        );
+        Setting::set('ecom.multi_currency_enabled', isset($_POST['multi_currency_enabled']) ? '1' : '0');
+        Setting::set('ecom.fx_provider', (string)($_POST['fx_provider'] ?? 'manual'));
 
         // Manual rate updates.
         if (isset($_POST['rates']) && is_array($_POST['rates'])) {

@@ -39,7 +39,7 @@ class MailAdminController extends Controller
     public function retry($req, $res, $params)
     {
         $this->requireAdmin($res);
-        $id = (int)($params['id'] ?? 0);
+        $id = (int)($params[0] ?? 0);
         if ($id) {
             DB::execute(
                 'UPDATE mail_queue SET status = "pending", attempts = 0, available_at = NOW() WHERE id = :id',

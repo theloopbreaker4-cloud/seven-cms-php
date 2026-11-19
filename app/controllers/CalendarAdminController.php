@@ -78,7 +78,7 @@ class CalendarAdminController extends Controller
     public function delete($req, $res, $params)
     {
         $this->requireAdmin($res);
-        $id = (int)($params['id'] ?? 0);
+        $id = (int)($params[0] ?? 0);
         if ($id) CalendarEvent::delete($id, $this->currentUserId());
         $res->redirectUrl('/' . $this->app->router->getLanguage() . '/admin/calendar');
     }

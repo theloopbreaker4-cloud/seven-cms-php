@@ -426,13 +426,18 @@ function cmdDemoSnapshot(): void
 {
     $dir = demoDir();
     runMysqlTool('mysqldump', ['--single-transaction', '--skip-lock-tables', '--add-drop-table'], null, $dir . '/seed.sql');
-    $uploads = $dir . '/uploads';
-    if (is_dir($uploads)) {
-        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($uploads, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
-        foreach ($it as $item) $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
-    }
-    copyTree(ROOT_DIR . '/public/uploads', $uploads);
+    emptyDir($dir . '/uploads');
+    copyTree(ROOT_DIR . '/public/uploads', $dir . '/uploads');
+    emptyDir($dir . '/private');
+    copyTree(ROOT_DIR . '/storage/private', $dir . '/private');
     ok('Demo baseline saved to storage/demo/');
+}
+
+function emptyDir(string $dir): void
+{
+    if (!is_dir($dir)) return;
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+    foreach ($it as $item) $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
 }
 
 function cmdDemoReset(): void
@@ -444,6 +449,8 @@ function cmdDemoReset(): void
     runMysqlTool('mysql', [], $seed);
     clearUploads();
     copyTree(demoDir() . '/uploads', ROOT_DIR . '/public/uploads');
+    emptyDir(ROOT_DIR . '/storage/private');
+    copyTree(demoDir() . '/private', ROOT_DIR . '/storage/private');
     bootCliCache();
     Cache::flush();
     ok('Demo reset to baseline at ' . date('Y-m-d H:i'));

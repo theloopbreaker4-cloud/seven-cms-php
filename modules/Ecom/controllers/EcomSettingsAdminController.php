@@ -35,7 +35,7 @@ class EcomSettingsAdminController extends Controller
 
         $values = [];
         foreach (self::KEYS as $k) {
-            $values[$k] = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = :k', [':k' => $k]) ?? '');
+            $values[$k] = (string)(Setting::get($k) ?? '');
         }
         return $this->app->view->render('ecom/settings/index', ['values' => $values]);
     }
@@ -45,12 +45,7 @@ class EcomSettingsAdminController extends Controller
         $this->requirePerm('ecom.settings.update', $res);
         foreach (self::KEYS as $k) {
             $val = (string)($_POST[str_replace('.', '_', $k)] ?? '');
-            DB::execute(
-                'INSERT INTO settings (`key`, `value`)
-                 VALUES (:k, :v)
-                 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)',
-                [':k' => $k, ':v' => $val]
-            );
+            Setting::set($k, $val);
         }
         ActivityLog::log('ecom.settings.update', 'settings', null, 'Shop settings updated');
         Session::setFlash('Settings saved.');

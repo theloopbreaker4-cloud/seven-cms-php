@@ -36,8 +36,8 @@ class TaxCalculator
         }
 
         // 2. Global default.
-        $defaultRate = (float)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.tax_rate"') ?? 0);
-        $inclusive   = (bool)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.tax_inclusive"') ?? false);
+        $defaultRate = (float)(Setting::get('ecom.tax_rate') ?? 0);
+        $inclusive   = (bool)(Setting::get('ecom.tax_inclusive') ?? false);
         if ($defaultRate <= 0) return ['amount' => 0, 'rate_bp' => 0, 'inclusive' => $inclusive];
 
         $rateBp = (int)round($defaultRate * 100);

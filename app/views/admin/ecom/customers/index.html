@@ -22,7 +22,7 @@ $lang = Seven::app()->router->getLanguage();
           <td class="px-3 py-2"><a href="/<?= $lang ?>/admin/ecom/customers/view/<?= (int)$c['id'] ?>" class="text-[var(--primary)] hover:underline"><?= htmlspecialchars($c['email']) ?></a></td>
           <td class="px-3 py-2 text-xs"><?= htmlspecialchars(trim(($c['first_name'] ?? '') . ' ' . ($c['last_name'] ?? ''))) ?></td>
           <td class="px-3 py-2 text-xs"><?= (int)$c['orders_count'] ?></td>
-          <td class="px-3 py-2 text-xs"><?= Money::format((int)$c['total_spent'], (string)(DB::getCell('SELECT value FROM settings WHERE `key`="ecom.currency"') ?? 'USD')) ?></td>
+          <td class="px-3 py-2 text-xs"><?= Money::format((int)$c['total_spent'], (string)(Setting::get('ecom.currency') ?? 'USD')) ?></td>
         </tr>
       <?php endforeach ?>
     </tbody>

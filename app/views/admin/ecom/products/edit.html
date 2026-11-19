@@ -3,7 +3,7 @@
 /** @var array        $variants */
 $lang   = Seven::app()->router->getLanguage();
 $isNew  = $product === null;
-$cur    = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.currency"') ?? 'USD');
+$cur    = (string)(Setting::get('ecom.currency') ?? 'USD');
 $action = $isNew
     ? "/{$lang}/admin/ecom/products/store"
     : "/{$lang}/admin/ecom/products/update/" . (int)$product->id;
@@ -93,22 +93,47 @@ $images = $isNew ? [] : (json_decode($product->images           ?: '[]', true) ?
               </span>
               <span class="col-span-2 text-xs"><?= Money::format((int)$v['price'], $cur) ?></span>
               <span class="col-span-2 text-xs">stock: <?= (int)$v['stock'] ?></span>
-              <form method="POST" action="/<?= $lang ?>/admin/ecom/products/variant/delete/<?= (int)$v['id'] ?>" class="col-span-1 m-0 text-right">
-                <button class="text-xs text-red-500" data-confirm="Delete variant?">×</button>
-              </form>
+              <span class="col-span-1 text-right">
+                <button type="submit" form="variant-del-<?= (int)$v['id'] ?>" class="text-xs text-red-500" data-confirm="Delete variant?">×</button>
+              </span>
             </li>
           <?php endforeach ?>
         </ul>
       </div>
 
-      <form method="POST" action="/<?= $lang ?>/admin/ecom/products/variant/store/<?= (int)$product->id ?>"
-            class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] grid grid-cols-1 sm:grid-cols-4 gap-3">
-        <input name="sku" placeholder="SKU" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
-        <input name="attributes[size]" placeholder="size" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm" />
-        <input name="price" placeholder="Price" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
-        <input name="stock" type="number" placeholder="Stock" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
-        <button class="col-span-full sm:col-span-1 px-3 py-2 rounded bg-[var(--primary)] text-white text-sm">Add variant</button>
-      </form>
+      <?php /* Controls below belong to standalone forms after the main one (nested forms are invalid HTML). */ ?>
+      <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <input form="variant-add" name="sku" placeholder="SKU" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] font-mono text-sm" />
+        <input form="variant-add" name="attributes[size]" placeholder="size" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm" />
+        <input form="variant-add" name="price" placeholder="Price" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+        <input form="variant-add" name="stock" type="number" placeholder="Stock" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)]" />
+        <button type="submit" form="variant-add" class="col-span-full sm:col-span-1 px-3 py-2 rounded bg-[var(--primary)] text-white text-sm">Add variant</button>
+      </div>
+
+      <div class="p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+        <h3 class="font-semibold mb-1">Digital files</h3>
+        <p class="text-xs text-[var(--text-tertiary)] mb-3">Delivered after payment through a one-time download link. Stored outside the public web root.</p>
+        <ul class="space-y-2 mb-4">
+          <?php foreach ($assets as $a): ?>
+            <li class="flex items-center gap-3 text-sm">
+              <span class="flex-1"><?= htmlspecialchars((string)$a['name']) ?></span>
+              <span class="text-xs text-[var(--text-tertiary)]">
+                <?= $a['max_downloads'] !== null ? (int)$a['max_downloads'] . ' downloads' : 'unlimited' ?>
+                · <?= $a['expires_days'] !== null ? (int)$a['expires_days'] . ' days' : 'no expiry' ?>
+              </span>
+              <button type="submit" form="asset-del-<?= (int)$a['id'] ?>" class="text-xs text-red-500" data-confirm="Delete this file?">×</button>
+            </li>
+          <?php endforeach ?>
+          <?php if (!$assets): ?><li class="text-xs text-[var(--text-tertiary)]">No files yet.</li><?php endif ?>
+        </ul>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <input form="asset-upload" type="file" name="file" required class="sm:col-span-2 text-sm" />
+          <input form="asset-upload" name="name" placeholder="Display name" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm" />
+          <input form="asset-upload" name="max_downloads" type="number" min="1" placeholder="Max downloads" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm" />
+          <input form="asset-upload" name="expires_days" type="number" min="1" placeholder="Expires (days)" class="px-3 py-2 rounded border bg-[var(--bg-primary)] border-[var(--border-color)] text-sm" />
+          <button type="submit" form="asset-upload" class="sm:col-span-3 px-3 py-2 rounded bg-[var(--primary)] text-white text-sm">Upload file</button>
+        </div>
+      </div>
     <?php endif ?>
   </div>
 
@@ -170,9 +195,19 @@ $images = $isNew ? [] : (json_decode($product->images           ?: '[]', true) ?
     </button>
 
     <?php if (!$isNew): ?>
-      <form method="POST" action="/<?= $lang ?>/admin/ecom/products/delete/<?= (int)$product->id ?>" class="m-0">
-        <button class="w-full text-xs text-red-500 hover:underline" data-confirm="Delete this product?">Delete product</button>
-      </form>
+      <button type="submit" form="product-delete" class="w-full text-xs text-red-500 hover:underline" data-confirm="Delete this product?">Delete product</button>
     <?php endif ?>
   </aside>
 </form>
+
+<?php if (!$isNew): $base = "/{$lang}/admin/ecom/products"; ?>
+  <form id="variant-add" method="POST" action="<?= $base ?>/variant/store/<?= (int)$product->id ?>"><?= Csrf::field() ?></form>
+  <form id="asset-upload" method="POST" enctype="multipart/form-data" action="<?= $base ?>/asset/upload/<?= (int)$product->id ?>"><?= Csrf::field() ?></form>
+  <form id="product-delete" method="POST" action="<?= $base ?>/delete/<?= (int)$product->id ?>"><?= Csrf::field() ?></form>
+  <?php foreach ($variants as $v): ?>
+    <form id="variant-del-<?= (int)$v['id'] ?>" method="POST" action="<?= $base ?>/variant/delete/<?= (int)$v['id'] ?>"><?= Csrf::field() ?></form>
+  <?php endforeach ?>
+  <?php foreach ($assets as $a): ?>
+    <form id="asset-del-<?= (int)$a['id'] ?>" method="POST" action="<?= $base ?>/asset/delete/<?= (int)$a['id'] ?>"><?= Csrf::field() ?></form>
+  <?php endforeach ?>
+<?php endif ?>

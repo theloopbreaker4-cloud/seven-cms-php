@@ -18,7 +18,7 @@ class EcomDiscountsAdminController extends Controller
     public function store($req, $res, $params)
     {
         $this->requirePerm('ecom.discounts.manage', $res);
-        $currency = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.currency"') ?? 'USD');
+        $currency = (string)(Setting::get('ecom.currency') ?? 'USD');
 
         $kind = (string)($_POST['kind'] ?? 'percent');
         $value = match ($kind) {

@@ -19,7 +19,7 @@ class CronAdminController extends Controller
     public function run($req, $res, $params)
     {
         $this->requireAdmin($res);
-        $name = (string)($params['name'] ?? '');
+        $name = (string)($params[0] ?? '');
         if ($name === '') { $res->redirect('/admin/cron'); return; }
         $r = CronRunner::runOnce($name);
         Session::setFlash('Job dispatched: ' . $name);
@@ -29,7 +29,7 @@ class CronAdminController extends Controller
     public function toggle($req, $res, $params)
     {
         $this->requireAdmin($res);
-        $name    = (string)($params['name'] ?? '');
+        $name    = (string)($params[0] ?? '');
         $enabled = (string)($_POST['enabled'] ?? '0') === '1';
         if ($name !== '') CronRunner::setEnabled($name, $enabled);
         $res->redirect('/admin/cron');

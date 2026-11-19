@@ -51,3 +51,4 @@ public/uploads/*
 .claude/
 CLAUDE.md
 storage/demo/
+storage/private/

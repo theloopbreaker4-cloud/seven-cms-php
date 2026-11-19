@@ -42,7 +42,7 @@ class EcomProductsAdminController extends Controller
     {
         $this->requirePerm('ecom.products.create', $res);
         $this->app->setTitle('New product');
-        return $this->app->view->render('ecom/products/edit', ['product' => null, 'variants' => []]);
+        return $this->app->view->render('ecom/products/edit', ['product' => null, 'variants' => [], 'assets' => []]);
     }
 
     public function store($req, $res, $params)
@@ -59,8 +59,9 @@ class EcomProductsAdminController extends Controller
         $product = Product::findById($id);
         if (!$product) $res->errorCode(404);
         $variants = $product->variants();
+        $assets   = $product->digitalAssets();
         $this->app->setTitle('Edit: ' . ($product->pickI18n('name', 'en') ?: $product->slug));
-        return $this->app->view->render('ecom/products/edit', compact('product', 'variants'));
+        return $this->app->view->render('ecom/products/edit', compact('product', 'variants', 'assets'));
     }
 
     public function update($req, $res, $params)
@@ -75,6 +76,11 @@ class EcomProductsAdminController extends Controller
     {
         $this->requirePerm('ecom.products.delete', $res);
         $id = (int)($params[0] ?? 0);
+        $files = DB::getCol(
+            'SELECT storage_path FROM ecom_digital_assets WHERE product_id = :id AND storage_path IS NOT NULL',
+            [':id' => $id]
+        ) ?: [];
+        foreach ($files as $path) DigitalDelivery::deleteFile((string)$path);
         DB::execute('DELETE FROM ecom_products WHERE id = :id', [':id' => $id]);
         ActivityLog::log('ecom.product.delete', 'ecom_products', $id);
         $this->redirectAdmin('ecom/products');
@@ -84,7 +90,7 @@ class EcomProductsAdminController extends Controller
     {
         $this->requirePerm('ecom.products.update', $res);
         $productId = (int)($params[0] ?? 0);
-        $currency  = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.currency"') ?? 'USD');
+        $currency  = (string)(Setting::get('ecom.currency') ?? 'USD');
         DB::execute(
             'INSERT INTO ecom_product_variants (product_id, sku, attributes, price, stock)
              VALUES (:p, :sku, :a, :pr, :st)',
@@ -106,7 +112,7 @@ class EcomProductsAdminController extends Controller
         $row = DB::findOne('ecom_product_variants', ' id = :id ', [':id' => $variantId]);
         if (!$row) $res->errorCode(404);
 
-        $currency = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.currency"') ?? 'USD');
+        $currency = (string)(Setting::get('ecom.currency') ?? 'USD');
         DB::execute(
             'UPDATE ecom_product_variants
                 SET sku = :sku, attributes = :a, price = :pr, stock = :st, is_active = :ia
@@ -123,6 +129,33 @@ class EcomProductsAdminController extends Controller
         $this->redirectAdmin('ecom/products/edit/' . (int)$row['product_id']);
     }
 
+    /** POST /admin/ecom/products/asset/upload/{productId} — attach a private downloadable file. */
+    public function assetUpload($req, $res, $params)
+    {
+        $this->requirePerm('ecom.products.update', $res);
+        $productId = (int)($params[0] ?? 0);
+        if (!Product::findById($productId)) $res->errorCode(404);
+
+        $error = DigitalDelivery::store($productId, $_FILES['file'] ?? [], [
+            'name'          => (string)($_POST['name'] ?? ''),
+            'max_downloads' => $_POST['max_downloads'] ?? null,
+            'expires_days'  => $_POST['expires_days'] ?? null,
+        ]);
+        Session::setFlash($error ?? 'File attached.');
+        $this->redirectAdmin('ecom/products/edit/' . $productId);
+    }
+
+    /** POST /admin/ecom/products/asset/delete/{assetId} */
+    public function assetDelete($req, $res, $params)
+    {
+        $this->requirePerm('ecom.products.update', $res);
+        $row = DB::findOne('ecom_digital_assets', ' id = :id ', [':id' => (int)($params[0] ?? 0)]);
+        if (!$row) $res->errorCode(404);
+        if (!empty($row['storage_path'])) DigitalDelivery::deleteFile((string)$row['storage_path']);
+        DB::execute('DELETE FROM ecom_digital_assets WHERE id = :id', [':id' => (int)$row['id']]);
+        $this->redirectAdmin('ecom/products/edit/' . (int)$row['product_id']);
+    }
+
     public function variantDelete($req, $res, $params)
     {
         $this->requirePerm('ecom.products.update', $res);
@@ -136,7 +169,7 @@ class EcomProductsAdminController extends Controller
 
     private function save(?int $id): int
     {
-        $currency = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.currency"') ?? 'USD');
+        $currency = (string)(Setting::get('ecom.currency') ?? 'USD');
         $payload = [
             ':slug'    => Product::slugify((string)($_POST['slug'] ?? $_POST['name_en'] ?? '')),
             ':kind'    => in_array(($_POST['kind'] ?? ''), ['physical','digital','service'], true) ? $_POST['kind'] : 'physical',

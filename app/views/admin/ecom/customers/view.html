@@ -3,7 +3,7 @@
 /** @var array $orders */
 /** @var array $subs */
 $lang = Seven::app()->router->getLanguage();
-$cur  = (string)(DB::getCell('SELECT value FROM settings WHERE `key`="ecom.currency"') ?? 'USD');
+$cur  = (string)(Setting::get('ecom.currency') ?? 'USD');
 ?>
 <div class="flex items-center gap-3 mb-6">
   <h2 class="text-xl font-semibold flex-1"><?= htmlspecialchars($customer->email) ?></h2>

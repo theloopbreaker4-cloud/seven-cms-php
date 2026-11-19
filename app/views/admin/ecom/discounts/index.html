@@ -1,7 +1,7 @@
 <?php
 /** @var array $discounts */
 $lang = Seven::app()->router->getLanguage();
-$cur  = (string)(DB::getCell('SELECT value FROM settings WHERE `key`="ecom.currency"') ?? 'USD');
+$cur  = (string)(Setting::get('ecom.currency') ?? 'USD');
 ?>
 <div class="flex items-center justify-between mb-6">
   <h2 class="text-xl font-semibold">Discounts</h2>

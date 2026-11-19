@@ -228,7 +228,7 @@ class CartService
 
     private static function defaultCurrency(): string
     {
-        $row = DB::findOne('settings', ' `key` = :k ', [':k' => 'ecom.currency']);
+        $row = DB::findOne('setting', ' `key` = :k ', [':k' => 'ecom.currency']);
         return $row ? (string)$row['value'] : 'USD';
     }
 }

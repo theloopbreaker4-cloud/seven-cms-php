@@ -49,7 +49,7 @@ class ProductsBlock extends BlockType
         ]);
         $columns = max(1, min(6, (int)($data['columns'] ?? 3)));
         $locale  = (string)($context['locale'] ?? 'en');
-        $cur     = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.currency"') ?? 'USD');
+        $cur     = (string)(Setting::get('ecom.currency') ?? 'USD');
 
         $cards = [];
         foreach ($rows as $r) {

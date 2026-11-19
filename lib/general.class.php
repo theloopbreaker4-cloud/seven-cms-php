@@ -179,7 +179,7 @@ class General
             // (prefetchers, crawlers and cross-site navigations send GETs).
             if ($this->router->getMethodPrefix() === 'admin'
                 && strtoupper($method) === 'GET'
-                && in_array(strtolower((string)$this->router->getAction()), self::MUTATING_ACTIONS, true)) {
+                && $this->isMutatingAction(strtolower((string)$this->router->getAction()))) {
                 $response->errorCode(405);
             }
 
@@ -204,6 +204,13 @@ class General
                 (new Response())->errorCode(500);
             }
         }
+    }
+
+    /** Exact names plus suffixes such as variantDelete / assetUpload / hostRemove. */
+    private function isMutatingAction(string $action): bool
+    {
+        return in_array($action, self::MUTATING_ACTIONS, true)
+            || (bool)preg_match('/(delete|destroy|remove|store|update|upload|toggle|restore)$/', $action);
     }
 
     private function refuseInDemo(string $reason, Response $response): never

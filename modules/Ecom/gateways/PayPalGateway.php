@@ -233,7 +233,7 @@ class PayPalGateway implements PaymentGateway
 
     private static function setting(string $key, string $envFallback): string
     {
-        $row = DB::findOne('settings', ' `key` = :k ', [':k' => $key]);
+        $row = DB::findOne('setting', ' `key` = :k ', [':k' => $key]);
         if ($row && (string)$row['value'] !== '') return (string)$row['value'];
         return (string)Env::get($envFallback, '');
     }

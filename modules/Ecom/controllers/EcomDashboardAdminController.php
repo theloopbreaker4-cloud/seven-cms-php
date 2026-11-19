@@ -18,7 +18,7 @@ class EcomDashboardAdminController extends Controller
         $this->requirePerm('ecom.reports.view', $res);
         $this->app->setTitle('Shop Dashboard');
 
-        $currency = (string)(DB::getCell('SELECT value FROM settings WHERE `key` = "ecom.currency"') ?? 'USD');
+        $currency = (string)(Setting::get('ecom.currency') ?? 'USD');
 
         $stats = [
             'orders_today'       => (int)(DB::getCell("SELECT COUNT(*) FROM ecom_orders WHERE DATE(created_at) = CURDATE()") ?? 0),

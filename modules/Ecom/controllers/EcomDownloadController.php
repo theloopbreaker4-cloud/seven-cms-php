@@ -30,7 +30,25 @@ class EcomDownloadController extends Controller
             exit;
         }
 
-        // Local Media row → stream the file.
+        // Private file (storage/private/digital) — the normal case.
+        if (!empty($asset['storage_path'])) {
+            $abs = DigitalDelivery::filePath((string)$asset['storage_path']);
+            if (!$abs) $res->errorCode(404);
+            $name = (string)($asset['original_name'] ?: $asset['name']);
+            if (!empty($asset['license_key'])) {
+                $name = pathinfo($name, PATHINFO_FILENAME) . '_' . $asset['license_key'] . '.' . pathinfo($name, PATHINFO_EXTENSION);
+            }
+            $name = preg_replace('/[^\w.\- ]+/u', '_', $name) ?: 'download';
+            header('Content-Type: application/octet-stream');
+            header('X-Content-Type-Options: nosniff');
+            header('Content-Length: ' . filesize($abs));
+            header('Content-Disposition: attachment; filename="' . $name . '"; filename*=UTF-8\'\'' . rawurlencode($name));
+            header('Cache-Control: private, no-store');
+            readfile($abs);
+            exit;
+        }
+
+        // Legacy: a public Media row.
         if (!empty($asset['media_id'])) {
             $media = DB::findOne('media', ' id = :id ', [':id' => (int)$asset['media_id']]);
             if (!$media || empty($media['path'])) $res->errorCode(404);

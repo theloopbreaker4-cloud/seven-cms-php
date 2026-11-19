@@ -16,6 +16,12 @@ class Db extends \RedBeanPHP\Facade
         return parent::exec($sql, $bindings);
     }
 
+    /** PDO-style alias used across the codebase; RedBean calls it getInsertID(). */
+    public static function lastInsertId(): int
+    {
+        return (int)parent::getInsertID();
+    }
+
     /**
      * Align the MySQL session time zone with PHP's. Code mixes date() with NOW()
      * (cron next_run_at, mail available_at, reset expiry); a server/DB zone
