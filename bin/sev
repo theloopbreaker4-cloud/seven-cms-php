@@ -447,6 +447,7 @@ function cmdDemoReset(): void
     if (!is_file($seed)) fail('No baseline yet — run demo:snapshot first.');
 
     runMysqlTool('mysql', [], $seed);
+    Migrator::migrate(); // a baseline taken before a deploy must not roll the schema back
     clearUploads();
     copyTree(demoDir() . '/uploads', ROOT_DIR . '/public/uploads');
     emptyDir(ROOT_DIR . '/storage/private');
