@@ -260,10 +260,23 @@ function cmdMakeAdmin(string $email): void
     ok("{$email} is now an admin.");
 }
 
+/** Boot the same cache driver the web app uses (Redis when configured and reachable). */
+function bootCliCache(): void
+{
+    global $config;
+    $driver = null;
+    if (($config['cache']['driver'] ?? 'file') === 'redis') {
+        $r = $config['redis'] ?? [];
+        $driver = new CacheRedisDriver($r['host'] ?? '127.0.0.1', (int)($r['port'] ?? 6379), $r['prefix'] ?? 'seven:');
+        if (!$driver->isConnected()) $driver = null;
+    }
+    Cache::boot($driver ?? new CacheFileDriver());
+}
+
 function cmdCacheClear(): void
 {
-    if (!class_exists('Cache')) { warn('Cache class not available.'); return; }
-    Cache::clear();
+    bootCliCache();
+    Cache::flush();
     ok('Cache cleared.');
 }
 
@@ -428,6 +441,7 @@ function cmdDemoReset(): void
     runMysqlTool('mysql', [], $seed);
     clearUploads();
     copyTree(demoDir() . '/uploads', ROOT_DIR . '/public/uploads');
-    if (class_exists('Cache')) { try { Cache::clear(); } catch (\Throwable $e) {} }
+    bootCliCache();
+    Cache::flush();
     ok('Demo reset to baseline at ' . date('Y-m-d H:i'));
 }
