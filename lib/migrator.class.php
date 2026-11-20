@@ -116,7 +116,17 @@ class Migrator
             if ($statement === '') continue;
             // Straight to the adapter: the facade (fluid mode) would swallow "unknown
             // column" errors and the migration would be recorded as applied anyway.
-            DB::getDatabaseAdapter()->exec($statement);
+            try {
+                DB::getDatabaseAdapter()->exec($statement);
+            } catch (\RedBeanPHP\RedException\SQL $e) {
+                // Core migrations also touch tables that plugins or RedBean's fluid mode
+                // create later (page, post, ecom_*). Skipping those statements is the
+                // long-standing behaviour; anything else (unknown column, syntax) fails.
+                if ((string)$e->getSQLState() !== '42S02') throw $e;
+                Logger::channel('app')->warn('Migration statement skipped: table does not exist yet', [
+                    'sql' => substr(preg_replace('/\s+/', ' ', $statement), 0, 200),
+                ]);
+            }
         }
     }
 
