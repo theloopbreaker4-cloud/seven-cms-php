@@ -447,12 +447,20 @@ function ensureDemoUser(): string
     if ($row) {
         DB::execute('UPDATE user SET password = :p, role = "admin", is_active = 1 WHERE id = :id', [':p' => $hash, ':id' => (int)$row['id']]);
     } else {
+        // `user` is created by RedBean's fluid mode, so optional columns (provider, …)
+        // only exist once something wrote them — insert just the ones that are there.
+        $now  = date('Y-m-d H:i:s');
+        $want = ['first_name' => 'Demo', 'last_name' => 'Admin', 'user_name' => 'demo', 'email' => $email,
+                 'password' => $hash, 'role' => 'admin', 'is_active' => 1, 'provider' => 'local',
+                 'created_at' => $now, 'updated_at' => $now];
+        $cols = array_map(fn($r) => $r['Field'], DB::getAll('SHOW COLUMNS FROM user'));
+        $data = array_intersect_key($want, array_flip($cols));
         DB::execute(
-            'INSERT INTO user (first_name, last_name, user_name, email, password, role, is_active, provider, created_at, updated_at)
-             VALUES ("Demo", "Admin", "demo", :e, :p, "admin", 1, "local", NOW(), NOW())',
-            [':e' => $email, ':p' => $hash]
+            'INSERT INTO user (`' . implode('`, `', array_keys($data)) . '`) VALUES (' . implode(', ', array_fill(0, count($data), '?')) . ')',
+            array_values($data)
         );
     }
+    if (!DB::getCell('SELECT id FROM user WHERE email = ?', [$email])) fail("Could not create the demo user {$email}.");
     return $email;
 }
 

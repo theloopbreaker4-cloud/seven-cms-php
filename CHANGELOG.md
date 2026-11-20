@@ -28,6 +28,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
   the catalog, `createdAt` empty, …). Both spellings are matched now.
 - **Content entry update inserted a copy** instead of updating.
 
+### Fixed — 2026-11-20 — Silent SQL failures
+
+- RedBean's fluid mode answered any raw query naming a missing column with an empty
+  result — writes were silently lost. `Db` now logs it (`logs/db`, level error) and
+  throws in dev. Missing *tables* stay quiet (fluid creates them on first save).
+- The public demo's hourly reset deleted the visitor login: the baseline had no
+  demo user and `demo:init` inserted into a column that didn't exist (silently).
+  `demo:reset` now re-creates the user, inserting only existing columns.
+
 ### Security — 2026-11-20 — Site login
 
 - The site login returned the session token in JSON and the Vue site wrote it to a

@@ -13,7 +13,44 @@ class Db extends \RedBeanPHP\Facade
      */
     public static function execute($sql, $bindings = [])
     {
-        return parent::exec($sql, $bindings);
+        return self::exec($sql, $bindings);
+    }
+
+    // ── Raw queries ─────────────────────────────────────────────────────────
+    // In fluid mode RedBean's facade answers SQL that names a missing table or
+    // column with an empty result — no error, no log. That hid real bugs (the demo
+    // INSERT into a non-existent `user.provider` "succeeded" and created nothing).
+    // These overrides log every such query; in dev they throw so it's seen at once.
+
+    public static function exec($sql, $bindings = [])     { return self::run('exec',     $sql, $bindings); }
+    public static function getAll($sql, $bindings = [])   { return self::run('get',      $sql, $bindings); }
+    public static function getRow($sql, $bindings = [])   { return self::run('getRow',   $sql, $bindings); }
+    public static function getCol($sql, $bindings = [])   { return self::run('getCol',   $sql, $bindings); }
+    public static function getCell($sql, $bindings = [])  { return self::run('getCell',  $sql, $bindings); }
+    public static function getAssoc($sql, $bindings = []) { return self::run('getAssoc', $sql, $bindings); }
+
+    private static function run(string $method, $sql, $bindings)
+    {
+        try {
+            return parent::getDatabaseAdapter()->$method($sql, $bindings ?? []);
+        } catch (\RedBeanPHP\RedException\SQL $e) {
+            $state = (string)$e->getSQLState();
+            if (!in_array($state, ['42S02', '42S22'], true)) throw $e; // not "no such table/column"
+            $ctx = [
+                'error' => $e->getMessage(),
+                'sql'   => is_string($sql) ? substr(preg_replace('/\s+/', ' ', $sql), 0, 300) : '',
+            ];
+            if ($state === '42S02') {
+                // Fluid mode creates a table on its first store(), so reading one that
+                // doesn't exist yet just means "no rows".
+                if (class_exists('Logger')) Logger::channel('db')->debug('Query on a table not created yet', $ctx);
+            } else {
+                // A missing column is a real bug: the write is silently lost otherwise.
+                if (class_exists('Logger')) Logger::channel('db')->error('Query references a missing column', $ctx);
+                if (defined('ENVIRONMENT') && ENVIRONMENT === 'dev') throw $e;
+            }
+            return $method === 'getCell' ? null : [];
+        }
     }
 
     /** PDO-style alias used across the codebase; RedBean calls it getInsertID(). */
@@ -29,7 +66,7 @@ class Db extends \RedBeanPHP\Facade
      */
     public static function syncTimezone(): void
     {
-        parent::exec('SET time_zone = ?', [date('P')]);
+        self::exec('SET time_zone = ?', [date('P')]);
     }
 
     public static function isSetDatabase(array $dbConfig, Logger $logger): void
