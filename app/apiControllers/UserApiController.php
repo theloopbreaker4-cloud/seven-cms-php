@@ -19,9 +19,7 @@ class UserApiController extends ApiController
         $rows  = DB::getAll('SELECT * FROM user ORDER BY created_at DESC');
         $users = [];
         foreach ($rows as $row) {
-            $u = new User();
-            $u->setModel($row);
-            $users[] = $u->toPublic();
+            $users[] = (new User($row))->toPublic(); // setModel() is protected: this was always a 500
         }
         Logger::channel('app')->debug('API users list', ['count' => count($users), 'adminId' => $admin->id]);
         return json_encode($users);

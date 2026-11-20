@@ -13,7 +13,7 @@ Current backlog. Items are not committed deadlines, just an honest list of what'
 - [ ] Port the HTTP smoke suite (login, plugins, CSRF, API/GraphQL, uploads, content, digital downloads, comments, themes, admin languages, middleware) into PHPUnit integration tests with a throw-away database. Today `tests/Unit/` covers only Container, Event, JWT, Money, TOTP, and PHPUnit isn't installed in the dev box.
 
 ### Architecture debt
-- [ ] Move the Vue site from legacy `/api/auth/*` + `/api/{post,page,comment}` to `/api/v1`, then drop the legacy auth API.
+- [ ] Remove the deprecated `/api/*` URL aliases in 1.0 (the Vue site no longer uses them).
 - [ ] Run PHPStan once Composer is available. A token-based bean-vs-array scan (bean passed to array functions / array-typed params, returned from `array` functions, `!R::load()`) is clean; PHPStan would also cover views and generic type errors.
 - [ ] RedBean runs in fluid mode everywhere (core tables like `post`, `page`, `user` are only created that way). Write migrations for them, then freeze the schema in prod.
 
@@ -22,6 +22,7 @@ Current backlog. Items are not committed deadlines, just an honest list of what'
 
 - ✅ Shop + headless content actually work end-to-end: cart (was 500), add-to-cart (REST path swallowed), checkout (orders saved to a fluid look-alike table), content type create + entry update; route `path`/`method`; models match snake_case columns; `db:orphans`
 - ✅ Admin UI in az and hy — all 9 languages complete
+- ✅ Vue site on `/api/v1`; site session is an httpOnly cookie set by the server (token used to be readable by JS); site login rate-limited; legacy content API accepts JWT
 
 - ✅ Public demo: DEMO_MODE (read-only sensitive sections, demo login, banners, 2 MB image uploads), `demo:init/seed/snapshot/reset`, hourly cron reset; deployed with PHP 8.5 + MariaDB 11.4
 - ✅ Custom themes built in the admin (light + dark, WCAG contrast check, no build step)

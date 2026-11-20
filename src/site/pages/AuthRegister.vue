@@ -94,8 +94,7 @@ async function submit() {
   generalError.value = ''
   errors.value       = {}
   try {
-    const data = await api.auth.register(form.value)
-    if (data.token) document.cookie = `token=${data.token}; path=/; SameSite=Strict`
+    await api.auth.register(form.value) // server sets the httpOnly session cookie
     window.location.href = `/${lang}/`
   } catch (e) {
     if (e.data && typeof e.data === 'object' && !e.data.error) {

@@ -150,6 +150,21 @@ Route::add('api.v1.content.create',        ['controller' => 'contentv1', 'action
 Route::add('api.v1.content.update',        ['controller' => 'contentv1', 'action' => 'updateEntry',  'prefix' => 'api/v1', 'path' => 'api/v1/content/{type}/{id}',        'method' => ['PUT', 'PATCH']]);
 Route::add('api.v1.content.delete',        ['controller' => 'contentv1', 'action' => 'deleteEntry',  'prefix' => 'api/v1', 'path' => 'api/v1/content/{type}/{id}',        'method' => 'DELETE']);
 
+// Public site API used by the bundled Vue site (docs/api.md → "Site API").
+Route::add('api.v1.posts',          ['controller' => 'post',    'action' => 'published', 'prefix' => 'api/v1', 'path' => 'api/v1/posts',                'method' => 'GET']);
+Route::add('api.v1.posts.show',     ['controller' => 'post',    'action' => 'slug',      'prefix' => 'api/v1', 'path' => 'api/v1/posts/{slug}',         'method' => 'GET']);
+Route::add('api.v1.posts.comments', ['controller' => 'comment', 'action' => 'post',      'prefix' => 'api/v1', 'path' => 'api/v1/posts/{id}/comments',  'method' => 'GET']);
+Route::add('api.v1.posts.comment',  ['controller' => 'comment', 'action' => 'store',     'prefix' => 'api/v1', 'path' => 'api/v1/posts/{id}/comments',  'method' => 'POST']);
+Route::add('api.v1.pages.show',     ['controller' => 'page',    'action' => 'slug',      'prefix' => 'api/v1', 'path' => 'api/v1/pages/{slug}',         'method' => 'GET']);
+
+// Browser session auth for the site (httpOnly cookie). Headless clients use the JWT /auth/login.
+Route::add('api.v1.session.create',   ['controller' => 'auth', 'action' => 'login',    'prefix' => 'api/v1', 'path' => 'api/v1/session',                 'method' => 'POST']);
+Route::add('api.v1.session.delete',   ['controller' => 'auth', 'action' => 'logout',   'prefix' => 'api/v1', 'path' => 'api/v1/session',                 'method' => 'DELETE']);
+Route::add('api.v1.session.show',     ['controller' => 'auth', 'action' => 'me',       'prefix' => 'api/v1', 'path' => 'api/v1/session',                 'method' => 'GET']);
+Route::add('api.v1.account.register', ['controller' => 'auth', 'action' => 'register', 'prefix' => 'api/v1', 'path' => 'api/v1/account/register',        'method' => 'POST']);
+Route::add('api.v1.account.forgot',   ['controller' => 'auth', 'action' => 'forgot',   'prefix' => 'api/v1', 'path' => 'api/v1/account/password/forgot', 'method' => 'POST']);
+Route::add('api.v1.account.reset',    ['controller' => 'auth', 'action' => 'reset',    'prefix' => 'api/v1', 'path' => 'api/v1/account/password/reset',  'method' => 'POST']);
+
 // ─── Multi-site admin ────────────────────────────────────────────────────────
 
 Route::add('admin.sites',             ['controller' => 'site', 'action' => 'index',      'prefix' => 'admin']);

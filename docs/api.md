@@ -4,22 +4,36 @@
 
 ## Versioning
 
-All new endpoints live under `/api/v1`. The legacy `/api/*` endpoints are
-preserved for backwards compatibility but new clients should target v1.
+Everything lives under `/api/v1`. The older `/api/*` URLs still answer
+(same handlers) but are deprecated.
 
-**Deprecated:** legacy `/api/auth/*` (opaque cookie token) duplicates
-`/api/v1/auth/*` (JWT). The bundled Vue site still uses the legacy auth and
-the public read endpoints below; they will move to v1 before 1.0.
+There are two ways to authenticate, on purpose:
 
-### Public read endpoints (no auth)
+- **Browser session** (`/api/v1/session`) — what the bundled Vue site uses. The
+  server sets an `httpOnly`, `SameSite=Strict` cookie (the same session as the
+  admin); the token never reaches JavaScript.
+- **JWT** (`/api/v1/auth/*`) — for headless clients, apps and scripts.
 
-| Endpoint | Returns |
+### Site API (used by the Vue site)
+
+| Endpoint | Notes |
 |---|---|
-| `GET /api/post/published?limit=&offset=` | published posts, newest first |
-| `GET /api/post/slug/{slug}?lang=xx` | one published post by its localized slug |
-| `GET /api/page/slug/{slug}?lang=xx` | one published page |
-| `GET /api/comment/post/{postId}` | approved comments (no emails) |
-| `POST /api/comment/store` | `{postId, name, email, content, website}` → `201 {status:"pending"}`; `website` is a honeypot, rate-limited per IP |
+| `POST /api/v1/session` | `{login, password}` → `{user}` + session cookie; 5 failures / 15 min per IP → `429` |
+| `GET /api/v1/session` | `{user}` or `401` |
+| `DELETE /api/v1/session` | revokes the session, clears the cookie |
+| `POST /api/v1/account/register` | `{firstName, lastName, userName, email, password}` → `201 {user}` + session cookie |
+| `POST /api/v1/account/password/forgot` | `{email, lang}` — always the same answer (no account probing) |
+| `POST /api/v1/account/password/reset` | `{token, password, confirmPassword}` |
+| `GET /api/v1/posts?limit=&offset=` | published posts, newest first |
+| `GET /api/v1/posts/{slug}?lang=xx` | one published post by its localized slug |
+| `GET /api/v1/pages/{slug}?lang=xx` | one published page |
+| `GET /api/v1/posts/{id}/comments` | approved comments (no emails) |
+| `POST /api/v1/posts/{id}/comments` | `{name, email, content, website}` → `201 {status:"pending"}`; `website` is a honeypot, rate-limited per IP |
+| `GET /api/v1/social/links` | footer social links |
+
+The legacy content-management endpoints (`/api/post|page|user/{store,update,delete,…}`)
+take `Authorization: Bearer <JWT access token>`; they never read cookies, so they
+can't be triggered by CSRF.
 
 ## Authentication
 

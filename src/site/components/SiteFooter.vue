@@ -117,7 +117,7 @@ function t(key) {
 
 onMounted(async () => {
   try {
-    const res = await fetch('/api/social/links')
+    const res = await fetch('/api/v1/social/links')
     if (res.ok) socials.value = await res.json()
   } catch { /* silently ignore */ }
 })

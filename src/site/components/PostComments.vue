@@ -52,16 +52,16 @@ const sent = ref(false)
 const error = ref('')
 
 async function load() {
-  try { comments.value = await apiFetch(`/comment/post/${props.postId}`) } catch { comments.value = [] }
+  try { comments.value = await apiFetch(`/posts/${props.postId}/comments`) } catch { comments.value = [] }
 }
 
 async function submit() {
   sending.value = true
   error.value = ''
   try {
-    await apiFetch('/comment/store', {
+    await apiFetch(`/posts/${props.postId}/comments`, {
       method: 'POST',
-      body: JSON.stringify({ postId: props.postId, lang, ...form.value }),
+      body: JSON.stringify({ lang, ...form.value }),
     })
     sent.value = true
   } catch (e) {

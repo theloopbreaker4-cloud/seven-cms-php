@@ -1,55 +1,37 @@
-// Lightweight fetch wrapper for PHP API endpoints
-const BASE = '/api'
-
-function getToken() {
-  const m = document.cookie.match(/(?:^|;\s*)token=([^;]+)/)
-  return m ? m[1] : null
-}
+// Fetch wrapper for the site API (/api/v1). The session lives in an httpOnly cookie
+// set by the server, so nothing here reads or writes tokens.
+const BASE = '/api/v1'
 
 export async function apiFetch(path, options = {}) {
-  const token = getToken()
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...options.headers,
   }
-  const res = await fetch(BASE + path, { ...options, headers })
+  const res = await fetch(BASE + path, { credentials: 'same-origin', ...options, headers })
   const json = await res.json().catch(() => ({}))
   if (!res.ok) throw Object.assign(new Error(json.error || `HTTP ${res.status}`), { status: res.status, data: json })
   return json
 }
 
+const post = (path, data) => apiFetch(path, { method: 'POST', body: JSON.stringify(data) })
+
 export const api = {
   auth: {
-    login:    (data)  => apiFetch('/auth/login',    { method: 'POST', body: JSON.stringify(data) }),
-    logout:   ()      => apiFetch('/auth/logout',   { method: 'POST' }),
-    me:       ()      => apiFetch('/auth/me'),
-    register: (data)  => apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
-    forgot:   (email, lang) => apiFetch('/auth/forgot', { method: 'POST', body: JSON.stringify({ email, lang }) }),
-    reset:    (data)  => apiFetch('/auth/reset',    { method: 'POST', body: JSON.stringify(data) }),
+    login:    (data)        => post('/session', data),
+    logout:   ()            => apiFetch('/session', { method: 'DELETE' }),
+    me:       ()            => apiFetch('/session'),
+    register: (data)        => post('/account/register', data),
+    forgot:   (email, lang) => post('/account/password/forgot', { email, lang }),
+    reset:    (data)        => post('/account/password/reset', data),
   },
-  blog: {
-    list:   (params = {}) => apiFetch('/post/index?' + new URLSearchParams(params)),
-    show:   (id)          => apiFetch('/post/show/' + id),
-    create: (data)        => apiFetch('/post/store',      { method: 'POST', body: JSON.stringify(data) }),
-    update: (id, data)    => apiFetch('/post/update/' + id, { method: 'PUT',  body: JSON.stringify(data) }),
-    remove: (id)          => apiFetch('/post/delete/' + id, { method: 'DELETE' }),
+  posts: {
+    list:     (params = {}) => apiFetch('/posts?' + new URLSearchParams(params)),
+    bySlug:   (slug, lang)  => apiFetch(`/posts/${encodeURIComponent(slug)}?lang=${encodeURIComponent(lang)}`),
+    comments: (postId)      => apiFetch(`/posts/${postId}/comments`),
+    comment:  (postId, data) => post(`/posts/${postId}/comments`, data),
   },
   pages: {
-    list:   ()         => apiFetch('/page/index'),
-    show:   (id)       => apiFetch('/page/show/' + id),
-    create: (data)     => apiFetch('/page/store',       { method: 'POST', body: JSON.stringify(data) }),
-    update: (id, data) => apiFetch('/page/update/' + id, { method: 'PUT',  body: JSON.stringify(data) }),
-    remove: (id)       => apiFetch('/page/delete/' + id, { method: 'DELETE' }),
-  },
-  users: {
-    list:   ()         => apiFetch('/user/index'),
-    show:   (id)       => apiFetch('/user/show/' + id),
-    update: (id, data) => apiFetch('/user/update/' + id, { method: 'PUT',  body: JSON.stringify(data) }),
-    remove: (id)       => apiFetch('/user/delete/' + id, { method: 'DELETE' }),
-  },
-  calendar: {
-    events: (month) => apiFetch('/calendar/events?month=' + month),
+    bySlug:   (slug, lang)  => apiFetch(`/pages/${encodeURIComponent(slug)}?lang=${encodeURIComponent(lang)}`),
   },
 }

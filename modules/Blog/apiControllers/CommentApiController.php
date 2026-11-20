@@ -6,8 +6,9 @@ defined('_SEVEN') or die('No direct script access allowed');
 /**
  * Public comments API.
  *
- * GET  /api/comment/post/{postId}  — approved comments of a published post (no emails)
- * POST /api/comment/store          — { postId, name, email, content, website } → pending
+ * GET  /api/v1/posts/{postId}/comments  — approved comments of a published post (no emails)
+ * POST /api/v1/posts/{postId}/comments  — { name, email, content, website } → pending
+ * (legacy /api/comment/post/{postId} and /api/comment/store {postId,…} still answer)
  *
  * "website" is a honeypot: humans never see it, bots fill it in.
  */
@@ -38,7 +39,7 @@ class CommentApiController extends ApiController
         RateLimit::check('comment');
 
         $body    = $this->body();
-        $postId  = (int)($body['postId'] ?? 0);
+        $postId  = (int)($params[0] ?? $body['postId'] ?? 0); // v1: /posts/{id}/comments
         $name    = trim(strip_tags((string)($body['name'] ?? '')));
         $email   = strtolower(trim((string)($body['email'] ?? '')));
         $content = trim(strip_tags((string)($body['content'] ?? '')));

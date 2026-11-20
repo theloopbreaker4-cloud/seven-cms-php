@@ -37,63 +37,57 @@ class ApiController extends Controller
         exit;
     }
 
-    // Resolve Bearer token → User with admin role, or abort
+    /**
+     * Bearer → active User, or abort. Accepts the JWT access token from
+     * POST /api/v1/auth/login (the supported way for headless clients) and, for old
+     * integrations, an opaque session token. Cookies are deliberately not read here:
+     * these endpoints change data and must not be reachable by CSRF.
+     */
+    private function bearerUser(): User
+    {
+        $token = $this->bearerToken();
+        if (!$token) $this->jsonError(401, 'Unauthorized');
+
+        if (substr_count($token, '.') === 2) {
+            $claims = class_exists('Jwt') ? Jwt::verify($token) : null;
+            if (!$claims || empty($claims['sub'])) $this->jsonError(401, 'Invalid or expired token');
+            $userId = (int)$claims['sub'];
+        } else {
+            $t = new Token();
+            $t->setToken($token);
+            if (!$t->id || !$t->auth) $this->jsonError(401, 'Invalid or expired token');
+            $userId = (int)$t->userId;
+        }
+        $user = new User();
+        $user->getOne($userId);
+        if (!$user->id || !$user->isActive) $this->jsonError(403, 'Forbidden');
+        return $user;
+    }
+
     protected function requireAdminToken(): mixed
     {
-        $token = $this->bearerToken();
-        if (!$token) $this->jsonError(401, 'Unauthorized');
-        $t = new Token();
-        $t->setToken($token);
-        if (!$t->id || !$t->auth) $this->jsonError(401, 'Invalid or expired token');
-        $user = new User();
-        $user->getOne($t->userId);
-        if (!$user->id || !$user->isActive) $this->jsonError(403, 'Forbidden');
-        if ($user->role !== 'admin')        $this->jsonError(403, 'Admin only');
+        $user = $this->bearerUser();
+        if ($user->role !== 'admin') $this->jsonError(403, 'Admin only');
         return $user;
     }
 
-    // Resolve Bearer token → User with editor role or higher
     protected function requireEditorToken(): mixed
     {
-        $token = $this->bearerToken();
-        if (!$token) $this->jsonError(401, 'Unauthorized');
-        $t = new Token();
-        $t->setToken($token);
-        if (!$t->id || !$t->auth) $this->jsonError(401, 'Invalid or expired token');
-        $user = new User();
-        $user->getOne($t->userId);
-        if (!$user->id || !$user->isActive) $this->jsonError(403, 'Forbidden');
-        if (!$user->isEditor())             $this->jsonError(403, 'Editor access required');
+        $user = $this->bearerUser();
+        if (!$user->isEditor()) $this->jsonError(403, 'Editor access required');
         return $user;
     }
 
-    // Resolve Bearer token → User with moderator role or higher
     protected function requireModeratorToken(): mixed
     {
-        $token = $this->bearerToken();
-        if (!$token) $this->jsonError(401, 'Unauthorized');
-        $t = new Token();
-        $t->setToken($token);
-        if (!$t->id || !$t->auth) $this->jsonError(401, 'Invalid or expired token');
-        $user = new User();
-        $user->getOne($t->userId);
-        if (!$user->id || !$user->isActive) $this->jsonError(403, 'Forbidden');
-        if (!$user->isModerator())          $this->jsonError(403, 'Moderator access required');
+        $user = $this->bearerUser();
+        if (!$user->isModerator()) $this->jsonError(403, 'Moderator access required');
         return $user;
     }
 
-    // Resolve Bearer token → any authenticated User, or abort
     protected function requireAuthToken(): mixed
     {
-        $token = $this->bearerToken();
-        if (!$token) $this->jsonError(401, 'Unauthorized');
-        $t = new Token();
-        $t->setToken($token);
-        if (!$t->id || !$t->auth) $this->jsonError(401, 'Invalid or expired token');
-        $user = new User();
-        $user->getOne($t->userId);
-        if (!$user->id || !$user->isActive) $this->jsonError(403, 'Forbidden');
-        return $user;
+        return $this->bearerUser();
     }
 
     protected function bearerToken(): ?string

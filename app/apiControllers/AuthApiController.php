@@ -4,29 +4,36 @@
 defined('_SEVEN') or die('No direct script access allowed');
 
 /**
- * Auth API — Bearer token via Authorization header
+ * Browser session auth for the bundled site (same session as the admin).
  *
- * POST /api/auth/login    { login, password }
- * POST /api/auth/logout
- * GET  /api/auth/me
- * POST /api/auth/register { firstName, lastName, userName, email, password }
- * POST /api/auth/forgot   { email }
- * POST /api/auth/reset    { token, password, confirmPassword }
+ * POST   /api/v1/session                  { login, password } → sets the httpOnly `token` cookie
+ * DELETE /api/v1/session                  → revokes it
+ * GET    /api/v1/session                  → current user
+ * POST   /api/v1/account/register         { firstName, lastName, userName, email, password }
+ * POST   /api/v1/account/password/forgot  { email, lang }
+ * POST   /api/v1/account/password/reset   { token, password, confirmPassword }
+ *
+ * The session token never reaches JavaScript: it used to be returned in the body and
+ * written to a script-readable cookie, so any XSS could lift an admin session.
+ * Headless clients use the JWT endpoints (/api/v1/auth/*). The legacy /api/auth/*
+ * URLs reach the same actions.
  */
 class AuthApiController extends ApiController
 {
     public function login($req, $res, $params)
     {
         if (!$req->isMethod('POST')) $res->jsonError(405, 'Method Not Allowed');
+        RateLimit::check('site_login');
 
         $body     = $this->body();
         $login    = trim($body['login'] ?? '');
         $password = $body['password'] ?? '';
-        $ip       = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $ip       = RateLimit::clientIp();
         $log      = Logger::channel('auth');
 
         if (!$login || !$password) {
-            $log->warn('API login: empty fields', ['ip' => $ip]);
+            RateLimit::hit('site_login');
+            $log->warn('Site login: empty fields', ['ip' => $ip]);
             $this->jsonError(422, 'login and password are required');
         }
 
@@ -34,38 +41,60 @@ class AuthApiController extends ApiController
         $tokenValue = $user->auth($login, $password);
 
         if ($tokenValue === false) {
-            $log->warn('API login: invalid credentials', ['login' => $login, 'ip' => $ip]);
+            RateLimit::hit('site_login');
+            $log->warn('Site login: invalid credentials', ['login' => $login, 'ip' => $ip]);
             $this->jsonError(401, 'Invalid credentials');
         }
 
+        RateLimit::clear('site_login');
+        $this->startSession($res, $tokenValue);
         Event::emit('user.login', ['user' => $user]);
-        $log->info('API login: success', ['login' => $login, 'ip' => $ip]);
+        $log->info('Site login: success', ['login' => $login, 'ip' => $ip]);
         http_response_code(200);
-        return json_encode(['token' => $tokenValue, 'user' => $user->toPublic()]);
+        return json_encode(['user' => $user->toPublic()]);
     }
 
     public function logout($req, $res, $params)
     {
-        $ip    = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-        $log   = Logger::channel('auth');
-        $token = $this->bearerToken();
+        $token = $this->sessionToken();
         if ($token) {
             $t = new Token();
             $t->setToken($token);
             if ($t->id) {
-                $log->info('API logout', ['userId' => $t->userId, 'ip' => $ip]);
+                Logger::channel('auth')->info('Site logout', ['userId' => $t->userId, 'ip' => RateLimit::clientIp()]);
                 $t->auth = 0;
                 $t->save($t->id);
             }
         }
+        $res->removeCookie('token');
         return json_encode(['message' => 'Logged out']);
     }
 
     public function me($req, $res, $params)
     {
-        $user = $this->requireAuthToken();
-        Logger::channel('auth')->debug('API me', ['userId' => $user->id]);
-        return json_encode($user->toPublic());
+        $token = $this->sessionToken();
+        if (!$token) $this->jsonError(401, 'Unauthorized');
+        $t = new Token();
+        $t->setToken($token);
+        if (!$t->id || !$t->auth) $this->jsonError(401, 'Invalid or expired session');
+        $user = new User();
+        $user->getOne($t->userId);
+        if (!$user->id || !$user->isActive) $this->jsonError(403, 'Forbidden');
+        return json_encode(['user' => $user->toPublic()]);
+    }
+
+    /** Cookie session first (site), Bearer as a fallback for old clients. */
+    private function sessionToken(): ?string
+    {
+        $c = (string)($_COOKIE['token'] ?? '');
+        if ($c !== '' && preg_match('/^[A-Za-z0-9]+$/', $c)) return $c;
+        return $this->bearerToken();
+    }
+
+    private function startSession($res, string $tokenValue): void
+    {
+        if (class_exists('Session')) Session::regenerate();
+        $res->createCookie('token', $tokenValue);
     }
 
     public function register($req, $res, $params)
@@ -98,10 +127,11 @@ class AuthApiController extends ApiController
         }
 
         $tokenValue = $user->auth($body['email'], $body['password']);
+        if ($tokenValue) $this->startSession($res, $tokenValue);
         Event::emit('user.registered', ['userId' => $id]);
         $log->info('API register: success', ['id' => $id, 'email' => $body['email'], 'ip' => $ip]);
         http_response_code(201);
-        return json_encode(['token' => $tokenValue ?: null, 'user' => $user->toPublic()]);
+        return json_encode(['user' => $user->toPublic()]);
     }
 
     public function forgot($req, $res, $params)

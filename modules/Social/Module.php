@@ -19,6 +19,7 @@ class SocialModule implements ModuleInterface
             'admin.social.delete' => ['controller' => 'social', 'action' => 'delete', 'prefix' => 'admin'],
             // API
             'api.social.links'  => ['controller' => 'social', 'action' => 'links',  'prefix' => 'api'],
+            'api.v1.social.links' => ['controller' => 'social', 'action' => 'links', 'prefix' => 'api/v1', 'path' => 'api/v1/social/links', 'method' => 'GET'],
             'api.social.store'  => ['controller' => 'social', 'action' => 'store',  'prefix' => 'api'],
             'api.social.update' => ['controller' => 'social', 'action' => 'update', 'prefix' => 'api'],
             'api.social.delete' => ['controller' => 'social', 'action' => 'delete', 'prefix' => 'api'],

@@ -80,8 +80,7 @@ async function submit() {
   loading.value = true
   error.value   = ''
   try {
-    const data = await api.auth.login(form.value)
-    document.cookie = `token=${data.token}; path=/; SameSite=Strict`
+    const data = await api.auth.login(form.value) // server sets the httpOnly session cookie
     window.location.href = data.user?.role === 'admin' ? `/${lang}/admin` : `/${lang}/`
   } catch (e) {
     error.value = e.message || t('validation.wrongPass', 'Login failed')

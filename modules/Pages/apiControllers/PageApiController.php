@@ -46,9 +46,7 @@ class PageApiController extends ApiController
         $rows  = DB::getAll('SELECT * FROM page ORDER BY created_at DESC');
         $pages = [];
         foreach ($rows as $row) {
-            $p = new Page();
-            $p->setModel($row);
-            $pages[] = $this->toArray($p);
+            $pages[] = $this->toArray(new Page($row));
         }
         Logger::channel('app')->debug('API pages list', ['count' => count($pages), 'adminId' => $admin->id]);
         return json_encode($pages);

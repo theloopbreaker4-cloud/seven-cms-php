@@ -28,6 +28,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
   the catalog, `createdAt` empty, …). Both spellings are matched now.
 - **Content entry update inserted a copy** instead of updating.
 
+### Security — 2026-11-20 — Site login
+
+- The site login returned the session token in JSON and the Vue site wrote it to a
+  script-readable cookie — any XSS could take over an admin session. The server now
+  sets an `httpOnly` cookie and never returns the token.
+- Site login (`/api/auth/login`) had no brute-force limit; it now shares the
+  5-per-15-minutes limiter.
+
+### Changed — 2026-11-20
+
+- The Vue site talks only to `/api/v1` (`/session`, `/account/*`, `/posts`, `/pages`,
+  `/posts/{id}/comments`, `/social/links`). Old `/api/*` URLs still answer.
+- Legacy content endpoints (`/api/post|page|user/*`) accept the v1 JWT; the list
+  endpoints were always `500` (protected `setModel()` called from outside).
+
 ### Added — 2026-11-20
 
 - Admin UI in Azerbaijani and Armenian (all 9 languages complete).

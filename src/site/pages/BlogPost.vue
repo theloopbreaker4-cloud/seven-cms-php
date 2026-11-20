@@ -56,7 +56,7 @@ const content = computed(() => localise(post.value?.content))
 async function load(slug) {
   loading.value = true
   try {
-    post.value = await apiFetch(`/post/slug/${encodeURIComponent(slug)}?lang=${lang}`).catch(e => (e.status === 404 ? null : Promise.reject(e)))
+    post.value = await apiFetch(`/posts/${encodeURIComponent(slug)}?lang=${lang}`).catch(e => (e.status === 404 ? null : Promise.reject(e)))
   } catch (e) {
     console.error('Failed to load post', e)
   } finally {

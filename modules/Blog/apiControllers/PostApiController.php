@@ -63,9 +63,7 @@ class PostApiController extends ApiController
         );
         $posts = [];
         foreach ($rows as $row) {
-            $p = new Post();
-            $p->setModel($row);
-            $posts[] = $this->toArray($p);
+            $posts[] = $this->toArray(new Post($row));
         }
         Logger::channel('app')->debug('API posts list', ['count' => count($posts), 'adminId' => $admin->id]);
         return json_encode($posts);

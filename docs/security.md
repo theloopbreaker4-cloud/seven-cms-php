@@ -56,6 +56,7 @@ RateLimit::clear('api_login');         // wipe on success (e.g. after login)
 
 Currently wired into:
 - `AuthAdminController::login`
+- `AuthApiController::login` (site session, `POST /api/v1/session`)
 - `AuthV1ApiController::login`, `::refresh`
 - `AuthApiController::register`, `::forgot`, `::reset`
 
@@ -118,8 +119,10 @@ text field is tag-stripped. Comments are plain text.
 
 ## Authentication
 
-- Sessions for the admin UI (PHP `Session` wrapper, `httponly`, `secure`,
-  `samesite=Strict`)
+- Sessions for the admin UI and the site (`token` cookie, `httponly`, `secure`,
+  `samesite=Strict`). The site logs in through `POST /api/v1/session`, which sets
+  the cookie server-side — the token is never returned to JavaScript (before
+  2026-11-20 it was, and the site stored it in a script-readable cookie).
 - JWT HS256 + rotating refresh tokens for `/api/v1/*`. Access TTL 15 min,
   refresh TTL 30 days. Refresh hashes stored in `api_refresh_tokens`.
 - TOTP 2FA (RFC 6238). Recovery codes are bcrypt-hashed in
