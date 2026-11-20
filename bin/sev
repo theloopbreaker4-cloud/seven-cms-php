@@ -435,6 +435,12 @@ function clearUploads(): void
 function cmdDemoInit(): void
 {
     if (!Demo::enabled()) fail('Set DEMO_MODE=true in .env first.');
+    ok('Demo admin ready: ' . ensureDemoUser());
+}
+
+/** Create or repair the shared demo login; returns its email. Idempotent. */
+function ensureDemoUser(): string
+{
     $email = strtolower(Demo::login());
     $hash  = password_hash(Demo::password(), PASSWORD_BCRYPT, ['cost' => 10]);
     $row   = DB::findOne('user', ' email = :e ', [':e' => $email]);
@@ -447,7 +453,7 @@ function cmdDemoInit(): void
             [':e' => $email, ':p' => $hash]
         );
     }
-    ok("Demo admin ready: {$email}");
+    return $email;
 }
 
 function cmdDemoSnapshot(): void
@@ -476,6 +482,7 @@ function cmdDemoReset(): void
 
     runMysqlTool('mysql', [], $seed);
     Migrator::migrate(); // a baseline taken before a deploy must not roll the schema back
+    ensureDemoUser();    // a baseline taken without the demo login must not lock visitors out
     clearUploads();
     copyTree(demoDir() . '/uploads', ROOT_DIR . '/public/uploads');
     emptyDir(ROOT_DIR . '/storage/private');
