@@ -114,7 +114,9 @@ class Migrator
         foreach (preg_split('/;\s*\n/', $sql) ?: [] as $statement) {
             $statement = trim($statement, " \t\n\r\0\x0B;");
             if ($statement === '') continue;
-            DB::execute($statement);
+            // Straight to the adapter: the facade (fluid mode) would swallow "unknown
+            // column" errors and the migration would be recorded as applied anyway.
+            DB::getDatabaseAdapter()->exec($statement);
         }
     }
 

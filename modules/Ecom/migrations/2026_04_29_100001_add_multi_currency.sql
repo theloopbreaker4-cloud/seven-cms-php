@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS ecom_fx_rates (
 
 -- Customer preferred currency. Falls back to ecom.currency setting.
 ALTER TABLE ecom_customers
-    ADD COLUMN preferred_currency CHAR(3) NULL AFTER country;
+    ADD COLUMN preferred_currency CHAR(3) NULL;
 
 -- Seed common currencies. Base = USD.
 INSERT IGNORE INTO ecom_currencies (code, is_enabled, is_base, label, created_at) VALUES
