@@ -58,6 +58,7 @@ class General
                 . ';dbname=' . $this->dbConfig['dbname'] . ';charset=utf8mb4';
         Db::setup($constr, $this->dbConfig['user'], $this->dbConfig['password']);
         Db::syncTimezone();
+        Db::applyFreeze();
 
         // Router
         $this->router = new Router($config, $this->getURI());

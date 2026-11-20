@@ -53,6 +53,19 @@ class Db extends \RedBeanPHP\Facade
         }
     }
 
+    /**
+     * Freeze the schema (no automatic CREATE/ALTER by RedBean) unless DB_FREEZE=false.
+     * Default: frozen in prod, fluid in dev. Every table now comes from a migration;
+     * fluid mode only stays useful while developing a new model.
+     */
+    public static function applyFreeze(): void
+    {
+        $env    = defined('ENVIRONMENT') ? ENVIRONMENT : 'prod';
+        $raw    = class_exists('Env') ? Env::get('DB_FREEZE', null) : null;
+        $freeze = $raw === null || $raw === '' ? $env !== 'dev' : filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+        parent::freeze($freeze);
+    }
+
     /** PDO-style alias used across the codebase; RedBean calls it getInsertID(). */
     public static function lastInsertId(): int
     {

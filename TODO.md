@@ -15,12 +15,13 @@ Current backlog. Items are not committed deadlines, just an honest list of what'
 ### Architecture debt
 - [ ] Remove the deprecated `/api/*` URL aliases in 1.0 (the Vue site no longer uses them).
 - [ ] Run PHPStan once Composer is available. A token-based bean-vs-array scan (bean passed to array functions / array-typed params, returned from `array` functions, `!R::load()`) is clean; PHPStan would also cover views and generic type errors.
-- [ ] RedBean runs in fluid mode everywhere (core tables like `post`, `page`, `user` are only created that way). Write migrations for them, then freeze the schema in prod.
+- [ ] Replace RedBean with a thin PDO layer behind `Db` (same method names, `findOne` returning arrays), model by model. The schema no longer depends on it; this removes the bean-vs-array class of bugs and a 600 KB dependency.
 
 
 ## Done (recent)
 
 - ✅ Shop + headless content actually work end-to-end: cart (was 500), add-to-cart (REST path swallowed), checkout (orders saved to a fluid look-alike table), content type create + entry update; route `path`/`method`; models match snake_case columns; `db:orphans`
+- ✅ Every table created by a migration; schema frozen in prod (`DB_FREEZE`); fluid-guessed types repaired (VARCHAR(191) content, TINYINT view_count); MySQL-portable migration idioms; fresh-install test
 - ✅ Admin UI in az and hy — all 9 languages complete
 - ✅ Vue site on `/api/v1`; site session is an httpOnly cookie set by the server (token used to be readable by JS); site login rate-limited; legacy content API accepts JWT
 

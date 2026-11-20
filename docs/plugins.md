@@ -112,6 +112,16 @@ class Review extends Model
 Tables with underscores are saved with plain SQL (RedBean can't dispense such
 bean types); only properties that have a matching snake_case column are written.
 
+**Every table needs a migration.** In production the schema is frozen
+(`DB_FREEZE`, default on outside dev): RedBean won't create tables or columns, and
+saving a property without a column fails loudly. In dev it stays fluid so you can
+prototype — then write the `CREATE TABLE IF NOT EXISTS` before shipping. Give text
+that holds JSON for several languages `TEXT`/`MEDIUMTEXT`, counters `INT`.
+
+Migrations may use `ADD COLUMN IF NOT EXISTS`, `MODIFY COLUMN IF EXISTS` and
+`CREATE INDEX IF NOT EXISTS` (one action per statement); the migrator makes them
+work on MySQL 8 as well as MariaDB.
+
 Drop your migrations into `modules/Reviews/migrations/*.sql` and install:
 
 ```bash

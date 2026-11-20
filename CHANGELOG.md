@@ -28,6 +28,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
   the catalog, `createdAt` empty, …). Both spellings are matched now.
 - **Content entry update inserted a copy** instead of updating.
 
+### Changed — 2026-11-20 — Schema owned by migrations, frozen in production
+
+- Migrations now create every table (`token`, `slug`, `language`, `adminlang`,
+  `post`, `category`, `tag`, `posttag`, `page`, `menu`, `menuitem`, `sociallink`,
+  `user`) and repair the column types fluid mode had guessed: post/page title and
+  content were `VARCHAR(191)` for multilingual JSON, `post.view_count` was
+  `TINYINT` (the `+1` broke after 255 views), `sort_order` columns `TINYINT`.
+- The RedBean schema is frozen unless `DB_FREEZE=false` (default: frozen outside dev).
+- Migrations: `ADD COLUMN IF NOT EXISTS` / `MODIFY COLUMN IF EXISTS` /
+  `CREATE INDEX IF NOT EXISTS` work on MySQL 8 too (were MariaDB-only, so a MySQL
+  install failed in `create_sites`).
+
 ### Fixed — 2026-11-20 — Silent SQL failures
 
 - RedBean's fluid mode answered any raw query naming a missing column with an empty

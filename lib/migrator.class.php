@@ -114,6 +114,8 @@ class Migrator
         foreach (preg_split('/;\s*\n/', $sql) ?: [] as $statement) {
             $statement = trim($statement, " \t\n\r\0\x0B;");
             if ($statement === '') continue;
+            $statement = self::portable($statement);
+            if ($statement === null) continue; // condition already satisfied
             // Straight to the adapter: the facade (fluid mode) would swallow "unknown
             // column" errors and the migration would be recorded as applied anyway.
             try {
@@ -128,6 +130,37 @@ class Migrator
                 ]);
             }
         }
+    }
+
+    /**
+     * MariaDB-only idioms, made to work on MySQL 8 too. One action per statement:
+     *   ALTER TABLE t ADD COLUMN IF NOT EXISTS c …   → run without IF only when c is missing
+     *   ALTER TABLE t MODIFY COLUMN IF EXISTS c …    → run without IF only when c exists
+     *   CREATE INDEX IF NOT EXISTS i ON t (…)        → run without IF only when i is missing
+     * Statements on a table that doesn't exist yet are skipped. Returns null to skip.
+     */
+    private static function portable(string $sql): ?string
+    {
+        $col = fn(string $t, string $c) => (int)DB::getDatabaseAdapter()->getCell(
+            'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?', [$t, $c]);
+        $tbl = fn(string $t) => (int)DB::getDatabaseAdapter()->getCell(
+            'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?', [$t]);
+
+        if (preg_match('/^ALTER\s+TABLE\s+`?(\w+)`?\s+ADD\s+(?:COLUMN\s+)?IF\s+NOT\s+EXISTS\s+`?(\w+)`?/i', $sql, $m)) {
+            if (!$tbl($m[1]) || $col($m[1], $m[2])) return null;
+            return preg_replace('/\s+IF\s+NOT\s+EXISTS/i', '', $sql, 1);
+        }
+        if (preg_match('/^ALTER\s+TABLE\s+`?(\w+)`?\s+MODIFY\s+(?:COLUMN\s+)?IF\s+EXISTS\s+`?(\w+)`?/i', $sql, $m)) {
+            if (!$tbl($m[1]) || !$col($m[1], $m[2])) return null;
+            return preg_replace('/\s+IF\s+EXISTS/i', '', $sql, 1);
+        }
+        if (preg_match('/^CREATE\s+INDEX\s+IF\s+NOT\s+EXISTS\s+`?(\w+)`?\s+ON\s+`?(\w+)`?/i', $sql, $m)) {
+            if (!$tbl($m[2])) return null;
+            $has = (int)DB::getDatabaseAdapter()->getCell(
+                'SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?', [$m[2], $m[1]]);
+            return $has ? null : preg_replace('/\s+IF\s+NOT\s+EXISTS/i', '', $sql, 1);
+        }
+        return $sql;
     }
 
     /**

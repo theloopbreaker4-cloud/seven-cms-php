@@ -70,6 +70,7 @@ Db::setup(
     $dbConfig['password']
 );
 Db::syncTimezone();
+Db::applyFreeze();
 
 // ─── Dispatch ──────────────────────────────────────────────────────────────
 $cmd  = (string)($argv[1] ?? '');
@@ -135,7 +136,7 @@ try {
 function cmdDbOrphans(array $args): void
 {
     $stray = ['order', 'ecomcustomer', 'subscription', 'discount', 'product', 'productvariant',
-              'contenttype', 'contentfield', 'contententry', 'mediafolder'];
+              'contenttype', 'contentfield', 'contententry', 'mediafolder', 'users'];
     $drop  = in_array('--drop-empty', $args, true);
     $found = 0;
     foreach ($stray as $t) {
