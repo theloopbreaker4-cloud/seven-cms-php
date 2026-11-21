@@ -1,6 +1,18 @@
 <?php
 return [
     'nav' => [
+        'content_types' => 'კონტენტის ტიპები',
+        'shop' => 'მაღაზია',
+        'shop_dashboard' => 'მიმოხილვა',
+        'products' => 'პროდუქტები',
+        'orders' => 'შეკვეთები',
+        'customers' => 'მყიდველები',
+        'subscriptions' => 'გამოწერები',
+        'discounts' => 'ფასდაკლებები',
+        'currencies' => 'ვალუტები',
+        'shop_settings' => 'მაღაზიის პარამეტრები',
+        'roles' => 'როლები და უფლებები',
+        'sites' => 'საიტები',
         'dashboard'  => 'მთავარი პანელი',
         'blog'       => 'ბლოგი',
         'pages'      => 'გვერდები',

@@ -1,6 +1,18 @@
 <?php
 return [
     'nav' => [
+        'content_types' => 'Типы контента',
+        'shop' => 'Магазин',
+        'shop_dashboard' => 'Обзор',
+        'products' => 'Товары',
+        'orders' => 'Заказы',
+        'customers' => 'Покупатели',
+        'subscriptions' => 'Подписки',
+        'discounts' => 'Скидки',
+        'currencies' => 'Валюты',
+        'shop_settings' => 'Настройки магазина',
+        'roles' => 'Роли и права',
+        'sites' => 'Сайты',
         'dashboard'  => 'Панель',
         'blog'       => 'Блог',
         'pages'      => 'Страницы',

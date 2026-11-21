@@ -1,6 +1,18 @@
 <?php
 return [
     'nav' => [
+        'content_types' => 'Типи контенту',
+        'shop' => 'Магазин',
+        'shop_dashboard' => 'Огляд',
+        'products' => 'Товари',
+        'orders' => 'Замовлення',
+        'customers' => 'Покупці',
+        'subscriptions' => 'Підписки',
+        'discounts' => 'Знижки',
+        'currencies' => 'Валюти',
+        'shop_settings' => 'Налаштування магазину',
+        'roles' => 'Ролі та права',
+        'sites' => 'Сайти',
         'dashboard'  => 'Панель',
         'blog'       => 'Блог',
         'pages'      => 'Сторінки',

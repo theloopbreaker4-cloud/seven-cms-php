@@ -96,7 +96,7 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
       <div class="nav-divider"></div>
 
       <!-- ── CONTENT ─────────────────────────────── -->
-      <?php $contentOpen = $is(['blog','page','media','slider']) ?>
+      <?php $contentOpen = $is(['blog','page','media','slider','content']) ?>
       <button class="nav-group-btn <?= $contentOpen ? 'open' : '' ?>" data-group="content">
         <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10" stroke-linecap="round"/></svg>
         <?= AdminLang::t('content', 'nav') ?>
@@ -119,7 +119,57 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
           <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="14" height="8" rx="1"/><path d="M1 8h14M4 4V2M12 4V2M4 12v2M12 12v2" stroke-linecap="round"/></svg>
           <?= AdminLang::t('slider', 'nav') ?>
         </a>
+<?php if (Module::has('Content')): ?>
+        <a href="/<?= $lang ?>/admin/content/typesindex" class="nav-link <?= $ctrl === 'content' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><path d="M12 9.5v5M9.5 12h5" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('content_types', 'nav', 'Content types') ?>
+        </a>
+<?php endif ?>
       </div>
+
+<?php if (Module::has('Ecom')): ?>
+      <!-- ── SHOP ───────────────────────────────── -->
+      <?php $shopOpen = $is(['ecomdashboard','ecomproducts','ecomorders','ecomcustomers','ecomsubscriptions','ecomdiscounts','ecomcurrency','ecomsettings']) ?>
+      <button class="nav-group-btn <?= $shopOpen ? 'open' : '' ?>" data-group="shop">
+        <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M1.5 2h2l1.5 8h8l1.5-5.5H4.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="13" r="1"/><circle cx="12" cy="13" r="1"/></svg>
+        <?= AdminLang::t('shop', 'nav', 'Shop') ?>
+        <svg class="chevron" fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 3l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="nav-sub <?= $shopOpen ? 'open' : '' ?>" id="nav-shop">
+        <a href="/<?= $lang ?>/admin/ecomdashboard" class="nav-link <?= $ctrl === 'ecomdashboard' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 14V8M6 14V4M10 14V7M14 14V2" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('shop_dashboard', 'nav', 'Overview') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/ecomproducts" class="nav-link <?= $ctrl === 'ecomproducts' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 5l6-3 6 3v6l-6 3-6-3V5z"/><path d="M2 5l6 3 6-3M8 8v6"/></svg>
+          <?= AdminLang::t('products', 'nav', 'Products') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/ecomorders" class="nav-link <?= $ctrl === 'ecomorders' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><rect x="3" y="1.5" width="10" height="13" rx="1"/><path d="M5.5 5h5M5.5 8h5M5.5 11h3" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('orders', 'nav', 'Orders') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/ecomcustomers" class="nav-link <?= $ctrl === 'ecomcustomers' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1.5 14a4.5 4.5 0 019 0"/><path d="M11 3.5a2.5 2.5 0 010 5M12.5 14a4.5 4.5 0 00-1.5-3.4" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('customers', 'nav', 'Customers') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/ecomsubscriptions" class="nav-link <?= $ctrl === 'ecomsubscriptions' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M13.5 6A5.5 5.5 0 003 5M2.5 10A5.5 5.5 0 0013 11" stroke-linecap="round"/><path d="M13.5 2v4h-4M2.5 14v-4h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <?= AdminLang::t('subscriptions', 'nav', 'Subscriptions') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/ecomdiscounts" class="nav-link <?= $ctrl === 'ecomdiscounts' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8.5V2.5a1 1 0 011-1h6l6 6-7 7-6-6z"/><circle cx="5" cy="5" r="1"/></svg>
+          <?= AdminLang::t('discounts', 'nav', 'Discounts') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/ecomcurrency" class="nav-link <?= $ctrl === 'ecomcurrency' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M10 5.5H7a1.5 1.5 0 000 3h2a1.5 1.5 0 010 3H6M8 4v1.5M8 11.5V13" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('currencies', 'nav', 'Currencies') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/ecomsettings" class="nav-link <?= $ctrl === 'ecomsettings' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5L13 13M3 13l1.5-1.5M11.5 4.5L13 3" stroke-linecap="round"/></svg>
+          <?= AdminLang::t('shop_settings', 'nav', 'Shop settings') ?>
+        </a>
+      </div>
+<?php endif ?>
 
       <!-- ── BLOG TAXONOMY ──────────────────────── -->
       <?php $taxOpen = $is(['category','tag','comment']) ?>
@@ -206,7 +256,7 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
       <div class="nav-divider"></div>
 
       <!-- ── SYSTEM ──────────────────────────────── -->
-      <?php $sysOpen = $is(['setting','theme','plugin','cache','language']) ?>
+      <?php $sysOpen = $is(['setting','theme','plugin','cache','language','role','site']) ?>
       <button class="nav-group-btn <?= $sysOpen ? 'open' : '' ?>" data-group="system">
         <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
         <?= AdminLang::t('system', 'nav') ?>
@@ -216,6 +266,18 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
         <a href="/<?= $lang ?>/admin/setting"  class="nav-link <?= $ctrl === 'setting'  ? 'active' : '' ?>">
           <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M7 2h2l.5 2a5 5 0 011.2.7l1.9-.8 1.4 1.4-.8 1.9a5 5 0 01.7 1.2L16 9v2l-2 .5a5 5 0 01-.7 1.2l.8 1.9-1.4 1.4-1.9-.8A5 5 0 019 16l-.5 2H7l-.5-2a5 5 0 01-1.2-.7l-1.9.8L2 14.6l.8-1.9A5 5 0 012 11.5L0 11V9l2-.5A5 5 0 012.8 7.3L2 5.4 3.4 4l1.9.8A5 5 0 016.5 4L7 2z"/><circle cx="8" cy="8" r="2"/></svg>
           <?= AdminLang::t('settings', 'nav') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/role" class="nav-link <?= $ctrl === 'role' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l5.5 2v4c0 3.3-2.3 5.9-5.5 7-3.2-1.1-5.5-3.7-5.5-7v-4L8 1.5z"/><path d="M5.5 8l2 2 3-3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <?= AdminLang::t('roles', 'nav', 'Roles & permissions') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/site" class="nav-link <?= $ctrl === 'site' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c2 2 2.8 4.2 2.8 6.5S10 12.5 8 14.5C6 12.5 5.2 10.3 5.2 8S6 3.5 8 1.5z"/></svg>
+          <?= AdminLang::t('sites', 'nav', 'Sites') ?>
+        </a>
+        <a href="/<?= $lang ?>/admin/language" class="nav-link <?= $ctrl === 'language' ? 'active' : '' ?>">
+          <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5h7M5.5 2v1.5M3.5 3.5c.5 2.5 2.3 4.5 4.5 5.5M7.5 3.5c-.5 2.5-2.3 4.5-4.5 5.5" stroke-linecap="round"/><path d="M8.5 14l3-7 3 7M9.5 11.8h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <?= AdminLang::t('languages', 'nav', 'Languages') ?>
         </a>
         <a href="/<?= $lang ?>/admin/theme"    class="nav-link <?= $ctrl === 'theme'    ? 'active' : '' ?>">
           <svg class="nav-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 010 12" fill="currentColor" stroke="none" opacity=".2"/><circle cx="5" cy="6" r="1" fill="currentColor"/><circle cx="8" cy="4.5" r="1" fill="currentColor"/><circle cx="11" cy="6" r="1" fill="currentColor"/></svg>

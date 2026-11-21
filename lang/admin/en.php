@@ -1,6 +1,18 @@
 <?php
 return [
     'nav' => [
+        'content_types' => 'Content types',
+        'shop' => 'Shop',
+        'shop_dashboard' => 'Overview',
+        'products' => 'Products',
+        'orders' => 'Orders',
+        'customers' => 'Customers',
+        'subscriptions' => 'Subscriptions',
+        'discounts' => 'Discounts',
+        'currencies' => 'Currencies',
+        'shop_settings' => 'Shop settings',
+        'roles' => 'Roles & permissions',
+        'sites' => 'Sites',
         'dashboard'  => 'Dashboard',
         'blog'       => 'Blog',
         'pages'      => 'Pages',

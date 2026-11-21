@@ -8,6 +8,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ## [Unreleased]
 
+### Fixed
+
+- The admin menu had no links to Content types, the Shop (products, orders, customers,
+  subscriptions, discounts, currencies, settings), Roles, Sites or Languages — the pages
+  worked but could only be reached by typing the URL. Plugin sections show up when the
+  plugin is enabled.
+
 ---
 
 ## [2.1.0] — 2026-11-22
