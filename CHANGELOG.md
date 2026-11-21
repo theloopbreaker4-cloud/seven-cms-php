@@ -8,6 +8,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ## [Unreleased]
 
+---
+
+## [2.1.0] — 2026-11-22
+
 ### Added
 
 - `demo:seed` also creates shop categories and products (physical, digital, monthly
@@ -217,6 +221,7 @@ the Vue site uses `/api/v1` with an httpOnly session cookie, and PHP 8.1 is the 
 - OAuth fields on User model (not yet implemented)
 - REST API skeleton (2 endpoints)
 
-[Unreleased]: https://github.com/theloopbreaker4-cloud/seven-cms-php/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/theloopbreaker4-cloud/seven-cms-php/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/theloopbreaker4-cloud/seven-cms-php/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/theloopbreaker4-cloud/seven-cms-php/releases/tag/v2.0.0
 [1.0.0]: https://github.com/theloopbreaker4-cloud/seven-cms-php/commits/master

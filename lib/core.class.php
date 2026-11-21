@@ -7,7 +7,7 @@ require_once(dirname(__FILE__) . DS . 'general.class.php');
 
 class Core
 {
-    public const VERSION = '2.0.0';
+    public const VERSION = '2.1.0';
 
     public static ?object $app      = null;
     public static mixed   $reqFiles = null;

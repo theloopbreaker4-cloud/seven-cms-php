@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/Tailwind-3-38BDF8?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind 3" />
   <img src="https://img.shields.io/badge/license-ISC-success?style=flat-square" alt="ISC License" />
   <img src="https://img.shields.io/badge/status-active-brightgreen?style=flat-square" alt="Active development" />
-  <a href="https://github.com/theloopbreaker4-cloud/seven-cms-php/releases"><img src="https://img.shields.io/badge/version-2.0.0-6366f1?style=flat-square" alt="Version 2.0.0" /></a>
+  <a href="https://github.com/theloopbreaker4-cloud/seven-cms-php/releases"><img src="https://img.shields.io/badge/version-2.1.0-6366f1?style=flat-square" alt="Version 2.1.0" /></a>
   <a href="https://seven.toolpix.dev/cms/"><img src="https://img.shields.io/badge/demo-live-f59e0b?style=flat-square" alt="Live demo" /></a>
 </p>
 
@@ -70,7 +70,7 @@ Edit anything; the demo resets every hour (users, roles, settings, mail and plug
 ### From a release (no Node.js needed — shared hosting friendly)
 
 1. Download the latest release, [`seven-cms-latest.zip`](https://seven.toolpix.dev/downloads/seven-cms-latest.zip)
-   (versioned files and `.sha256` checksums sit next to it, e.g. `seven-cms-2.0.0.zip`) — it
+   (versioned files and `.sha256` checksums sit next to it, e.g. `seven-cms-2.1.0.zip`) — it
    already contains the built admin and site assets.
 2. Upload it, point the web server's document root at `public/` (see `nginx.conf.example`;
    Apache uses `public/.htaccess`).
