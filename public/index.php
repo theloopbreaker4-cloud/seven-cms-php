@@ -49,7 +49,7 @@ header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
 // (Vite injects unsigned inline shims).
 $_viteSrc = ENVIRONMENT === 'dev' ? ' http://localhost:5173 ws://localhost:5173' : '';
 $_devInline = ENVIRONMENT === 'dev' ? " 'unsafe-inline'" : '';
-header("Content-Security-Policy: default-src 'self'{$_viteSrc}; script-src 'self' 'nonce-{$_nonce}'{$_devInline}{$_viteSrc}; style-src 'self' 'nonce-{$_nonce}'{$_devInline}{$_viteSrc}; img-src 'self' data: https://flagcdn.com; font-src 'self'{$_viteSrc}; connect-src 'self'{$_viteSrc}; frame-ancestors 'none';");
+header("Content-Security-Policy: default-src 'self'{$_viteSrc}; script-src 'self' 'nonce-{$_nonce}'{$_devInline}{$_viteSrc}; style-src 'self' 'nonce-{$_nonce}'{$_devInline}{$_viteSrc}; style-src-attr 'unsafe-inline'; img-src 'self' data: https://flagcdn.com; font-src 'self'{$_viteSrc}; connect-src 'self'{$_viteSrc}; frame-ancestors 'none';");
 if (PROTOCOL === 'https://') {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 }
