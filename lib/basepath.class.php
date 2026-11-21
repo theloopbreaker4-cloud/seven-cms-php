@@ -77,6 +77,7 @@ final class BasePath
         return '<meta name="seven-base" content="' . $p . '">' . "\n"
             . '<script' . $n . '>(function(b){'
             . 'function f(u){return typeof u==="string"&&u.charAt(0)==="/"&&u.charAt(1)!=="/"'
+            . '&&u.indexOf("/cdn-cgi/")!==0' // the CDN's own endpoints belong to the domain
             . '&&u!==b&&u.indexOf(b+"/")!==0&&u.indexOf(b+"?")!==0?b+u:u}'
             . 'var nf=window.fetch;if(nf){window.fetch=function(i,o){return nf.call(this,f(i),o)}}'
             . 'var xo=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u){'
