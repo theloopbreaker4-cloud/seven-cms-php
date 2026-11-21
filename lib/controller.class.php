@@ -31,9 +31,11 @@ class Controller
     protected function requireLogin(mixed $res): void
     {
         if (!Auth::isLogin()) {
-            $lang = Seven::app()->router->getLanguage();
-            $base = Seven::app()->config['baseUrl'];
-            header('Location: ' . $base . '/' . $lang . '/auth');
+            $lang   = Seven::app()->router->getLanguage();
+            $base   = Seven::app()->config['baseUrl'];
+            // Admin pages send guests to the admin sign-in, site pages to the site one.
+            $prefix = (string)Seven::app()->router->getMethodPrefix();
+            header('Location: ' . $base . '/' . $lang . ($prefix !== '' ? '/' . $prefix : '') . '/auth');
             exit;
         }
     }
