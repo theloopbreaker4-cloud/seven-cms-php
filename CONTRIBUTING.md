@@ -9,8 +9,8 @@ Thank you for your interest in contributing.
 1. Fork the repository
 2. Clone your fork:
    ```bash
-   git clone https://github.com/theloopbreaker4-cloud/seven-php.git
-   cd seven-php
+   git clone https://github.com/theloopbreaker4-cloud/seven-cms-php.git
+   cd seven-cms-php
    ```
 3. Copy `.env.example` to `.env` and fill in your local credentials
 4. Install frontend dependencies:
@@ -78,7 +78,7 @@ docs: update README installation steps
 
 ## Reporting Bugs
 
-Open an issue at [github.com/theloopbreaker4-cloud/seven-php/issues](https://github.com/theloopbreaker4-cloud/seven-php/issues) with:
+Open an issue at [github.com/theloopbreaker4-cloud/seven-cms-php/issues](https://github.com/theloopbreaker4-cloud/seven-cms-php/issues) with:
 
 - PHP version
 - Steps to reproduce

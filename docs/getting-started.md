@@ -6,7 +6,7 @@
 
 ### Requirements
 
-- PHP **8.1+** with extensions: `pdo`, `pdo_mysql`, `mbstring`, `json`, `fileinfo`
+- PHP **8.1+** (tested on 8.4 and 8.5) with extensions: `pdo`, `pdo_mysql`, `mbstring`, `json`, `fileinfo`
 - MySQL **8.0+** or MariaDB **10.5+**
 - (Optional) Composer 2.x — see [Composer guide](composer.md)
 - (Optional) Redis 6+ — for cache and session driver
@@ -15,9 +15,10 @@
 ### Step by step
 
 ```bash
-git clone https://github.com/your-org/sevencms.git
-cd sevencms
+git clone https://github.com/theloopbreaker4-cloud/seven-cms-php.git
+cd seven-cms-php
 cp .env.example .env
+npm ci && npm run build    # admin + site assets; release zips already contain them
 ```
 
 Edit `.env`:
@@ -28,17 +29,17 @@ BASE_URL=http://localhost:8085
 DB_HOST=127.0.0.1
 DB_NAME=sevencms
 DB_USER=root
-DB_PASS=secret
-JWT_SECRET=$(openssl rand -hex 32)
-APP_KEY=$(openssl rand -hex 32)
+DB_PASSWORD=secret
+JWT_SECRET=          # php bin/sev key:generate
 ```
 
-Create the database, run migrations:
+Create an empty database — the setup wizard (first visit) creates every table and the admin:
 
 ```bash
 mysql -u root -p -e "CREATE DATABASE sevencms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-php bin/sev migrate
 ```
+
+After upgrades, apply new migrations with `php bin/sev migrate`.
 
 (Optional) install Composer packages for production:
 
@@ -61,9 +62,9 @@ DB credentials) **must** live there in production — never commit them.
 |----------------------|----------------------------------------------------------|
 | `SEVEN_ENV`          | `dev` / `test` / `prod`                                  |
 | `BASE_URL`           | Public URL of the site                                   |
+| `BASE_PATH`          | Sub-path install, e.g. `/cms` ([guide](subpath.md))      |
 | `DB_*`               | Database connection                                      |
 | `JWT_SECRET`         | HMAC key for API access tokens                           |
-| `APP_KEY`            | Fallback secret for HMAC operations                      |
 | `MAIL_FROM`          | Default sender for transactional emails                  |
 | `STRIPE_SECRET_KEY`  | (optional) overrides DB setting                          |
 | `STRIPE_WEBHOOK_SECRET` | (optional) overrides DB setting                       |

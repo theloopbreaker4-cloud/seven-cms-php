@@ -1,6 +1,6 @@
 <?php
-if (version_compare(PHP_VERSION, '7.4.0', '<')) {
-    exit("Seven CMS PHP requires PHP version 7.4 or greater (running " . PHP_VERSION . ")\n");
+if (version_compare(PHP_VERSION, '8.1.0', '<')) {
+    exit("Seven CMS requires PHP 8.1 or newer (running " . PHP_VERSION . ")\n");
 }
 
 define('_SEVEN', TRUE);

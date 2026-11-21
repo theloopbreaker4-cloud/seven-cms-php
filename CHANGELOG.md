@@ -8,6 +8,37 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ## [Unreleased]
 
+---
+
+## [2.0.0] — 2026-11-22
+
+Everything since 1.0.0: plugins, content types, page builder, e-commerce, multi-site, REST +
+GraphQL, RBAC with 2FA, nine admin languages, a public demo mode, sub-path installs, and a
+security and correctness pass over the whole codebase. **Breaking:** Modules are now Plugins,
+the Vue site uses `/api/v1` with an httpOnly session cookie, and PHP 8.1 is the minimum.
+
+### Added — 2026-11-21 — Sub-path installs
+
+- Install under a path next to another site (`BASE_PATH=/cms`, or a `BASE_URL` with a path).
+  The prefix is applied at the edges of each request — stripped before routing, added to
+  redirects, HTML URLs, inline-script and JSON app paths and cookie paths; bundles read it from
+  `<meta name="seven-base">`. Nothing changes when `BASE_PATH` is empty. See `docs/subpath.md`.
+
+### Fixed — 2026-11-21
+
+- Guests opening an admin page were sent to the site login instead of the admin sign-in.
+- The notification bell never loaded (its `feed.json` URL never matched the route).
+- The UI kit page imported a dev-only source path, so its demos broke in production.
+- Admin elements with inline `style` attributes lost their styling under the CSP
+  (`style-src-attr 'unsafe-inline'` allows attributes only; scripts still need a nonce).
+- The PHP version check said 7.4; the code needs 8.1.
+
+### Security — 2026-11-22
+
+- Preview links were signed with the default key `change-me` when `JWT_SECRET` was not set,
+  so anyone could forge a link to unpublished content. They now refuse to work without a
+  32+ character secret, like API tokens (`php bin/sev key:generate`).
+
 ### Fixed — 2026-11-20 — Shop and headless content were not working
 
 - **Cart API always 500** — `CartService::current()` returned a RedBean bean from an
@@ -140,15 +171,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 
 ### Security
-- `.env` support — DB credentials moved out of config files
-- `Env` class — `.env` loader with `get()` / `require()` methods
-- CSRF protection on all forms (in progress)
-- Session hardening — `httpOnly`, `Secure`, `SameSite` cookies (in progress)
-- Input sanitization in `Request` class (in progress)
-- Rate limiting on login endpoint (in progress)
-- Security headers — CSP, X-Frame-Options, X-Content-Type-Options (in progress)
-- File upload MIME whitelist and directory traversal protection (in progress)
-- Role-based middleware for admin routes (in progress)
+- `.env` support — DB credentials moved out of config files (`Env::get()` / `require()`)
+- CSRF tokens on every admin form and state-changing `fetch()`; no state changes over GET
+- Session cookies `httpOnly`, `Secure`, `SameSite=Strict`; session tokens stored as SHA-256
+- Login rate limits (5 per 15 minutes per IP) for admin, site and API
+- CSP with per-request nonces, X-Frame-Options, X-Content-Type-Options, HSTS
+- Uploads: MIME + extension allowlist, no PHP in `/uploads`, SVG sanitizer
+- Allowlist HTML sanitizer for rich text (closes stored XSS)
+- Role-based middleware and permission checks on admin routes
 
 ---
 
@@ -173,5 +203,6 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 - OAuth fields on User model (not yet implemented)
 - REST API skeleton (2 endpoints)
 
-[Unreleased]: https://github.com/theloopbreaker4-cloud/seven-php/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/theloopbreaker4-cloud/seven-php/releases/tag/v1.0.0
+[Unreleased]: https://github.com/theloopbreaker4-cloud/seven-cms-php/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/theloopbreaker4-cloud/seven-cms-php/releases/tag/v2.0.0
+[1.0.0]: https://github.com/theloopbreaker4-cloud/seven-cms-php/commits/master

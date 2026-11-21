@@ -12,11 +12,13 @@
 <p align="center">
   <a href="https://github.com/theloopbreaker4-cloud/seven-cms-php"><img src="https://img.shields.io/badge/maintainer-%40theloopbreaker4--cloud-0891b2?style=flat-square&logo=github" alt="Maintainer" /></a>
   <img src="https://img.shields.io/badge/AI--assisted-Claude-D97757?style=flat-square&logo=anthropic&logoColor=white" alt="AI-assisted: Claude" />
-  <img src="https://img.shields.io/badge/PHP-8.4-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP 8.4" />
+  <img src="https://img.shields.io/badge/PHP-8.1%2B-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP 8.1+" />
   <img src="https://img.shields.io/badge/Vue-3-42B883?style=flat-square&logo=vue.js&logoColor=white" alt="Vue 3" />
   <img src="https://img.shields.io/badge/Tailwind-3-38BDF8?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind 3" />
   <img src="https://img.shields.io/badge/license-ISC-success?style=flat-square" alt="ISC License" />
   <img src="https://img.shields.io/badge/status-active-brightgreen?style=flat-square" alt="Active development" />
+  <a href="https://github.com/theloopbreaker4-cloud/seven-cms-php/releases"><img src="https://img.shields.io/badge/version-2.0.0-6366f1?style=flat-square" alt="Version 2.0.0" /></a>
+  <a href="https://seven.toolpix.dev/cms/"><img src="https://img.shields.io/badge/demo-live-f59e0b?style=flat-square" alt="Live demo" /></a>
 </p>
 
 <p align="center">
@@ -33,6 +35,13 @@
   <a href="docs/cli.md">CLI</a> ·
   <a href="docs/subpath.md">Sub-path install</a>
 </p>
+
+---
+
+## Live demo
+
+**https://seven.toolpix.dev/cms/** — admin sign-in `demo@seven.dev` / `demo1234`.
+Edit anything; the demo resets every hour (users, roles, settings, mail and plugins are read-only).
 
 ---
 
@@ -55,34 +64,39 @@
 
 ## Install
 
-### Quick (zero-dependency)
+**Requirements:** PHP 8.1+ (tested on 8.4 and 8.5) with `pdo_mysql`, `mbstring`, `json`,
+`fileinfo` · MySQL 8 or MariaDB 10.5+ · optional: Redis, `gd`/`imagick`, Composer.
+
+### From a release (no Node.js needed — shared hosting friendly)
+
+1. Download the latest release, [`seven-cms-latest.zip`](https://seven.toolpix.dev/downloads/seven-cms-latest.zip)
+   (versioned files and `.sha256` checksums sit next to it, e.g. `seven-cms-2.0.0.zip`) — it
+   already contains the built admin and site assets.
+2. Upload it, point the web server's document root at `public/` (see `nginx.conf.example`;
+   Apache uses `public/.htaccess`).
+3. Create an empty database (`utf8mb4`), copy `.env.example` to `.env`, fill in `DB_*`,
+   `BASE_URL` and a `JWT_SECRET` (`php bin/sev key:generate`).
+4. Open the site — the **setup wizard** creates every table and your admin account.
+
+### From source
 
 ```bash
-git clone https://github.com/your-org/sevencms.git
-cd sevencms
-cp .env.example .env
-# edit .env: DB credentials, BASE_URL, JWT_SECRET
-mysql -u root -p sevencms < db/migrations/2026_04_26_000001_create_plugins_table.sql
-php bin/sev migrate
+git clone https://github.com/theloopbreaker4-cloud/seven-cms-php.git
+cd seven-cms-php
+cp .env.example .env            # DB_*, BASE_URL, JWT_SECRET
+npm ci && npm run build         # admin + site assets (Vite)
 php -S localhost:8085 -t public public/router.php
 ```
 
-Open `http://localhost:8085`. The **Setup wizard** runs on first request and seeds an admin user.
+Open `http://localhost:8085` and follow the setup wizard. Later schema changes:
+`php bin/sev migrate`.
 
-### With Composer (recommended for production)
+**Composer is optional** — a manual class loader runs the project on hosts without it. When
+`vendor/autoload.php` exists it is registered automatically, so `composer require` Stripe / AWS /
+PHPMailer works. See [docs/composer.md](docs/composer.md).
 
-```bash
-composer install --no-dev --optimize-autoloader
-php bin/sev migrate
-php bin/sev plugin:install Content
-php bin/sev plugin:install Ecom
-```
-
-Composer is **optional** — SevenCMS ships a manual class loader so the project runs on
-shared hosts without `composer install`. When `vendor/autoload.php` exists,
-SevenCMS registers it automatically and you can `composer require` Stripe / AWS / PHPMailer.
-
-See [docs/composer.md](docs/composer.md) for the full Composer guide.
+**Installing under a path** (`https://example.com/cms/`): set `BASE_PATH=/cms` — see
+[docs/subpath.md](docs/subpath.md).
 
 ---
 

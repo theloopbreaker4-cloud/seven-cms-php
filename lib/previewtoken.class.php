@@ -56,7 +56,11 @@ class PreviewToken
     private static function secret(): string
     {
         $secret = (string)Env::get('JWT_SECRET', '');
-        if ($secret === '') $secret = (string)Env::get('APP_KEY', 'change-me');
+        if ($secret === '') $secret = (string)Env::get('APP_KEY', '');
+        // Same rule as Jwt: a known default would let anyone forge preview links to drafts.
+        if (strlen($secret) < 32 || $secret === 'change-me') {
+            throw new RuntimeException('JWT_SECRET is missing or shorter than 32 chars. Run: php bin/sev key:generate');
+        }
         return $secret;
     }
 
