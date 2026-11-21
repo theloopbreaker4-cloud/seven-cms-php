@@ -3,6 +3,7 @@ return [
     'nav' => [
         'home'      => 'Home',
         'blog'      => 'Blog',
+        'shop'      => 'Shop',
         'about'     => 'About',
         'signin'    => 'Sign In',
         'signout'   => 'Sign Out',

@@ -32,6 +32,7 @@
       <nav class="flex items-center gap-5 text-sm font-medium">
         <RouterLink :to="`/${lang}/`"     class="hover:text-[var(--primary)] transition-colors">{{ t('nav.home') }}</RouterLink>
         <RouterLink :to="`/${lang}/blog`" class="hover:text-[var(--primary)] transition-colors">{{ t('nav.blog') }}</RouterLink>
+        <RouterLink :to="`/${lang}/shop`" class="hover:text-[var(--primary)] transition-colors">{{ t('nav.shop') }}</RouterLink>
         <template v-if="isLogin">
           <a :href="withBase(`/${lang}/admin`)"       class="hover:text-[var(--primary)] transition-colors">{{ t('nav.dashboard') }}</a>
           <a :href="withBase(`/${lang}/auth/logout`)" class="hover:text-[var(--primary)] transition-colors">{{ t('nav.signout') }}</a>

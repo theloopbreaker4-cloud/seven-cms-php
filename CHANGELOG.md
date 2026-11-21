@@ -15,6 +15,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ### Fixed
 
+- **Storefront pages were broken in production**: the catalog and cart loaded Vue from a CDN
+  with in-DOM templates (blocked by the CSP, which allows neither the CDN nor `eval`), and the
+  product page called a method that doesn't exist (500). Catalog, product and cart + checkout are
+  now compiled pages of the Vue site (`src/site/pages/Shop*.vue`); the site menu links the shop.
 - Sub-path installs: links inside rich text delivered as JSON (pages and posts in the Vue
   site) now get the prefix too.
 

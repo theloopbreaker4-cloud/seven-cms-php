@@ -3,6 +3,7 @@ return [
     'nav' => [
         'home'      => 'Ana Səhifə',
         'blog'      => 'Blog',
+        'shop'      => 'Mağaza',
         'about'     => 'Haqqında',
         'signin'    => 'Daxil ol',
         'signout'   => 'Çıxış',
