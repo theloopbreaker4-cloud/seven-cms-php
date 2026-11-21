@@ -51,7 +51,7 @@ class Response
         $secure = (PROTOCOL === 'https://');
         setcookie($name, $value, [
             'expires'  => time() + $time,
-            'path'     => '/',
+            'path'     => BasePath::cookiePath(),
             'domain'   => '',
             'secure'   => $secure,
             'httponly' => true,
@@ -67,7 +67,7 @@ class Response
         $secure = (PROTOCOL === 'https://');
         setcookie($name, '', [
             'expires'  => time() - $time,
-            'path'     => '/',
+            'path'     => BasePath::cookiePath(),
             'domain'   => '',
             'secure'   => $secure,
             'httponly' => true,

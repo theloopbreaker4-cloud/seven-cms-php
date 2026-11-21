@@ -2,10 +2,13 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import CalendarWidget from '../shared/components/CalendarWidget.vue'
 import { initConfirmLinks } from './dialog.js'
-import { initUI } from './ui.js'
+import { initUI, SevenUI } from './ui.js'
 import { initForms } from './forms.js'
 import { initSelects } from './select.js'
 import './main.scss'
+
+// Views' inline scripts use the UI helpers without importing source paths (dev-only).
+window.SevenUI = SevenUI
 
 const el = document.getElementById('app')
 if (el) {

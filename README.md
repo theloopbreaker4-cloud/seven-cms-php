@@ -30,7 +30,8 @@
   <a href="docs/ecom.md">E-commerce</a> ·
   <a href="docs/multisite.md">Multi-site</a> ·
   <a href="docs/pagebuilder.md">Page builder</a> ·
-  <a href="docs/cli.md">CLI</a>
+  <a href="docs/cli.md">CLI</a> ·
+  <a href="docs/subpath.md">Sub-path install</a>
 </p>
 
 ---

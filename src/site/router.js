@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { BASE } from '../shared/base.js'
 
 import HomePage    from './pages/HomePage.vue'
 import BlogList    from './pages/BlogList.vue'
@@ -14,7 +15,7 @@ import NotFound    from './pages/NotFound.vue'
 const lang = window.__LANG__ || 'en'
 
 export default createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(BASE || undefined),
   routes: [
     { path: `/:lang/`,                    component: HomePage },
     { path: `/:lang/blog`,                component: BlogList },

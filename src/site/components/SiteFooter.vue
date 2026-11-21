@@ -6,7 +6,7 @@
         <!-- Brand column -->
         <div>
           <div class="flex items-center gap-2 mb-3">
-            <img :src="`${base}brand.svg`" alt="Seven CMS" class="w-7 h-7 rounded-[4px]" />
+            <img :src="withBase('/brand.svg')" alt="Seven CMS" class="w-7 h-7 rounded-[4px]" />
             <span class="font-bold text-base"><span class="text-[var(--primary)]">Seven</span> <span class="text-[var(--text-secondary)]">CMS</span></span>
           </div>
           <p class="text-sm text-[var(--text-tertiary)] leading-relaxed">
@@ -89,7 +89,7 @@
         <span>&copy; {{ year }} Seven CMS. {{ t('footer.allRights') }}</span>
         <div class="flex items-center gap-4">
           <RouterLink :to="`/${lang}/about`" class="hover:text-[var(--primary)] transition-colors">{{ t('nav.about') }}</RouterLink>
-          <a :href="`/${lang}/blog`"  class="hover:text-[var(--primary)] transition-colors">{{ t('nav.blog') }}</a>
+          <a :href="withBase(`/${lang}/blog`)"  class="hover:text-[var(--primary)] transition-colors">{{ t('nav.blog') }}</a>
         </div>
       </div>
     </div>
@@ -99,8 +99,8 @@
 <script setup>
 import { ref, onMounted, h } from 'vue'
 import { RouterLink } from 'vue-router'
+import { withBase } from '../../shared/base.js'
 
-const base = import.meta.env.BASE_URL
 
 const props = defineProps({
   lang:    { type: String, default: 'en' },
@@ -117,7 +117,7 @@ function t(key) {
 
 onMounted(async () => {
   try {
-    const res = await fetch('/api/v1/social/links')
+    const res = await fetch(withBase('/api/v1/social/links'))
     if (res.ok) socials.value = await res.json()
   } catch { /* silently ignore */ }
 })

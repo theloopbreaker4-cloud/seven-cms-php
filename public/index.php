@@ -11,6 +11,11 @@ define('ROOT_DIR', dirname(__DIR__));
 require_once(ROOT_DIR . DS . 'lib' . DS . 'env.class.php');
 Env::load(ROOT_DIR . DS . '.env');
 
+// Optional sub-path install (BASE_PATH=/cms): strips the prefix before routing and adds it to
+// links, redirects and cookies on the way out.
+require_once(ROOT_DIR . DS . 'lib' . DS . 'basepath.class.php');
+BasePath::boot();
+
 // Fail safe: a missing SEVEN_ENV must not expose dev error pages in production.
 define('ENVIRONMENT', Env::get('SEVEN_ENV', $_SERVER['SEVEN_ENV'] ?? 'prod'));
 define('ROOT_URL', isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '_UNKNOWN_'));

@@ -3,7 +3,7 @@
 defined('_SEVEN') or die('No direct script access allowed');
 
 $config = [
-    'baseUrl'              => PROTOCOL . ROOT_URL,
+    'baseUrl'              => PROTOCOL . ROOT_URL . (class_exists('BasePath', false) ? BasePath::get() : ''),
     'siteName'             => Env::get('SITE_NAME', 'Seven CMS'),
     'defaultLanguage'      => 'en',
     'defaultRouter'        => 'default',

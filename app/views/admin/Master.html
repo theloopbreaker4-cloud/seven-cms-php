@@ -12,6 +12,7 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
 <html lang="<?= $lang ?>"<?= $activePalette !== 'default' ? ' data-palette="' . htmlspecialchars($activePalette) . '"' : '' ?>>
 <head>
   <meta charset="UTF-8" />
+  <?= BasePath::headTags(Csp::nonce()) ?>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?= htmlspecialchars(Seven::app()->getTitle()) ?> — <?= htmlspecialchars(Setting::get('site_name', 'Seven CMS')) ?> Admin</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -370,7 +371,7 @@ $is = fn(array $ctrls) => in_array($ctrl, $ctrls, true);
           else                 { count.classList.add('hidden'); }
         }
         function escape(s){return String(s||'').replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
-        function load(){ fetch('/<?= $lang ?>/admin/notifications/feed.json',{credentials:'same-origin'}).then(function(r){return r.json();}).then(render).catch(function(){}); }
+        function load(){ fetch('/<?= $lang ?>/admin/notifications/feed',{credentials:'same-origin'}).then(function(r){return r.json();}).then(render).catch(function(){}); }
         btn.addEventListener('click', function(e){
           e.stopPropagation();
           panel.classList.toggle('hidden');

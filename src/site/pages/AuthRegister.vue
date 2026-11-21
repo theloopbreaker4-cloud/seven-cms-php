@@ -67,6 +67,7 @@ import FormField    from '../components/FormField.vue'
 import CaptchaField from '../components/CaptchaField.vue'
 import { api }      from '../composables/useApi.js'
 import { useCaptcha } from '../composables/useCaptcha.js'
+import { withBase } from '../../shared/base.js'
 import { t }        from '../composables/useI18n.js'
 
 const lang = window.__LANG__ || 'en'
@@ -95,7 +96,7 @@ async function submit() {
   errors.value       = {}
   try {
     await api.auth.register(form.value) // server sets the httpOnly session cookie
-    window.location.href = `/${lang}/`
+    window.location.href = withBase(`/${lang}/`)
   } catch (e) {
     if (e.data && typeof e.data === 'object' && !e.data.error) {
       errors.value = e.data

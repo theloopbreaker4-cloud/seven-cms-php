@@ -5,7 +5,7 @@
       <!-- Logo + title -->
       <div class="text-center mb-8">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-[5px] bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-sm mb-4">
-          <img :src="`${base}brand.svg`" alt="Seven CMS" class="w-8 h-8 rounded-[4px]" />
+          <img :src="withBase('/brand.svg')" alt="Seven CMS" class="w-8 h-8 rounded-[4px]" />
         </div>
         <h1 class="text-2xl font-bold text-[var(--text-primary)]">{{ title }}</h1>
         <p v-if="subtitle" class="mt-1.5 text-sm text-[var(--text-tertiary)]">{{ subtitle }}</p>
@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-const base = import.meta.env.BASE_URL
+import { withBase } from '../../shared/base.js'
 
 defineProps({
   title:    { type: String, required: true },

@@ -3,6 +3,12 @@
 // Serves static files directly, routes everything else to index.php
 
 $uri  = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+
+// Sub-path install in dev (BASE_PATH=/cms php -S …): static files live at the root of public/.
+$basePath = '/' . trim((string)getenv('BASE_PATH'), '/');
+if ($basePath !== '/' && ($uri === $basePath || str_starts_with($uri, $basePath . '/'))) {
+    $uri = substr($uri, strlen($basePath)) ?: '/';
+}
 $file = __DIR__ . $uri;
 
 // Block direct directory access — route to index.php instead

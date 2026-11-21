@@ -3,6 +3,7 @@
 <html lang="<?= Seven::app()->router->getLanguage() ?>"<?= $activePalette !== 'default' ? ' data-palette="' . htmlspecialchars($activePalette) . '"' : '' ?>>
 <head>
   <meta charset="UTF-8" />
+  <?= BasePath::headTags(Csp::nonce()) ?>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="<?= htmlspecialchars(Lang::t('description', 'meta')) ?>" />
   <title><?= htmlspecialchars(Seven::app()->getTitle()) ?> — <?= htmlspecialchars(Setting::get('site_name', 'Seven CMS')) ?></title>

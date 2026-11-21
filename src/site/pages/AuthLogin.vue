@@ -58,6 +58,7 @@ import CaptchaField from '../components/CaptchaField.vue'
 import { api }      from '../composables/useApi.js'
 import { useCaptcha } from '../composables/useCaptcha.js'
 import { t }        from '../composables/useI18n.js'
+import { withBase } from '../../shared/base.js'
 
 const lang           = window.__LANG__ || 'en'
 const captchaEnabled = (window.__DATA__?.captchaOnLogin ?? false)
@@ -81,7 +82,7 @@ async function submit() {
   error.value   = ''
   try {
     const data = await api.auth.login(form.value) // server sets the httpOnly session cookie
-    window.location.href = data.user?.role === 'admin' ? `/${lang}/admin` : `/${lang}/`
+    window.location.href = withBase(data.user?.role === 'admin' ? `/${lang}/admin` : `/${lang}/`)
   } catch (e) {
     error.value = e.message || t('validation.wrongPass', 'Login failed')
     if (captchaEnabled) refresh()

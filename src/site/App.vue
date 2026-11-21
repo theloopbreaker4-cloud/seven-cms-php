@@ -25,7 +25,7 @@
   <header class="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/80 backdrop-blur-sm sticky top-0 z-50">
     <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
       <RouterLink :to="`/${lang}/`" class="flex items-center gap-2">
-        <img :src="`/brand.svg`" alt="Seven CMS" class="w-8 h-8 rounded-lg" />
+        <img :src="withBase('/brand.svg')" alt="Seven CMS" class="w-8 h-8 rounded-lg" />
         <span class="font-bold text-lg text-[var(--primary)]">Seven <span class="text-[var(--text-secondary)]">CMS</span></span>
       </RouterLink>
 
@@ -33,8 +33,8 @@
         <RouterLink :to="`/${lang}/`"     class="hover:text-[var(--primary)] transition-colors">{{ t('nav.home') }}</RouterLink>
         <RouterLink :to="`/${lang}/blog`" class="hover:text-[var(--primary)] transition-colors">{{ t('nav.blog') }}</RouterLink>
         <template v-if="isLogin">
-          <a :href="`/${lang}/admin`"       class="hover:text-[var(--primary)] transition-colors">{{ t('nav.dashboard') }}</a>
-          <a :href="`/${lang}/auth/logout`" class="hover:text-[var(--primary)] transition-colors">{{ t('nav.signout') }}</a>
+          <a :href="withBase(`/${lang}/admin`)"       class="hover:text-[var(--primary)] transition-colors">{{ t('nav.dashboard') }}</a>
+          <a :href="withBase(`/${lang}/auth/logout`)" class="hover:text-[var(--primary)] transition-colors">{{ t('nav.signout') }}</a>
         </template>
         <template v-else>
           <RouterLink :to="`/${lang}/auth`" class="hover:text-[var(--primary)] transition-colors">{{ t('nav.signin') }}</RouterLink>
@@ -92,6 +92,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import SiteFooter from './components/SiteFooter.vue'
+import { withBase, appPath } from '../shared/base.js'
 
 const data      = window.__DATA__  || {}
 const lang      = window.__LANG__  || 'en'
@@ -132,9 +133,9 @@ function t(key) {
 
 function langUrl(code) {
   // Replace first path segment (the lang prefix) with new code
-  const parts = window.location.pathname.split('/')
+  const parts = appPath().split('/')
   parts[1] = code
-  return parts.join('/') + window.location.search
+  return withBase(parts.join('/')) + window.location.search
 }
 
 // Map lang code → ISO 3166-1 alpha-2 country code for flag CDN

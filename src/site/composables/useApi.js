@@ -1,6 +1,8 @@
 // Fetch wrapper for the site API (/api/v1). The session lives in an httpOnly cookie
 // set by the server, so nothing here reads or writes tokens.
-const BASE = '/api/v1'
+import { withBase } from '../../shared/base.js'
+
+const BASE = withBase('/api/v1')
 
 export async function apiFetch(path, options = {}) {
   const headers = {

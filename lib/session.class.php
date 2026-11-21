@@ -14,7 +14,7 @@ class Session
         $secure   = (PROTOCOL === 'https://');
         session_set_cookie_params([
             'lifetime' => 0,
-            'path'     => '/',
+            'path'     => BasePath::cookiePath(),
             'domain'   => '',
             'secure'   => $secure,
             'httponly' => true,

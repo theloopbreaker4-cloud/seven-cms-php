@@ -91,7 +91,7 @@ class AdminLang
     {
         setcookie('admin_lang', $code, [
             'expires'  => time() + 60 * 60 * 24 * 365,
-            'path'     => '/',
+            'path'     => BasePath::cookiePath(),
             'samesite' => 'Strict',
             'secure'   => isset($_SERVER['HTTPS']),
             'httponly' => true,

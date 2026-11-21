@@ -777,8 +777,7 @@ overlay.hide()</div>
 </div>
 
 <script type="module" nonce="<?= Csp::nonce() ?>">
-import { toast, overlay } from '/src/admin/ui.js'
-window.SevenUI = { toast, overlay }
+const { toast, overlay } = window.SevenUI
 
 document.getElementById('demo-toast-success')?.addEventListener('click', () => toast('Changes saved successfully!', 'success'))
 document.getElementById('demo-toast-danger')?.addEventListener('click',  () => toast('Something went wrong.', 'danger'))

@@ -16,8 +16,11 @@ function syncViteDev() {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [vue(), syncViteDev()],
+
+  // Relative asset URLs in the build, so bundles work under a sub-path install (BASE_PATH).
+  base: command === 'build' ? './' : '/',
 
   publicDir: false,
 
@@ -63,4 +66,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))
