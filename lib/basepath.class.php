@@ -198,10 +198,17 @@ final class BasePath
     /** JSON string values that are app paths ("/uploads/…", "/en/…") get the prefix. */
     public static function rewriteJson(string $json): string
     {
-        $seg = self::segmentPattern();
-        return preg_replace_callback(
+        $seg    = self::segmentPattern();
+        $prefix = fn(string $slash) => $slash === '/' ? self::$path . '/' : str_replace('/', '\/', self::$path) . '\/';
+        $json = preg_replace_callback(
             '~"(\\\\?/)(?=(?:' . $seg . ')(?:\\\\?/|"))~',
-            fn($m) => '"' . ($m[1] === '/' ? self::$path . '/' : str_replace('/', '\/', self::$path) . '\/'),
+            fn($m) => '"' . $prefix($m[1]),
+            $json
+        ) ?? $json;
+        // Links inside HTML strings (rich text): href=\"/en/…\" or href=\"\/en\/…\".
+        return preg_replace_callback(
+            '~((?:href|src|action)=\\\\")(\\\\?/)(?=(?:' . $seg . ')(?:\\\\?/|\\\\"|[?#]))~',
+            fn($m) => $m[1] . $prefix($m[2]),
             $json
         ) ?? $json;
     }

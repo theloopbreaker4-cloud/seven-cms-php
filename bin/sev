@@ -563,5 +563,81 @@ function cmdDemoSeed(): void
         $id = $post->save();
         Slug::saveForEntity('post', (int)$id, ['en' => $slug, 'ru' => $slug]);
     }
+
+    $hasTable = fn(string $t) => (bool)DB::getCell('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :t', [':t' => $t]);
+
+    // Shop: a few products of every kind, so the storefront, cart and checkout have something to show.
+    if ($hasTable('ecom_products')) {
+        $cats = [
+            'merch'    => ['en' => 'Merch', 'ru' => 'Мерч', 'ka' => 'მერჩი'],
+            'digital'  => ['en' => 'Digital', 'ru' => 'Цифровые товары', 'ka' => 'ციფრული'],
+            'services' => ['en' => 'Services', 'ru' => 'Услуги', 'ka' => 'სერვისები'],
+        ];
+        $catIds = [];
+        foreach ($cats as $slug => $name) {
+            $id = (int)DB::getCell('SELECT id FROM ecom_categories WHERE slug = :s', [':s' => $slug]);
+            if (!$id) {
+                DB::execute('INSERT INTO ecom_categories (slug, name, description, sort_order, is_active) VALUES (:s, :n, :d, :o, 1)',
+                    [':s' => $slug, ':n' => $j($name), ':d' => '{}', ':o' => count($catIds)]);
+                $id = (int)DB::getCell('SELECT id FROM ecom_categories WHERE slug = :s', [':s' => $slug]);
+            }
+            $catIds[$slug] = $id;
+        }
+        $products = [
+            // slug, kind, category, price (minor units), compare-at, name, short description, subscription period
+            ['seven-tee', 'physical', 'merch', 2500, 3200, ['en' => 'Seven T-shirt', 'ru' => 'Футболка Seven', 'ka' => 'Seven მაისური'],
+                ['en' => 'Soft cotton tee with the Seven logo.', 'ru' => 'Хлопковая футболка с логотипом Seven.'], null],
+            ['seven-mug', 'physical', 'merch', 1200, null, ['en' => 'Seven mug', 'ru' => 'Кружка Seven', 'ka' => 'Seven ჭიქა'],
+                ['en' => 'Ceramic mug, 330 ml.', 'ru' => 'Керамическая кружка, 330 мл.'], null],
+            ['starter-theme', 'digital', 'digital', 4900, null, ['en' => 'Starter theme', 'ru' => 'Стартовая тема', 'ka' => 'საწყისი თემა'],
+                ['en' => 'A ready-made theme — delivered as a download link after payment.', 'ru' => 'Готовая тема — ссылка на скачивание после оплаты.'], null],
+            ['care-plan', 'service', 'services', 1900, null, ['en' => 'Website care plan', 'ru' => 'Поддержка сайта', 'ka' => 'საიტის მხარდაჭერა'],
+                ['en' => 'Monthly updates, backups and fixes — billed every month.', 'ru' => 'Обновления, бэкапы и правки — оплата каждый месяц.'], 'month'],
+        ];
+        foreach ($products as $i => [$slug, $kind, $cat, $price, $compare, $name, $short, $period]) {
+            if (DB::getCell('SELECT COUNT(*) FROM ecom_products WHERE slug = :s', [':s' => $slug])) continue;
+            DB::execute(
+                'INSERT INTO ecom_products (slug, kind, name, short_description, description, category_id, is_subscription,
+                    billing_period, billing_interval, base_price, compare_at_price, sku, track_inventory, stock, tax_class,
+                    is_active, is_featured, published_at)
+                 VALUES (:slug, :kind, :name, :short, :descr, :cat, :sub, :period, :interval, :price, :compare, :sku,
+                    :track, :stock, "standard", 1, :featured, NOW())',
+                [
+                    ':slug' => $slug, ':kind' => $kind, ':name' => $j($name), ':short' => $j($short),
+                    ':descr' => $j(array_map(fn($t) => '<p>' . htmlspecialchars($t) . '</p>', $short)),
+                    ':cat' => $catIds[$cat], ':sub' => $period ? 1 : 0, ':period' => $period, ':interval' => $period ? 1 : null,
+                    ':price' => $price, ':compare' => $compare, ':sku' => strtoupper(str_replace('-', '', $slug)),
+                    ':track' => $kind === 'physical' ? 1 : 0, ':stock' => $kind === 'physical' ? 50 : 0, ':featured' => $i < 2 ? 1 : 0,
+                ]
+            );
+        }
+    }
+
+    // Content types: a "Team" type with fields and a few entries, readable at /api/v1/content/team.
+    if ($hasTable('content_types')) {
+        $typeId = (int)DB::getCell('SELECT id FROM content_types WHERE slug = "team"');
+        if (!$typeId) {
+            DB::execute('INSERT INTO content_types (slug, name, description, icon) VALUES ("team", "Team", "People shown on the About page", "users")');
+            $typeId = (int)DB::getCell('SELECT id FROM content_types WHERE slug = "team"');
+            $fields = [['name', 'Name', 'text', 1, 0], ['role', 'Role', 'text', 1, 1], ['bio', 'Bio', 'richtext', 0, 1]];
+            foreach ($fields as $o => [$key, $label, $type, $required, $localized]) {
+                DB::execute('INSERT INTO content_fields (type_id, `key`, label, field_type, required, localized, settings, sort_order)
+                             VALUES (:t, :k, :l, :f, :r, :loc, "{}", :o)',
+                    [':t' => $typeId, ':k' => $key, ':l' => $label, ':f' => $type, ':r' => $required, ':loc' => $localized, ':o' => $o]);
+            }
+        }
+        $people = [
+            'nino'  => ['Nino Beridze', ['en' => 'Editor', 'ru' => 'Редактор'], ['en' => '<p>Keeps the blog and pages in shape.</p>', 'ru' => '<p>Следит за блогом и страницами.</p>']],
+            'giorgi' => ['Giorgi Kapanadze', ['en' => 'Shop manager', 'ru' => 'Менеджер магазина'], ['en' => '<p>Runs the catalog and orders.</p>', 'ru' => '<p>Ведёт каталог и заказы.</p>']],
+            'anna'  => ['Anna Petrova', ['en' => 'Developer', 'ru' => 'Разработчик'], ['en' => '<p>Builds themes and plugins.</p>', 'ru' => '<p>Делает темы и плагины.</p>']],
+        ];
+        $o = 0;
+        foreach ($people as $slug => [$name, $role, $bio]) {
+            if (DB::getCell('SELECT COUNT(*) FROM content_entries WHERE type_id = :t AND slug = :s', [':t' => $typeId, ':s' => $slug])) continue;
+            DB::execute('INSERT INTO content_entries (type_id, slug, status, locale, sort_order, data, author_id, published_at)
+                         VALUES (:t, :s, "published", "en", :o, :d, :a, NOW())',
+                [':t' => $typeId, ':s' => $slug, ':o' => $o++, ':d' => $j(['name' => $name, 'role' => $role, 'bio' => $bio]), ':a' => $admin ?: null]);
+        }
+    }
     ok('Demo content seeded.');
 }

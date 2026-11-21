@@ -8,6 +8,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) — [Semantic V
 
 ## [Unreleased]
 
+### Added
+
+- `demo:seed` also creates shop categories and products (physical, digital, monthly
+  subscription) and a "Team" content type with entries, so every demo area has data.
+
+### Fixed
+
+- Sub-path installs: links inside rich text delivered as JSON (pages and posts in the Vue
+  site) now get the prefix too.
+
 ---
 
 ## [2.0.0] — 2026-11-22
